@@ -9,6 +9,42 @@
     - `newScheduledThreadPool(int)` : 일정 시간 뒤에 실행되는 작업이나, 주기적으로 수행되는 작업이 있는 경우 활용할 수 있다.
     - `newSingleThreadExecutor()` : 싱글 쓰레드에서 동작해야 하는 작업을 처리할 때 활용할 수 있다.
 
+- 4개의 고정된 쓰레드풀을 생성하여 작업
+    ```java
+        private static void runFixedThreadPool() throws InterruptedException {
+            ExecutorService executor = Executors.newFixedThreadPool(4);
+
+            executor.submit(() -> {
+                printThreadName("job1");
+            });
+
+            executor.submit(() -> {
+                printThreadName("job2");
+            });
+
+            executor.submit(() -> {
+                printThreadName("job3");
+            });
+
+            executor.submit(() -> {
+                printThreadName("job4");
+            });
+
+            printThreadName("main job");
+
+            //더 이상 쓰레드풀에 작업을 추가하지 못하며, 처리 중인 Task가 모두 완료되면 쓰레드풀을 종료시킨다.
+            executor.shutdown();
+
+            //수행 중인 Task가 지정된 시간동안 끝나기를 기다린다. 만약 Task가 지정된 시간 내에에 끝나지 않으면 false를리턴
+            if(!executor.awaitTermination(20, TimeUnit.SECONDS)){
+                executor.shutdownNow();
+            }
+        }
+
+        public static void printThreadName(String workName){
+            System.out.println("[" + Thread.currentThread().getName() + "] " + workName);
+        }
+    ```
 
 ### Future
 --- 

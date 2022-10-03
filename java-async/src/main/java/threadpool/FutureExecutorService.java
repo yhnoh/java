@@ -10,8 +10,8 @@ import java.util.concurrent.Future;
 public class FutureExecutorService {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        useFutureWhenDelayTask();
-        //useFuture();
+        //useFutureWhenDelayTask();
+        useFuture();
     }
 
     private static void useFuture() throws InterruptedException, ExecutionException {
@@ -19,12 +19,13 @@ public class FutureExecutorService {
         final ExecutorService executor = Executors.newFixedThreadPool(maxCore);
         final List<Future<String>> futures = new ArrayList<>();
 
+        //다른 쓰레드의 결과값을 Future에 따로 저장
         for (int i = 0; i < 5; i++) {
             final int index = i;
             futures.add(executor.submit(() -> "[" + Thread.currentThread().getName() + "] " + "job" + index));
         }
 
-
+        //Future를 이용해 결과 값 가져오기
         for (Future<String> future : futures) {
             String result = future.get();
             System.out.println(result);
@@ -41,8 +42,10 @@ public class FutureExecutorService {
         for (int i = 4; i >= 0; i--) {
             final int index = i;
             futures.add(executor.submit(() -> {
-                Thread.sleep(index * 1000);
-                return "[" + Thread.currentThread().getName() + "] " + "job" + index;
+                long startTime = System.currentTimeMillis();
+                Thread.sleep(1000 * index);
+                long endTime = System.currentTimeMillis();
+                return "[" + Thread.currentThread().getName() + "] job" + index + " : " + (endTime - startTime) + "ms";
             }));
         }
 

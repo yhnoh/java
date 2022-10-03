@@ -11,22 +11,18 @@ public class ParallelExecutorService {
     }
 
 
-    public static void runParallelExecutorServiceWhenDelayTask(){
-
+    public static void runParallelExecutorService(){
         int maxCore = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(maxCore);
         BlockingQueue<String> queue = new ArrayBlockingQueue<>(10);
-
-
+        //q
         for (int i = 0; i < 5; i++) {
             final int index = i;
             executorService.submit(() -> {
                 try {
                     long startTime = System.currentTimeMillis();
-                    Thread.sleep(1000 * index);
                     long endTime = System.currentTimeMillis();
                     queue.put("[" + Thread.currentThread().getName() + "] job" + index + " : " + (endTime - startTime) + "ms");
-
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -49,23 +45,30 @@ public class ParallelExecutorService {
 
     }
 
-    public static void runParallelExecutorService(){
+    public static void runParallelExecutorServiceWhenDelayTask(){
+
         int maxCore = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(maxCore);
         BlockingQueue<String> queue = new ArrayBlockingQueue<>(10);
+
+        //작업이 초반에 딜레이되게끔 Thread Sleep
+        //Queue에서 작업을 put
         for (int i = 0; i < 5; i++) {
             final int index = i;
             executorService.submit(() -> {
                 try {
                     long startTime = System.currentTimeMillis();
+                    Thread.sleep(1000 * index);
                     long endTime = System.currentTimeMillis();
                     queue.put("[" + Thread.currentThread().getName() + "] job" + index + " : " + (endTime - startTime) + "ms");
+
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             });
         }
 
+        //Queue에서 결과물 가져오기
         for (int i = 0; i < 5; i++) {
             try {
                 System.out.println(queue.take());

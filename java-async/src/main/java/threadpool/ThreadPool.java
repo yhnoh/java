@@ -42,6 +42,10 @@ public class ThreadPool {
         }
     }
 
+    public static void printThreadName(String workName){
+        System.out.println("[" + Thread.currentThread().getName() + "] " + workName);
+    }
+
     public static void runSingleThreadExecutor() throws InterruptedException {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -68,9 +72,5 @@ public class ThreadPool {
             executor.shutdownNow();
         }
 
-    }
-
-    public static void printThreadName(String workName){
-        System.out.println("[" + Thread.currentThread().getName() + "] " + workName);
     }
 }
