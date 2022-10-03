@@ -7,11 +7,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class FutureTest {
+public class FutureExecutorService {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        delayFirstTaskInFutures();
-        useFuture();
+        useFutureWhenDelayTask();
+        //useFuture();
     }
 
     private static void useFuture() throws InterruptedException, ExecutionException {
@@ -21,9 +21,7 @@ public class FutureTest {
 
         for (int i = 0; i < 5; i++) {
             final int index = i;
-            futures.add(executor.submit(() -> {
-                return "[" + Thread.currentThread().getName() + "] " + "job" + index;
-            }));
+            futures.add(executor.submit(() -> "[" + Thread.currentThread().getName() + "] " + "job" + index));
         }
 
 
@@ -35,7 +33,7 @@ public class FutureTest {
         executor.shutdownNow();
     }
 
-    private static void delayFirstTaskInFutures() throws InterruptedException, ExecutionException {
+    private static void useFutureWhenDelayTask() throws InterruptedException, ExecutionException {
         final int maxCore = Runtime.getRuntime().availableProcessors();
         final ExecutorService executor = Executors.newFixedThreadPool(maxCore);
         final List<Future<String>> futures = new ArrayList<>();
