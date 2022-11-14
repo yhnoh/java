@@ -5,6 +5,8 @@
 
 
 ### 생성자 대신 정적 팩터리 메서드를 고려하라
+---
+
 ```java
 public class FactoryMethod {
 
@@ -82,3 +84,110 @@ public class FactoryMethod {
 > 또한 생성자나 정적 팩토리 메서드로 처리해 두었더라도 나중에 매개변수가 많아질 수 있으니 애초에 빌더로 시작하는 편이 나을 때도 많다.
 
 ### 자원을 직접 명시하지 말고 의존 객체 주입을 사용하라
+
+---
+
+#### 필요성
+
+- 의존 객체 주입을 활용하여 유연성을 확보할 수 있다.
+  - ***자원을 내부에서 직접 생성하고 다른 곳에서 조립할 수 없는 형태로 제작된다면, 유연하지 않으며 테스트를 하기도 어렵다.***
+
+```java
+//내부에서 직접 생성하고 다른 곳에서 
+public class SpellChecker {
+    private static final Dictionary dictionary = new Dictionary();
+
+    private SpellChecker() {} //객체 생성 방지
+
+    public static boolean isValid(String word) { ... }
+    public static List<String> suggestions(String typo) { ... }
+}
+
+```
+- 위 코드에서 `SpellChecker` 객체 내에서 `Dictionary`객체를 직접생성한다.
+- `SpellChecker` 클래스를 사용하는 개발자는 `Dictionary`객체를 변경할 수 없다.
+- 실전에서는 `Dictionary`가 언어별로 또는 어휘별로 두기도 하며 테스트용으로도 필요할 수 있다.
+
+#### 장점
+1. `SpellChecker`클래스는 ***사용하는 자원에 따라 동작이 달라지는 클래스***가 될 수 있기 때문에 직접적으로 `Dictionary`를 명시하기 보다는 ***해당 자원을 외부에서 주입받을 수 있도록 하면 유연하게 대처할 수 있다.***
+    ```java
+    public class SpellChecker {
+        private final Dictionary dictionary;
+
+        private SpellChecker(Dictionary dictionary) {
+            this.dictionary = dictionary;
+        } //객체 생성 방지
+
+        public boolean isValid(String word) { ... }
+        public List<String> suggestions(String typo) { ... }
+    }   
+    ```
+2. 의존 객체 주입은 클래스의 유연성, 재사용성, 테스트 용이성을 개선해준다.
+
+#### 단점
+1. 의존 객체 주입이 유연성과 테스트 용이성을 제공해주지만, 의존성이 많아지면 코드가 어지러워진다.
+  - 스프링과 같은 프레임워크를 활용하면 DI를 통해서 이러한 문제를 조금이나마 해소가 가능하다.
+
+### 불필요한 객체 생성을 피하라
+
+- 불필요한 객체를 계속해서 생성하지말고 생성되어 있는 객체를 재사용하는 것이 좋다.
+  - 성능상의 이점을 가져올 수 있다.
+
+#### 객체의 재사용의 단적인 예시
+```java
+public final class Boolean implements java.io.Serializable, Comparable<Boolean>{
+    public static final Boolean TRUE = new Boolean(true);
+    public static final Boolean FALSE = new Boolean(false);
+    
+    //필드에 생성된 Boolean 객체를 재활용 한다.
+    public static Boolean valueOf(boolean b) {
+        return (b ? TRUE : FALSE);
+    }
+
+    public static Boolean valueOf(String s) {
+        return parseBoolean(s) ? TRUE : FALSE;
+    }
+
+}
+```
+- Boolean 클래스의 valueOf 정적 메소드 덕분에 불필요한 Boolean 객체를 생성하지 않으며, 재사용 가능하다.
+  - `mew Boolean(...)`하여 직접 생성하는 것은 지속적으로 불필요한 객체를 생성하는 행위이다.
+
+#### 값비싼 객체 재사용하기
+```java
+public class Mobile(){
+    public static boolean isMobile(String mobile){
+        return mobile.matches("정규식");
+    }
+}
+```
+- String.matches는 정규표현식으로 문자열 혈태를 확인하는 가장 좋은 방법이지만, 성능이 중요한 상황에서는 적합하지 않다.
+
+```java
+public class Mobile(){
+    private static final Pattern MOBILE = Pattern.compile("정규식");
+    public static boolean isMobile(String mobile){
+        return MOBILE.matcher(mobile).matches();
+    }
+}
+```
+- 위와 같이 Pattern클래스를 ***한번만 생성하여 재사용을 하게되면 성능의 이점을 상당히 끌어올릴 수 있다.***
+- 생성이 비싼 객체의 경우 캐싱해서 재사용할 수 있는 것과 비슷한 원리이다.
+
+#### 오토박싱을 조심하자
+> 여기서 이야기하는 오토 박싱은 기본 타입을 Wrapper클래스로 박싱해 주는 것을 이야기한다.
+```java
+private static long sum() {
+    Long sum = 0L;
+    for (long i = 0; i <= Interger.MAX_VALUE; i++){
+        sum += i;
+    }
+    return sum;
+}
+```
+- 
+- 위의 코드는 개발자가 원하는 답을 정확하게 주겠지만 Long으로 선언해서 불필요한 인스턴스가 지속적으로 생성이 된다.
+- ***Wrapper클래스를 사용하기 보다 기본 타입을 사용하고, 의도치 않은 오토박싱이 있는지 주의해서 코드를 작성하자.***
+
+> 객체 생성을 통해서 성능적 이점을 극대화하자 라는 것이 본질이 아니다.
+> 작은 습관하나가 품질 좋은 프로그램을 생산해내기 때문에 해당 객체를 재사용할 수 있을지 없을지 고민해보는 프로그래머가 되자.
