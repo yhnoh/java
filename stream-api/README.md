@@ -36,6 +36,100 @@
 ### 스트림 빌더
 - 스트림은 데이터를 소모하는 역할만 하고 데이터를 생성하는 역할을 수행하지 않는다.
 - 하지만 스트림에서는 데이터를 처리하는 것에서 끝나지 않고 데이터를 직접 생성하기 위한 기능도 제공하는데 그것이 바로 스트림 빌더이다.
-- 
+
+### 주요 스트림 연산 기능
+
+#### 데이터 필터링
+
+#### 조건에 맞는 데이터만 필터링
+- 스트림에서 데이터 필터링은 불필요한 데이터를 없애고 본인이 원하는 데이터만을 가져오기 위해 사용된다.
+  - `마치 데이터베이시의 where절과 비슷하다.`
+- 스트림 API에서는 데이터 필터링을 위해서 `Stream<T> filter(Predicate<? super T> predicate);` 메서드를 제공한다.
+  - Predicate와 일치하는 항목으로 구성된 스트림을 리턴한다.
+  - 스트림을 리턴하기 때문에 중간 연산자 메서드에 해당한다.
+  - 함수형 인터페이스인 Predicate는 test 메서드를 실행시켜, 인자로 전달 받은 내용이 true이면 스트림이 포함시키고, false이면 스트림에서 제외시킨다.
+    ```java
+    List<Member> members = List.of(new Member("id1", "username1", 1),
+            new Member("id2", "username2", 2));
+
+    members.stream()
+            .filter(member -> member.getName().equals("username1"))
+            .forEach(System.out::println);
+    ```
+    - id1인 객체만 출려된다.
+
+#### 중복 제거
+- Stream API에서는 중복을 제거해주는 기능도 존재한다.
+  - List 객체는 중복을 허용하기 때문에 Set으로 타입을 변경하지 않는 이상 중복 제거를 위해 특정 로직을 작성해야한다.
+  - 하지만 Stream에서는 중복 제거를 위하여 `Stream<T> distinct()` 메서드를 제공해주며 직접 구현이 아닌 간편하게 중복 제거를 할 수 있다.
+- distinct 메서드는 중복 여부를 확인하기 위하여 equals 메서드가 내부적으로 호출된다.
+  - 때문에 특정 상황에서는 정확한 비교를 위해서 equals 메서드를 오버라이드 하는 것을 고려해야한다.
+    ```java
+    @Getter
+    @ToString
+    @EqualsAndHashCode(of = "id")
+    public class Member {
+        private String id;
+        private String name;
+        private int age;
+
+        public Member(String id, String name, int age) {
+            this.id = id;
+            this.name = name;
+            this.age = age;
+        }
+    }
+    ```
+    - lombok을 이용하여 두 member의 id가 같으면 equals가 true로 메서드를 오버라이딩 하였다.
+    ```java
+    List<Member> members = List.of(new Member("id1", "username1", 1),
+        new Member("id2", "username2", 2),
+        new Member("id2", "username3", 3));
+
+    members.stream()
+            .distinct()
+            .forEach(System.out::println);
+
+    ```
+    - `distinct()` 메서드 실행시, username3는 출력되지 않는다.
+    - 여기서 주의해야할 것이, 중복 제거시 가장 앞에 있는 요소는 출력되지만 뒤에 있는 요소는 출력되지 않는다.
+    - 즉, 중복 제거를 할 때 정렬 기준이 중요하다.
+
+#### 데이터 제한하기
+
+- Collection에서 상위 몇개의 데이터만 가져오고 싶을 수 있다.
+  - Stream API 에서는 `Stream<T> limit(long maxSize);` 함수를 제공한다.
+- limit 메서드를 이용하면 스트림에서 포함하고 있는 데이터중 앞에서 부터 maxSize만큼의 데이터만 가져올 수 있다.
+    ```java
+    List<Member> members = List.of(new Member("id1", "username1", 1),
+            new Member("id2", "username2", 2),
+            new Member("id3", "username3", 3));
+
+    members.stream()
+            .limit(1)
+            .forEach(System.out::println);
+    ```
+    - limit 메서드 실행시, id1인 Member만 출력된다.
+    - 데이터를 제한하는 limit 함수는 정렬 기준이 중요하다.
+
+
+#### 데이터 뛰어넘기
+
+- Collection에서 상위 몇개의 데이터를 넘어가고 싶을 수 있다.
+    - Stream API 에서는 `Stream<T> skip(long n);` 함수를 제공한다.
+- skip 메서드를 이용하면 스트림에서 포함하고 있는 데이터중 앞에서 부터 n만큼의 데이터를 필터링하고 나머지 데이터를 가져올 수 있다..
+    ```java
+    List<Member> members = List.of(new Member("id1", "username1", 1),
+        new Member("id2", "username2", 2),
+        new Member("id3", "username3", 3));
+
+    members.stream()
+            .skip(1)
+            .forEach(System.out::println);
+    ```
+    - skip 메서드 실행시, id2와 id3인 Member만 출력된다.
+    - 데이터를 뛰어넘는 skip 함수는 정렬 기준이 중요하다.
+
+> Practical 모던 자바,p132-142
 
 > https://futurecreator.github.io/2018/08/26/java-8-streams/
