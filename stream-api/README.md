@@ -187,4 +187,32 @@
 
 > Practical 모던 자바,p142-148
 
+### 데이터 매핑
+
+- 스트림에서 데이터 매핑은 스트림에 포함되어 있는 데이터 항목을 다른 값으로 변환하는 것을 의미한다.
+   - 아래는 스트림 인터페이스에서 제공하는 매핑 관련 메서드이다.
+    ```java
+    <R> Stream<R> map(Function<? super T, ? extends R> mapper);
+
+    IntStream mapToInt(ToIntFunction<? super T> mapper);
+
+    LongStream mapToLong(ToLongFunction<? super T> mapper);
+
+    DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper);
+    ```
+  - Function 함수형 인터페이스를 통해서 내가 원하는 값을 변환하여 Stream으로 전달해준다.
+    - Stream을 리턴형으로 넘겨주기 때문에 중간 연산 메서드라는 것을 알 수 있다.
+  - 데이터를 변환해주기 때문에 원래 스트림 객체와 다른 제네릭 타입의 스트림을 리턴받을 수 있다.
+- 만약 처리해야하는 데이터 타입이 기본형이라면 기본형에 대응하는 map메서드를 사용하여 성능과 가독성이 좋은 코드를 작성할 수 있다.
+    ```java
+    Member member1 = new Member("id1", "name1", 1);
+    Member member2 = new Member("id2", "name2", 2);
+    List<Member> members = List.of(member1, member2);
+
+    members.stream().mapToInt(Member::getAge).forEach(System.out::println);
+    ```
+> Practical 모던 자바,p148-151
+
+
+
 > https://futurecreator.github.io/2018/08/26/java-8-streams/
