@@ -132,4 +132,59 @@
 
 > Practical 모던 자바,p132-142
 
+### 데이터 정렬
+
+- 연속된 데이터를 처리할때 정렬은 자주 사용된다.
+  - 데이터베이스의 경우 개발자가 SQL을 작성하여 정렬 할 수 있기 때문에 순서가 보장되지만, 네트워크나 파일은 데이터를 관리하는 것이 아니라 주어진 대로 수신하는 것이기 때문에 정렬이 보장되지 않는다.
+- 스트림 API에서는 정렬 기능을 제공하고 있으며 다음과 같은 메서드를 제공한다.
+    ```java
+    Stream<T> sorted();
+
+    Stream<T> sorted(Comparator<? super T> comparator);
+    ```
+    - 둘다 Stream을 리턴해주기 때문에 중간 연산 메서드라는 것을 알 수 있다.
+- `sorted()` 메서드를 사용시, 개발자가 만든 클래스의 경우 Comparable 인터페이스를 구현하여 어떤 상태값을 이용하여 정렬할지를 정의해주어야 한다.
+    - 안그러면 `cast to class java.lang.Comparable .... java.lang.ClassCastException`이라는 에러가 발생한다.
+- `sorted()`는 `Comparable` 인터페이스를 파라미터로 받으 수 있는 또 다른 `Stream<T> sorted(Comparator<? super T> comparator)` 매서드를 제공하고 있다.
+  - `sorted()`와 달리 `Comparator` 객체를 인자로 받을 수 있으며, 제네릭 타입으로 선언된 데이터를 어떤 기준으로 정렬할지를 지정할 수 있다.
+  - 해당 메서드는 다음과 같은 상황에서 유용하다.
+    - Comparable 인터페이스를 구현하지 않은 객체를 정렬할 때
+    - 역순으로 정렬하고 싶을 때
+    - 정렬하고자 하는 객체의 키 값을 다르게 하고 싶을 때
+  - 주로 Comparator 내부에 정의해 놓은 메서드를 활용하는 방법들을 많이 사용한다.
+    ```java
+    //...
+    public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
+            Function<? super T, ? extends U> keyExtractor)    
+
+    //...
+    public static <T, U> Comparator<T> comparing(
+        Function<? super T, ? extends U> keyExtractor,
+        Comparator<? super U> keyComparator)
+    //...
+    public static <T extends Comparable<? super T>> Comparator<T> reverseOrder()
+    ```
+    - reserverOrder의 경우 정렬할 객체에 받드시 Comparable 인터페이스가 구현되어 있어야 한다.
+      - Comparable내에 compareTo 메서드를 반대로 해석하기 때문에 구현되어 있어야 한다.
+    - 만약 구현하지 않고 본인이 원하는 정렬 방식으로 정렬하고자 한다면 아래와 같이 정렬이 가능하다.
+        ```java
+        Member member1 = new Member("id1", "name1", 1);
+        Member member2 = new Member("id2", "name2", 2);
+        List<Member> members = List.of(member1, member2);
+
+        //오름차순
+        members.stream()
+                .sorted(Comparator.comparing(Member::getAge))
+                .forEach(System.out::println);
+        //내림차순
+        members.stream()
+                .sorted(Comparator.comparing(Member::getAge, (o1, o2) -> Integer.compare(o2, o1)))
+                .forEach(System.out::println);
+        ```
+      - 오름차순의 경우 Comparator 내부 메서드를 활용하였고, 내림차순의 경우 Comparator에 compare 메서드를 직접 구현하였다.
+  - 스트림 API 정렬 기능은 정의된 메서드를 활용할 뿐아니라 정의되지 않는 내용들도 직접 구현하여 정렬이 가능하도록 설계되어 있다.
+  - 스트림 API가 나오면서 람다 표현식이나 메서드 참조를 이용해서 최소화된 코드로 정렬기능을 수행할 수 있다는 장점이 있다. 
+
+> Practical 모던 자바,p142-148
+
 > https://futurecreator.github.io/2018/08/26/java-8-streams/
