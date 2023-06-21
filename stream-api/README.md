@@ -231,5 +231,84 @@
 > Practical 모던 자바,p151-154
 
  
+### 컬렉션으로 변환
+
+- 스트림은 데이터를 처리하고 나면 다시 꺼내쓸수 없고 다시 스트림을 만들어야 한다.
+- 반면에 컬렉션은 객체 내에 데이터를 읽어들인 후 다시 읽어들 수 있다.
+  - 때문에 최종연산지인 collect 메서드를 이용해서 컬렉션 객체로 변환하는 경우가 많다.
+    ```java
+    <R> R collect(Supplier<R> supplier,
+                    BiConsumer<R, ? super T> accumulator,
+                    BiConsumer<R, R> combiner);
+
+    <R, A> R collect(Collector<? super T, A, R> collector);
+    ```
+  - T: 리듀스 연산의 입력 항목으로 사용하는 데이터 타입
+  - A: 리듀스 연산의 변경 가능한 누적값으로 사용하는 타입
+  - R: 리듀스 연산의 최종 결과 데이터 타입
+  > 입력, 누적, 결과가 있는 연산을 리듀스 연산이라고 부른다.
+- Collector 유틸리티 클래스 Collectors
+  - collect 활용하기 위하여 상당히 많은 메서드들을 제공함으로 자바에서는 Collector 인터페이스를 구현한 유틸리티 클래스로 Collectors를 제공한다.
+    - Collectors를 사용하면 간단하게 원하는 값으로 변환이 가능하다.
+      - Collectors 내부에 있는 컬렉션 사용
+          ```java
+          Member member1 = new Member("id1", "name1", 1);
+          Member member2 = new Member("id2", "name2", 2);
+          List<Member> members = List.of(member1, member2);
+
+          List<String> memberNames = members.stream()
+                  .map(member -> member.getName())
+                  .collect(Collectors.toList());
+          ```
+      - Collectors에서 개발자가 정의한 컬렉션 사용
+          ```java
+          Member member1 = new Member("id1", "name1", 1);
+          Member member2 = new Member("id2", "name2", 2);
+          List<Member> members = List.of(member1, member2);
+          
+          List<String> memberNames = members.stream()
+                  .map(member -> member.getName())
+                  .collect(Collectors.toCollection(LinkedList::new));        
+          ```
+          - Collectors.toCollection 메서드를 이용하여 컬렉션 데이터 유형과 객체를 생성하는 메서드나 생성자를 정의할 수 있다.
+        - 하나의 데이터로 변환하여 사용
+          ```java
+          Member member1 = new Member("id1", "name1", 1);
+          Member member2 = new Member("id2", "name2", 2);
+          List<Member> members = List.of(member1, member2);
+          
+          //데이터를 쉼표로 구분하여 하나의 문자열로 리턴
+          String joiningMemberNames = members.stream()
+                  .map(member -> member.getName())
+                  .collect(Collectors.joining(", "));
+
+          //특정 값을 합한 값을 리턴        
+          Integer sumAge = members.stream()
+          .collect(Collectors.summingInt(Member::getAge));
+          ```
+          - 기존에는 for문을 사용하여야 하지만 스트림 내부 연산을 통해서 특정 값을 도출해 낼 수 있다. 
+      - 특정 데이터를 기준으로 Map으로 변환
+          ```java
+          Member member1 = new Member("id1", "name1", 1);
+          Member member2 = new Member("id2", "name1", 2);
+          Member member3 = new Member("id3", "name2", 3);
+          List<Member> members = List.of(member1,member2, member3);
+          
+          // Member 이름을 키로 가진 Map 
+          Map<String, List<Member>> memberMapByName = members.stream()
+                  .collect(Collectors.groupingBy(Member::getName));
+
+          // Member 이름을 키, 동일한 이름을 가진 나이의 합계가 값을 가진 Map
+          Map<String, Integer> memberMapByName = members.stream()
+                  .collect(Collectors.groupingBy(Member::getName, Collectors.summingInt(Member::getAge)));
+
+          // 조건에 따라 데이터를 분류후 Map으로 변환
+          Map<Boolean, List<Member>> memberPartitionByAge = members.stream()
+                  .collect(Collectors.partitioningBy(member -> member.getAge() >= 2));
+          ```
+          - 그룹핑 또는 파티셔닝을 하여 어떠한 데이터를 기준으로 Map을 리턴 받을 수 있다.
+> Practical 모던 자바,p154-159
+
+
 
 > https://futurecreator.github.io/2018/08/26/java-8-streams/
