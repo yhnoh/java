@@ -309,6 +309,106 @@
           - 그룹핑 또는 파티셔닝을 하여 어떠한 데이터를 기준으로 Map을 리턴 받을 수 있다.
 > Practical 모던 자바,p154-159
 
+### 여러 스트림 생성 방법
+---
 
+1. 배열을 스트림 객체로 변환하기
+   - `Arrays.stream(T[] array)`은 배열을 스트림 객체로 변환해주는 메서드이다.
+        ```java
+        Member member1 = new Member("id1", "name1", 1);
+        Member member2 = new Member("id2", "name2", 2);
+        Member member3 = new Member("id3", "name3", 3);
+        Member[] members = {member1, member2, member3};
 
+        Arrays.stream(members)
+                .forEach(System.out::println);
+        ```
+2. 데이터 항목을 이용해서 스트림 객체 만들기
+   - Stream 인터페이스에서는 스트림 객체를 생성할 수 있는 `Stream.of`를 제공한다.
+        > 자바8 이후부터 객체를 생성하는 메서드명으로 of를 자주 사용하다.
+        ```java
+        Stream.of(new Member("id1", "name1", 1),
+                new Member("id2", "name2", 2),
+                new Member("id3", "name3", 3))
+                .forEach(System.out::println);
+        ```
+3. 스트림 빌더를 통해서 스트림 객체 만들기
+    - Stream.of와 같이 Stream.\<T>builder를 통해서 스트림 객체를 생성할 수 있다.
+        ```java
+        Stream<Member> streamBuilder = Stream.<Member>builder()
+                .add(new Member("id1", "name1", 1))
+                .add(new Member("id2", "name2", 2))
+                .add(new Member("id3", "name3", 3)).build();
+
+        streamBuilder.forEach(System.out::println);
+
+        ```
+### 데이터 평면화
+---
+
+- 1차원 배열과 같은 형태의 배열과 컬렉션은 기존에 사용하던 스트림을 활용하여 데이터를 처리하는데 큰 문제가 없다.
+- 하지만 배열 냅부에 배열이 있거나 컬렉션 내부에 컬렉션이 선언되어 있을 경우 데이터 처리가 번거러워 질 수 있다.
+- 이런 다차원의 데이터가 있는 환경에서 필요한 기능 중 하나가 데이터 평면화이다.
+  - 데이터 평면화를 위해 스트림에서는 `<R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper);` 메서드를 제공한다.
+- 데이터 평면화가 필요한 사례
+  - 2차원 배열의 문자들을 데이터 평면화 기능을 사용하지 않고 하나의 문자열로 표현하기 
+    ```java
+    String[][] rawData = {
+            {"a", "b"},{"c", "d"},{"e", "f"}
+    };
+
+    //a를 제외한 하나의 문자열로 표현하는 로직  
+    String flatData = Arrays.stream(rawData)
+                .map(data -> Arrays.stream(data)
+                        .collect(Collectors.joining()))
+                .map(data -> data.replace("a", ""))
+                .collect(Collectors.joining());
+    
+    // flatData : bcdef
+    ```
+    - 데이터 평면화 작업을 하지 않고, 로직들이 추가되면 추가될 수록 Steam을 사용한다고 하여도 복잡한 로직으로 된다.
+      - 위예제 코드에서도 map이면 데이터를 매핑하기 위한 기능인데 a문자열을 제거하는 로직으로 사용하고 있다.
+      - 보통 무언가 맞지 않을 경우에는 filter를 많이 사용한다.
+      - 어떻게든 개발은 할 수 있지만 읽기 힘든 코드가 될 가능성이 높다.
+  - 데이터 평면화 기능을 사용하여 않고 하나의 문자열로 표현하기  
+    ```java
+    String[][] rawData = {
+            {"a", "b"},{"c", "d"},{"e", "f"}
+    };
+
+    //a를 제외한 하나의 문자열로 표현하는 로직  
+    String[][] rawData = {
+            {"a", "b"},{"c", "d"},{"e", "f"}
+    };
+
+    String flatData = Arrays.stream(rawData)
+            .flatMap(Arrays::stream)
+            .filter(data -> data.equals("a") ? false : true)
+            .collect(Collectors.joining());
+    
+    // flatData : bcdef
+    ```
+    - `flatMap`을 활용하여 데이터를 평면화한 이후 filter기능을 활용해 a문자열을 제거하고 하나의 문자열로 표현하였다.
+      - 다차원 배열에서도 스트림 메서드가 가지고 있는 기능들을 잘 활용하여 코드로 표현할 수 있는 장점이 있다.  
+      - `flatMap(Arrays::stream)`에서 컬렉션이나 배열을을 스트림 객체로 만들어 하나의 스트림으로 합쳐준다.
+
+### 데이터 검색
+- 원하는 데이터를 조회하기위해서 데이터를 필터링하여 원하는 데이터 집합을 조회할 수 있다.
+- Stream에서는 필터링 뿐만아니라 특정한 패턴에 맞는 데이터를 검색하여 조회할 수 있는 메서드들도 제공을 한다.
+    ```java
+    boolean anyMatch(Predicate<? super T> predicate);
+    boolean allMatch(Predicate<? super T> predicate);
+    boolean noneMatch(Predicate<? super T> predicate);
+    Optional<T> findFirst();
+    Optional<T> findAny();
+    ```
+    - anyMatch: 데이터가 하나로도 일치하는지 확인한다.
+    - allMatch: 데이터가 모두 일치하는지 확인한다.
+    - noneMatch: 데이터가 모두 일치하지 않는지 확인한다.
+    - findFirst: 일치하는 데이터 중 가장 첫 번째 값을 리턴한다.
+      - 데이터의 정렬 순서가 중요하다.
+    - findAny: 일치하는 데이터 중 임의의 값을 리턴한다.
+      - 병렬처리를 통해서 값을 가져오기 때문에 실행할 때마다 값이 달라질 수 있다.
+
+> Practical 모던 자바,p159-
 > https://futurecreator.github.io/2018/08/26/java-8-streams/
