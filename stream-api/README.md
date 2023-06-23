@@ -410,5 +410,6 @@
     - findAny: 일치하는 데이터 중 임의의 값을 리턴한다.
       - 병렬처리를 통해서 값을 가져오기 때문에 실행할 때마다 값이 달라질 수 있다.
 
-> Practical 모던 자바,p159-
+> Practical 모던 자바,p159-166
+
 > https://futurecreator.github.io/2018/08/26/java-8-streams/
