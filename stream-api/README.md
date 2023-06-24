@@ -412,4 +412,47 @@
 
 > Practical 모던 자바,p159-166
 
+### 리듀스 연산
+
+- 스트림에서의 연산은 중간연산과 최종연산으로 구분한다.
+- 여기서 최종연산은 특징에 따라 두가지로 구분할 수 있다.
+  - 스트림 항목들을 처리하면서 처리 결과를 바로 알 수 있는 최종 연산
+    - `foreach`
+    - 스트림에서 참조하는 데이터를 하나씩 꺼내서 처리하므로 데이터의 결과를 바로 알 수 있다.
+  - 스트림의 데이터를 모두 소모한 후에야 그 결과를 알 수 있는 최종 연산
+    - `count, sum, max, min...`
+    - 데이터를 모두 확인하기 전까지는 그 결과를 알 수 없다.
+- 이 중에서 ***데이터를 최종적으로 다 확인해서 결과값을 도출하는 최종 연산을 자바의 스트림 API에서는 리듀스 연산***이라고 한다.
+
+
+- 합계를 구하는 여러 방법들
+    ```java
+    Member member1 = new Member("id1", "name1", 1);
+    Member member2 = new Member("id2", "name2", 2);
+    Member member3 = new Member("id3", "name3", 3);
+    Member member4 = new Member("id4", "name4", 4);
+
+    List<Member> members = List.of(member1, member2, member3, member4);
+
+    // 스트림 이전 전동적인 방식
+    int ageSum = 0;
+    for (Member member : members) {
+        ageSum += member.getAge();
+    }
+
+    // IntStream 활용
+    int intStreamAgeSum = members.stream().mapToInt(Member::getAge).sum();
+
+    // Stream 활용
+    int streamAgeSum = members.stream().collect(Collectors.summingInt(Member::getAge));
+    ```
+- 전통적인 방식을 활용하면 코드양이 많아지면 이해하기 힘들 수 있고, 안정성이 떨어질 수 있다.
+  - 로직의 복잡도가 올라가면 코드를 이해하기 힘들어진다.
+  - 병렬처리 코드를 작성하게 될 경우 안전하게 계산될거라는 보장이 없기 때문에 노력을 들여 테스트 작업을 수행해야한다.
+- 전통적인 방식을 해결하기 위해서 Stream API 에서는 다양한 방식들을 제공한다. 
+    - IntStream 인터페이스 활용
+    - 스트림의 collect 연산을 활용
+
+> Practical 모던 자바,p166-175
+
 > https://futurecreator.github.io/2018/08/26/java-8-streams/
