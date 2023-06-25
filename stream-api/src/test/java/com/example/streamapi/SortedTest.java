@@ -36,5 +36,11 @@ public class SortedTest {
                 .sorted(Comparator.comparing(Member::getAge, (o1, o2) -> Integer.compare(o2, o1)))
                 .forEach(System.out::println);
 
+        //내림차순
+        members.stream()
+                .sorted(Comparator.comparing(Member::getAge).reversed())
+                .forEach(System.out::println);
+
+
     }
 }
