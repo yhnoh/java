@@ -530,21 +530,21 @@ T reduce(T identity, BinaryOperator<T> accumulator);
     ```
 
 #### 11.3. 처리해야하는 데이터 양이 많을 경우 병렬 스트림의 리듀스 연산 사용
-    ```java
-    Member member1 = new Member("id1", "name1", 1);
-    Member member2 = new Member("id2", "name2", 2);
-    Member member3 = new Member("id3", "name3", 3);
-    Member member4 = new Member("id4", "name4", 4);
 
-    List<Member> members = List.of(member1, member2, member3, member4);
-    Integer sum = members.parallelStream().map(Member::getAge).reduce(0, Integer::sum);
-    Integer max = members.parallelStream().map(Member::getAge).reduce(0, Integer::max);
-    Integer min = members.parallelStream().map(Member::getAge).reduce(1, Integer::min);
+```java
+Member member1 = new Member("id1", "name1", 1);
+Member member2 = new Member("id2", "name2", 2);
+Member member3 = new Member("id3", "name3", 3);
+Member member4 = new Member("id4", "name4", 4);
 
-    System.out.println("sum = " + sum);
+List<Member> members = List.of(member1, member2, member3, member4);
+Integer sum = members.parallelStream().map(Member::getAge).reduce(0, Integer::sum);
+Integer max = members.parallelStream().map(Member::getAge).reduce(0, Integer::max);
+Integer min = members.parallelStream().map(Member::getAge).reduce(1, Integer::min);
 
-    ```
-    - 처리해야하는 데이터 양이 많을 경우에는 병렬 스트림을 활용하여 리듀스 연산을 하면 성능을 크게 올릴 수 있다.
+System.out.println("sum = " + sum);
+```
+  - 처리해야하는 데이터 양이 많을 경우에는 병렬 스트림을 활용하여 리듀스 연산을 하면 성능을 크게 올릴 수 있다.
 
 
 ### 12. 결론
