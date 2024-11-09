@@ -7,20 +7,22 @@ import reactor.core.publisher.Flux;
 @Slf4j
 public class JustTest {
 
+
     @Test
-    public void helloWorldJustTest() {
+    public void justTest() {
 
-        Flux<Integer> sequence = Flux.just(1, 2);
-        sequence.subscribe(data -> log.info("emitted data = " + data),
-                error -> log.info("emitted error signal = " + error.getMessage()),
-                () -> log.info("emitted complete signal"));
+        Flux<Integer> sequence = Flux.just(1, 2)
+                .doOnSubscribe(subscription -> log.info("doOnSubscribe Subscribe Start"))
+                .doOnRequest(request -> log.info("doOnRequest Subscribe Request: " + request))
+                .doOnNext(data -> log.info("doOnNext Subscribe Data: " + data))
+                .doOnComplete(() -> log.info("doOnComplete Subscribe Complete"))
+                .doOnError(throwable -> log.error("doOnError Subscribe Error: " + throwable));
 
-//        Flux<Integer> sequence = Flux.just(1, 2)
-//                .doOnRequest(value -> log.info("doOnRequest Subscribe Request: " + value))
-//                .doOnSubscribe(subscription -> log.info("doOnSubscribe Subscribe Start"))
-//                .doOnNext(integer -> log.info("doOnNext Subscribe Data: " + integer))
-//                .doOnComplete(() -> log.info("doOnComplete Subscribe Complete"));
-//
+        sequence.subscribe(data -> log.info("subscribe data: " + data));
+
+
+//        sequence.subscribe()
+
 //        sequence.subscribe(new BaseSubscriber<Integer>() {
 //            @Override
 //            public void hookOnSubscribe(Subscription subscription) {
@@ -41,4 +43,6 @@ public class JustTest {
 //        });
 
     }
+
+
 }
