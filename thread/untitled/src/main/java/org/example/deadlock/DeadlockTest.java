@@ -2,6 +2,58 @@ package org.example.deadlock;
 
 public class DeadlockTest {
 
+    static class Resource {
+        private String name;
+        public Resource(String name) {
+            this.name = name;
+        }
+
+        public void work(){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        public String getName() {
+            return name;
+        }
+    }
+
+    static class Worker implements Runnable {
+        private Resource resource1;
+        private Resource resource2;
+
+        public Worker(Resource resource1, Resource resource2) {
+            this.resource1 = resource1;
+            this.resource2 = resource2;
+        }
+        @Override
+        public void run() {
+            synchronized (resource1) {
+                System.out.println(Thread.currentThread().getName() +"이 " + resource1.getName() + "에 대한 작업을 위하여 락을 획득했습니다.");
+                resource1.work();
+
+                synchronized (resource2) {
+                    System.out.println(Thread.currentThread().getName() +" 이 " + resource2.getName() + "에 대한 작업을 위하여 락을 획득했습니다.");
+                    resource2.work();
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Resource resource1 = new Resource("Resource1");
+        Resource resource2 = new Resource("Resource2");
+
+        Thread process1 = new Thread(new Worker(resource2, resource1), "Process1");
+        Thread process2 = new Thread(new Worker(resource1, resource2), "Process2");
+
+        process1.start();
+        process2.start();
+    }
+
+
     /**
      * 락의 순서를 조정하여 락 획득 및 해제의 순환을 막으면 된다.
      */
@@ -111,14 +163,6 @@ public class DeadlockTest {
         }
     }
 
-    static class Deadlock3 {
 
-    }
-
-
-    public static void main(String[] args) throws InterruptedException {
-        Deadlock2 deadlock = new Deadlock2();
-        deadlock.runMultiThread();
-    }
 
 }

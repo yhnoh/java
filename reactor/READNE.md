@@ -1,3 +1,13 @@
+### Reactor
+
+- Reactor는 자바 진영에서 리액티브 프로그래밍을 지원하기 위한 라이브러리로써, 스프링 진영에서 사용하는 리액티브 프로그래밍은 Reactor를 기반으로 만들어져 있다.
+- 리액티브 프로그래밍
+  - 데이터 흐름을 정의하고, 데이터 변경 사항을 전파
+  - 선언적 프로그래밍
+- Reactor는 Reactive Streams 스펙을 준수하여 만들어진 구현체이며, Non-Blocking, Backpressure를 지원한다. 
+> https://en.wikipedia.org/wiki/Reactive_programming <br/>
+> https://velog.io/@korea3611/%EB%A6%AC%EC%95%A1%ED%8B%B0%EB%B8%8C-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D%EC%97%90-%EB%8C%80%ED%95%98%EC%97%AC <br/>
+
 ### Reactor 구성요소
 
 #### Publisher
@@ -19,7 +29,7 @@ public interface Subscriber<T> {
 
     void onError(Throwable t);
 
-
+}
 ```
 
 #### Subscription
@@ -29,7 +39,7 @@ public interface Subscription {
 
     void request(long n);
 
-    void canc
+    void cancel();
 ```
 
 #### Processor

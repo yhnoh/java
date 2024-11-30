@@ -1,8 +1,10 @@
 package org.example.sequence;
 
+import ch.qos.logback.classic.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
+import reactor.util.Loggers;
 
 @Slf4j
 public class JustTest {
@@ -10,6 +12,7 @@ public class JustTest {
 
     @Test
     public void justTest() {
+
 
         Flux<Integer> sequence = Flux.just(1, 2)
                 .doOnSubscribe(subscription -> log.info("doOnSubscribe Subscribe Start"))
