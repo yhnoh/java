@@ -8,8 +8,6 @@ import static org.example.synchronization.demo.MyLogger.log;
 
 public class BoundedQueueV3 implements BoundedQueue {
 
-    private final Object producerLock = new Object();
-    private final Object consumerLock = new Object();
     private final Queue<String> queue = new ArrayDeque<>();
     private final int max;
 
