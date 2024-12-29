@@ -1,19 +1,17 @@
-import compare.InternetProtocol;
+package org.example.compare;
 
-import java.lang.reflect.Array;
+import org.example.InternetProtocol;
+
 import java.util.*;
 
-public class Main {
+public class CompareMain2 {
 
 
 
     public static void main(String[] args) {
-        InternetProtocol ip1 = new InternetProtocol("127.0.0.3");
-        InternetProtocol ip2 = new InternetProtocol("127.0.0.2");
-        InternetProtocol ip3 = new InternetProtocol("127.0.0.1");
-
-        int i = ip1.hashCode();
-
+        CompareInternetProtocol ip1 = new CompareInternetProtocol("127.0.0.3");
+        CompareInternetProtocol ip2 = new CompareInternetProtocol("127.0.0.2");
+        CompareInternetProtocol ip3 = new CompareInternetProtocol("127.0.0.1");
 
         InternetProtocol[] ips = {ip1, ip3, ip2};
         System.out.println("ips = " + Arrays.toString(ips));
