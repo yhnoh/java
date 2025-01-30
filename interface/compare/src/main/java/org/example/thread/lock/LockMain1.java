@@ -4,6 +4,10 @@ import java.util.concurrent.locks.LockSupport;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * LockSupport: 스레드를 대기상태로 변경하거나 대기중인 스레드를 실행상태로 변경하는 기능을 제공하는 클래스
+ */
+
 public class LockMain1 {
 
 
@@ -11,7 +15,6 @@ public class LockMain1 {
         Thread thread1 = new Thread(() -> {
             LockSupport.park(); //LockSupport.park() 메서드를 이용하여 해당 스레드를 대기상태로 변경
             System.out.println("Thread State3 = " + Thread.currentThread().getState());
-
         });
 
         thread1.start();

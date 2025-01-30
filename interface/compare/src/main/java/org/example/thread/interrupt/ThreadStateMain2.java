@@ -1,4 +1,4 @@
-package org.example.thread;
+package org.example.thread.interrupt;
 
 import static java.lang.Thread.currentThread;
 import static java.lang.Thread.sleep;

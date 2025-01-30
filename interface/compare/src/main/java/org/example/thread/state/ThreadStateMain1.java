@@ -1,4 +1,4 @@
-package org.example.thread;
+package org.example.thread.state;
 
 import static java.lang.Thread.*;
 
