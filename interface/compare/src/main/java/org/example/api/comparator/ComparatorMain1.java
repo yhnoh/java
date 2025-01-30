@@ -1,4 +1,4 @@
-package org.example.comparator;
+package org.example.api.comparator;
 
 import java.util.Comparator;
 

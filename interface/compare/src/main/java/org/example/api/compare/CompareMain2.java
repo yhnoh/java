@@ -1,6 +1,4 @@
-package org.example.compare;
-
-import org.example.InternetProtocol;
+package org.example.api.compare;
 
 import java.util.*;
 

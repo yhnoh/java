@@ -1,7 +1,6 @@
-package org.example.comparator.integer;
+package org.example.api.comparator.integer;
 
 import java.util.Arrays;
-import java.util.function.BinaryOperator;
 
 public class IntegerComparatorMain {
     public static void main(String[] args) {

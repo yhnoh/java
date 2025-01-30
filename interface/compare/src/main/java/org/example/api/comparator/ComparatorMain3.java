@@ -1,6 +1,4 @@
-package org.example.comparator;
-
-import org.example.InternetProtocol;
+package org.example.api.comparator;
 
 import java.util.Arrays;
 import java.util.Comparator;

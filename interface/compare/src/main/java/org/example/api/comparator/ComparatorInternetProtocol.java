@@ -1,6 +1,6 @@
-package org.example.comparator;
+package org.example.api.comparator;
 
-import org.example.InternetProtocol;
+import org.example.api.compare.InternetProtocol;
 
 public class ComparatorInternetProtocol extends InternetProtocol implements Comparable<ComparatorInternetProtocol> {
 

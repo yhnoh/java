@@ -1,4 +1,4 @@
-package org.example.compare;
+package org.example.api.compare;
 
 public class CompareMain1 {
 
