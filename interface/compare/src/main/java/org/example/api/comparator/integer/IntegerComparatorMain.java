@@ -3,6 +3,7 @@ package org.example.api.comparator.integer;
 import java.util.Arrays;
 
 public class IntegerComparatorMain {
+
     public static void main(String[] args) {
         Integer[] integers1 = {5, 4, 3, 2, 1};
         Arrays.sort(integers1);

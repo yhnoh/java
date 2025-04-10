@@ -1,4 +1,4 @@
-package org.example.api.compare;
+package org.example.api.comparator;
 
 public class InternetProtocol implements Comparable<InternetProtocol> {
 

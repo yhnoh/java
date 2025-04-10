@@ -3,20 +3,20 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-public class Level2 {
+public class ProgrammersLevel2 {
 
 
-    public int function1(int n){
-        if(n == 0) {
+    public int function1(int n) {
+        if (n == 0) {
             return 0;
-        }else if(n == 1){
+        } else if (n == 1) {
             return 1;
         }
 
         return function1(n - 1) + function1(n - 2);
     }
 
-    public int function2(int n){
+    public int function2(int n) {
 
         Stack<Integer> stack = new Stack<>();
         stack.push(0);
@@ -35,7 +35,7 @@ public class Level2 {
     }
 
     @Test
-    public void 피보니치_수(){
+    public void 피보니치_수() {
 //        System.out.println("n = 2일 뗴 = " + function1(2));
 //        System.out.println("n = 3일 뗴 = " + function1(3));
 //        System.out.println("n = 4일 뗴 = " + function1(4));
@@ -57,54 +57,97 @@ public class Level2 {
      * p = 현재위치
      * k = 점프거리, 점프시 k만큼의 배터리 소모
      * 순간이동 가능, 현재 위치에서 * 2만큼 이동
-     *
-     *
      */
-    @Test
-    public void 점프와_순간_이동(){
+    @Nested
+    class 점프와_순간_이동 {
+        @Test
+        public void 결과() {
 
-
-
-//        System.out.println(calculateK(1));
-        System.out.println(calculateK(5));
-        System.out.println(calculateK(6));
-    }
-
-    public int calculateK(int n){
-
-        int startK = n;
-        int mink = n;
-        while (startK != 1){
-            startK = startK / 2;
-            int calculateK = calculateK(startK, n);
-            if(mink > calculateK){
-                mink = calculateK;
-            }
+            // [실행] 버튼을 누르면 출력 값을 볼 수 있습니다.
+            int n = 5000000;
+            int result = result(n);
         }
 
-        return mink;
-    }
-
-
-    public int calculateK(int startK, int n){
-        int p = startK;
-        while (p < n) {
-            //순간이동
-            p = p * 2;
-            if (p == n) {
-//                System.out.println("startK = " + startK + " p = " + p +  " moreK = " + 0);
-                return startK;
+        public int result(int n) {
+            int result = 1;
+            if (n == 1) {
+                return result;
             }
+            //n과 k 데이터를 저장하기 위한 Queue
+            Queue<Node> queue = new LinkedList<>();
+            //k를 정렬하기 위한 Set
+            SortedSet<Node> sortedSet = new TreeSet<>();
+            queue.offer(new Node(1, 1));
+
+            //경우의수는 2가지, 에너지를 소비하고 한칸 가냐? 아니면 2배씩 순간이동 하냐?
+            int way = 2;
+            while (sortedSet.isEmpty()) {
+
+                for (int i = 0; i < way / 2; i++) {
+                    Node node = queue.poll();
+                    Node jumpNode = node.getJumpNode();
+                    Node teleportNode = node.getTeleportNode();
+
+                    queue.offer(jumpNode);
+                    queue.offer(teleportNode);
+
+                    if (jumpNode.getN() == n) {
+                        sortedSet.add(jumpNode);
+                    }
+                    if (teleportNode.getN() == n) {
+                        sortedSet.add(teleportNode);
+                    }
+                }
+
+                way = way * 2;
+            }
+
+            return sortedSet.first().getK();
         }
 
+        public static class Node implements Comparable<Node> {
+            private final int n;
+            private final int k;
 
-        int moreK = n - (p / 2);
-//        System.out.println("startK = " + startK + " p = " + p + " moreK = " + moreK);
-        return startK + moreK;
+            public Node(int n, int k) {
+                this.n = n;
+                this.k = k;
+            }
+
+            public Node getJumpNode() {
+                return new Node(n + 1, k + 1);
+            }
+
+            public Node getTeleportNode() {
+                return new Node(n * 2, k);
+            }
+
+            @Override
+            public int compareTo(Node o) {
+                return Integer.compare(k, o.k);
+            }
+
+            public int getN() {
+                return n;
+            }
+
+            public int getK() {
+                return k;
+            }
+
+            @Override
+            public String toString() {
+                return "Node{" +
+                        "n=" + n +
+                        ", k=" + k +
+                        '}';
+            }
+        }
     }
 
+
     @Test
-    public void 튜플(){
+    public void 튜플() {
         String s = "{{2},{2,1},{2,1,3},{2,1,3,4}}";
         TupleResult tupleResult = new TupleResult(s);
         System.out.println("tupleResult = " + tupleResult);
@@ -122,7 +165,7 @@ public class Level2 {
             }
         }
 
-        public int[] getResult(){
+        public int[] getResult() {
             Integer size = tuples.lastKey();
             int[] result = new int[size];
             for (int i = 1; i <= size; i++) {
@@ -146,7 +189,7 @@ public class Level2 {
             Integer lastKey = tuples.lastKey();
             tuples.forEach((k, v) -> {
                 sb.append(v);
-                if(!lastKey.equals(k)){
+                if (!lastKey.equals(k)) {
                     sb.append(",");
                 }
             });
@@ -155,11 +198,11 @@ public class Level2 {
         }
     }
 
-    public static class Tuple implements Comparable<Tuple>{
+    public static class Tuple implements Comparable<Tuple> {
         private final Set<Integer> tuple = new HashSet<>();
         private int size = 0;
 
-        public Tuple(String tuple){
+        public Tuple(String tuple) {
             String[] split = tuple.split(",");
             for (String s : split) {
                 this.tuple.add(Integer.valueOf(s));
@@ -171,11 +214,11 @@ public class Level2 {
             return size;
         }
 
-        public Integer getFirstData(){
+        public Integer getFirstData() {
             return tuple.iterator().next();
         }
 
-        public void remove(Integer data){
+        public void remove(Integer data) {
             tuple.remove(data);
         }
 
@@ -192,49 +235,36 @@ public class Level2 {
 
 
     @Nested
-    public class 해시{
-
-        @Test
-        public void result(){
-
-        }
+    public class 전화번호_목록 {
 
         /**
          * String[] phone_book 전화번호 배열이 담겨 있음
          * 전번화부 배열에 어떤 번호가 다른 번호의 접두어인 경우 false
          * 아닌 경우 ture
+         * <p>
+         * 1. 문자열 정렬을 통해서 사전순으로 정렬
+         * 2. 정렬된 배열을 순회하면서 다음 문자열이 접두사인지 확인
          */
         @Test
-        public void 해시(){
-            String[] phone_book = {"12","123","1235","567","88"};
-            Result prefixResult = new Result(phone_book);
-            boolean result = prefixResult.getResult();
-            System.out.println("prefixResult = " + prefixResult);
-        }
+        public void 결과() {
+            String[] phone_book = {"1235", "567", "88", "123", "12"};
+            Arrays.sort(phone_book);
 
-        public static class Result {
-            private final String[] phoneBook;
+//            System.out.println("sorted phone_book = " + Arrays.toString(phone_book));
+            boolean result = true;
+            for (int i = 0; i < phone_book.length - 1; i++) {
+                String str1 = phone_book[i];
+                String str2 = phone_book[i + 1];
 
-            public Result(String[] phoneBook) {
-                this.phoneBook = phoneBook;
-            }
-
-            public boolean getResult(){
-                final SortedSet<PhoneNumber> phoneNumbers = new TreeSet<>();
-                for (String phoneNumber : phoneBook) {
-                    boolean add = phoneNumbers.add(new PhoneNumber(phoneNumber));
-//                    if(!add){
-//                        return false;
-//                    }
+                if (str2.startsWith(str1)) {
+                    result = false;
+                    break;
                 }
-
-                return phoneNumbers.size() == phoneBook.length;
-
             }
 
 
+            System.out.println("result = " + result);
         }
-
 
         public static class PhoneNumber implements Comparable<PhoneNumber> {
 
@@ -256,13 +286,13 @@ public class Level2 {
                     return 0;
                 }
 
-                return -1;
+                return this.phoneNumber.compareTo(o.phoneNumber);
             }
         }
     }
 
     @Nested
-    class 행렬의_곱셈{
+    class 행렬의_곱셈 {
 
         @Test
         public void 결과() {
@@ -294,9 +324,7 @@ public class Level2 {
         }
 
 
-
     }
-
 
 
     @Nested
@@ -319,11 +347,11 @@ public class Level2 {
     @Nested
     class 캐시 {
 
-//        private LinkedHashSet<String> caches = new LinkedHashSet<>();
-        private Queue<String> caches = new LinkedList<>();
+        //        private LinkedHashSet<String> caches = new LinkedHashSet<>();
+        private final Queue<String> caches = new LinkedList<>();
 
         @Test
-        public void 결과(){
+        public void 결과() {
             int cacheSize = 3;
             String[] cities = {"Jeju", "Pangyo", "Seoul", "NewYork", "LA", "Jeju", "Pangyo", "Seoul", "NewYork", "LA"};
 
@@ -331,20 +359,20 @@ public class Level2 {
             int hit = 1;
             int miss = 5;
             for (String city : cities) {
-                if(cacheSize == 0){
+                if (cacheSize == 0) {
                     result += miss;
                     continue;
                 }
 
                 String lowerCaseCity = city.toLowerCase();
 
-                if(caches.contains(lowerCaseCity)){
+                if (caches.contains(lowerCaseCity)) {
                     result += hit;
                     //LRU 알고리즘 적용
                     caches.offer(caches.poll());
-                }else {
+                } else {
                     int nowCacheSize = caches.size();
-                    if(nowCacheSize >= cacheSize){
+                    if (nowCacheSize >= cacheSize) {
                         //LRU 알고리즘 적용
                         caches.poll();
                     }
@@ -362,21 +390,22 @@ public class Level2 {
     class 멀리_뛰기 {
 
         @Test
-        void 결과(){
+        void 결과() {
 
         }
 
-        public static class Node{
+        public static class Node {
 
-            private List<Integer> items = new LinkedList<>();
-            private int start = 0;
-            private int count = 0;
+            private final List<Integer> items = new LinkedList<>();
+            private final int start = 0;
+            private final int count = 0;
+
             public Node(int n) {
                 items.add(0);
 
             }
 
-            public void exclusive(int level){
+            public void exclusive(int level) {
                 items.add(start);
                 for (int i = 0; i < level; i++) {
                     int root = items.get(i);
@@ -384,7 +413,7 @@ public class Level2 {
                 }
             }
 
-            public void addItem(int item){
+            public void addItem(int item) {
 
             }
 
@@ -398,7 +427,7 @@ public class Level2 {
     class 뉴스_클러스터링 {
 
         @Test
-        public void 결과(){
+        public void 결과() {
             String str1 = "E=M*C^2";
             String str2 = "e=m*c^2";
 
@@ -419,12 +448,12 @@ public class Level2 {
             int setSum = 0;
             int allSum = 0;
             for (String key : keys) {
-                if(set1.containsKey(key) && set2.containsKey(key)){
+                if (set1.containsKey(key) && set2.containsKey(key)) {
                     setSum += Math.min(set1.get(key), set2.get(key));
                     allSum += Math.max(set1.get(key), set2.get(key));
-                }else if(set1.containsKey(key)) {
+                } else if (set1.containsKey(key)) {
                     allSum += set1.get(key);
-                }else if(set2.containsKey(key)){
+                } else if (set2.containsKey(key)) {
                     allSum += set2.get(key);
                 }
             }
@@ -432,11 +461,10 @@ public class Level2 {
 //            System.out.println("setSum = " + setSum);
 //            System.out.println("allSum = " + allSum);
 
-            float jakad = allSum == 0  ? 1 : (float) setSum / allSum;
+            float jakad = allSum == 0 ? 1 : (float) setSum / allSum;
             int result = (int) (jakad * 65536);
             System.out.println("result = " + result);
         }
-
 
 
         /**
@@ -448,7 +476,8 @@ public class Level2 {
          */
         public static class JakadSet {
 
-            private Map<String, Integer> set = new LinkedHashMap<>();
+            private final Map<String, Integer> set = new LinkedHashMap<>();
+
             public JakadSet(String str) {
 
                 int length = str.length();
@@ -456,7 +485,7 @@ public class Level2 {
                     char c1 = str.charAt(i);
                     char c2 = str.charAt(i + 1);
 
-                    if(isAlphabet(c1) && isAlphabet(c2)){
+                    if (isAlphabet(c1) && isAlphabet(c2)) {
                         String key = String.valueOf(c1).toUpperCase() + String.valueOf(c2).toUpperCase();
                         set.put(key, set.getOrDefault(key, 0) + 1);
                     }
@@ -467,7 +496,7 @@ public class Level2 {
                 return set;
             }
 
-            private boolean isAlphabet(char c){
+            private boolean isAlphabet(char c) {
                 return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
             }
 
@@ -476,6 +505,101 @@ public class Level2 {
                 return set.toString();
             }
         }
+    }
+
+
+    @Nested
+    class 의상 {
+
+        /**
+         * 코니는 매일 의상을 갈아입는다.
+         * -
+         * - 의상은 종류별(얼굴, 상의, 하의, 겉옷)로 하나만 입을 수 있다.
+         * - 매일 옷을 갈아 입을 때 종류를 변경하거나 종류를 추가할 경우 다른 의상으로 판단한다.
+         * - 하루에 최소 한개의 의상을 입는다.
+         */
+        @Test
+        public void 결과() {
+
+//            String[][] clothes = {{"yellow_hat", "headgear"}, {"blue_sunglasses", "eyewear"}, {"green_turban", "headgear"}};
+//            String[][] clothes = {{"yellow_hat", "headgear"}};
+//            String[][] clothes = {{"headgear1", "headgear"}, {"eyewear1", "eyewear"}};
+            String[][] clothes = {{"검정 선글라스", "얼굴"}, {"동그란 안경", "얼굴"}, {"파란색 티셔츠", "상의"}, {"청바지", "하의"}, {"긴코트", "겉옷"}};
+//            String[][] clothes = {{"yellow_hat", "headgear"}, {"yellow_hat2", "headgear"}};
+
+            /**
+             * headgear : yellow_hat, green_turban
+             * eyewear : blue_sunglasses
+             */
+
+            LinkedHashMap<String, List<String>> clotheMap = new LinkedHashMap<>();
+
+            for (String[] clothe : clothes) {
+                String name = clothe[0];//의상 이름
+                String key = clothe[1];//의상 종류
+
+                List<String> value = clotheMap.getOrDefault(key, new ArrayList<>());
+                value.add(name);
+                clotheMap.put(key, value);
+            }
+
+            System.out.println("clotheMap = " + clotheMap);
+
+            Set<String> keys = clotheMap.keySet();
+
+            for (int i = 1; i < clotheMap.size(); i++) {
+                int result = 0;
+
+            }
+
+
+            int result1 = 0;
+            int result2 = 1;
+            for (String key : clotheMap.keySet()) {
+                List<String> value = clotheMap.get(key);
+                result1 += value.size();
+                result2 *= value.size();
+            }
+
+            if (clotheMap.size() >= 2) {
+                System.out.println("result1 = " + result1 + " result2 = " + result2);
+            } else {
+                System.out.println("result1 = " + result1);
+            }
+
+            int result = clotheMap.size() >= 2 ? result1 + result2 : result1;
+
+        }
+    }
+
+    @Nested
+    class 주식가격 {
+        @Test
+        void 결과() {
+            int[] prices = {1, 2, 3, 2, 3};
+            int[] result = new int[prices.length];
+
+            for (int i = 0; i < prices.length; i++) {
+
+                int price1 = prices[i];
+                int seconds = 0;
+                for (int j = i + 1; j < prices.length; j++) {
+                    int price2 = prices[j];
+                    if (price1 <= price2) {
+                        seconds++;
+                    } else {
+                        seconds++;
+                        break;
+                    }
+                }
+
+                result[i] = seconds;
+            }
+
+            System.out.println("result = " + Arrays.toString(result));
+        }
+
+
     }
 
 }
