@@ -5,6 +5,101 @@ import java.util.*;
 
 public class ProgrammersLevel2 {
 
+    @Nested
+    class 최댓값과_최솟값 {
+
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/12939
+         * 문자열 s에는 공백으로 구분된 숫자들이 저장
+         * 최소값 최대값 형태의 문자열 반환 필요
+         */
+        @Test
+        public void solution() {
+            //given
+            //when
+            System.out.println(this.solution("-1 -2 -3 -4"));
+            //then
+        }
+
+        public String solution(String s) {
+            String[] array = s.split(" ");
+
+            SortedSet<Integer> set = new TreeSet<>();
+            for (String str : array) {
+                set.add(Integer.parseInt(str));
+            }
+
+            return set.first() + " " + set.last();
+        }
+
+    }
+
+
+    @Nested
+    class 올바른_괄호 {
+
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/12909
+         */
+        @Test
+        public void solution() {
+            //given
+
+            String s = "(()())()";
+            boolean result = solution(s);
+            //when
+            System.out.println("result = " + result);
+            //then
+        }
+
+        boolean solution(String s) {
+
+            char[] chars = s.toCharArray();
+            if (chars.length % 2 != 0) {
+                return false;
+            }
+
+            Stack<Character> leftStack = new Stack<>();
+            for (char character : chars) {
+
+                //'('가 없는데 ')'가 나오는 경우
+                if (leftStack.isEmpty() && character == ')') {
+                    return false;
+                }
+
+                if (character == '(') {
+                    leftStack.push(character);
+                } else if (character == ')') {
+                    leftStack.pop();
+                }
+            }
+
+            return leftStack.size() == 0;
+        }
+    }
+
+    @Nested
+    class 최솟값_만들기 {
+        //https://school.programmers.co.kr/learn/courses/30/lessons/12941
+
+        @Test
+        public void solution() {
+            //given
+
+            //when
+
+            //then
+        }
+
+        public int solution(int[] A, int[] B) {
+            int answer = 0;
+
+            // [실행] 버튼을 누르면 출력 값을 볼 수 있습니다.
+            System.out.println("Hello Java");
+
+            return answer;
+        }
+    }
 
     public int function1(int n) {
         if (n == 0) {
