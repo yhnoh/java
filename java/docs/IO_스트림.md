@@ -53,8 +53,22 @@ try (Reader reader = new FileReader("tmp/hello.txt")) {
 ```
 
 ### Bufferd Stream
-- 데이터를 읽고 쓸때, 버퍼를 사용하여 성능을 향상시키는 스트림이다.
-- 버퍼
+- 데이터를 읽고 쓸때 버퍼를 사용하여 성능을 향상시키는 스트림이다.
+- Byte Stream 및 Character Stream에서는 하나의 바이트 단위로 데이터를 읽거나 쓰거나 직접 버퍼를 생성하여 데이터를 읽거나 쓸 수 있다.
+- 하지만 위와 같은 방식은 몇가지 문제점이 존재한다.
+  - 하나의 바이트 단위마다 데이터를 읽거나 쓸때에는 I/O가 잦아지기 때문에 성능 이슈가 발생할 수 있다.
+  - 개발자가 직접 버퍼를 생성하여 버퍼단위로 데이터를 읽거나 쓸 수 있지만 이러한 작업은 번거러운 작업이 될 수 있고 실수가 일어날 수 있다.
+- 자바에서는 위와같은 문제를 해결하기 위한 Bufferd Stream을 제공한다.
+- Bufferd Stream의 경우 직접 사용할 수 는 없고, Byte Stream 및 Character Stream의 구현체들과 함께 사용한다.
+  - Bufferd Stream은 단순히 버퍼 사이즈만큼 메모리에 담아두는 작업을 할 뿐, I/O 작업들은 Byte Stream 및 Character Stream이 진행한다.
+
+
+### 이외에 알아볼만한 Stream 구현체
+
+- Data Streams
+- Object Streams
+
+
 
 > [Java Docs > java.io](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/package-summary.html)
 > (Java Docs Tutorial > io)[https://docs.oracle.com/javase/tutorial/essential/io/index.html]
