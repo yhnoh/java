@@ -1,51 +1,48 @@
 package org.example.io.iostream;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * <p>바이트 배열을 이용한 I/O 예제<p/>
+ * <br/>
+ * <p>write(byte[] b, int off, int len) throws IOException <p/>
+ * b : 데이터 쓰기를 위한 바이트 배열 <br/>
+ * off : b 배열의 시작 인덱스 <br/>
+ * len : b 배열을 어디까지 읽을지의 길이 <br/>
+ *
+ * <p> read(byte[] b, int off, int len) </p>
+ * b : 데이터 읽기를 위한 바이트 배열 <br/>
+ * off : b 배열의 시작 인덱스 <br/>
+ * len : b 배열을 어디까지 읽을지의 길이 <br/>
+ * return: 읽은 바이트 길이를 리턴한다. 만약 읽은 바이트가 없으면 -1을 리턴한다.
+ */
 public class ByteStreamMain2 {
 
     public static void main(String[] args) throws IOException {
 
+        String path = "tmp/byte.txt";
         Charset charset = StandardCharsets.UTF_8;
-        String str = "Hello World!";
-        System.out.println("Hello World! bytes length = " + str.getBytes(charset).length);
-        for (int i = 0; i < 9; i++) {
-            str += "Hello World!";
-        }
-        System.out.println("str bytes length = " + str.getBytes(charset).length);
+        String str = "Hello World!!!!";
+        byte[] outBytes = str.getBytes(charset);
+        //문자열 -> 바이트 -> 쓰기
+        try (FileOutputStream os = new FileOutputStream(path)) {
 
-        try (OutputStream os = new FileOutputStream("tmp/hello.txt")) {
-            byte[] bytes = str.getBytes(charset);
-
-            int bufferSize = 12;
-            int now = 0;
-            byte[] buffer = new byte[bufferSize];
-            for (byte b : bytes) {
-
-                if (now == bufferSize) {
-                    os.write(buffer);
-                    now = 0;
-                }
-
-                buffer[now] = b;
-                now++;
-            }
-
-            for (byte b : bytes) {
-                os.write(b);
-            }
+            os.write(outBytes, 0, outBytes.length);
         }
 
+        //바이트 -> 문자열 -> 읽기
+        try (FileInputStream in = new FileInputStream(path)) {
+            //outBytes.length 만큼 배열을 생성하여 데이터 읽기
+            byte[] inBytes = new byte[outBytes.length];
 
-//        try (InputStream in = new FileInputStream("tmp/hello.txt")) {
-//            int c = 0;
-//            while ((c = in.read()) != -1) {
-//                System.out.print((char) c);
-//            }
-//        }
+            int readBytesLength;
+            while ((readBytesLength = in.read(inBytes, 0, inBytes.length)) != -1) {
+                System.out.print(new String(inBytes, 0, readBytesLength));
+            }
+        }
     }
 }

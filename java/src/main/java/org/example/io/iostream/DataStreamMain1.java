@@ -6,7 +6,8 @@ public class DataStreamMain1 {
 
     public static void main(String[] args) throws IOException {
 
-        try (DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("./tmp/data.txt")))) {
+        String path = "tmp/data.txt";
+        try (DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)))) {
             double[] prices = {19.99, 9.99, 15.99, 3.99, 4.99};
             int[] units = {12, 8, 13, 29, 50};
             String[] descs = {
@@ -25,7 +26,7 @@ public class DataStreamMain1 {
 
         }
 
-        try (DataInputStream is = new DataInputStream(new BufferedInputStream(new FileInputStream("./tmp/data.txt")))) {
+        try (DataInputStream is = new DataInputStream(new BufferedInputStream(new FileInputStream(path)))) {
             try {
                 while (true) {
 
