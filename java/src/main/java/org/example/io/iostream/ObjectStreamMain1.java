@@ -13,8 +13,15 @@ public class ObjectStreamMain1 {
         }
 
         try (ObjectInputStream is = new ObjectInputStream(new BufferedInputStream(new FileInputStream(path)))) {
-            Person person = (Person) is.readObject();
-            System.out.println("person = " + person);
+            try {
+                while (true) {
+                    Person person = (Person) is.readObject();
+                    System.out.println("person = " + person);
+                }
+            } catch (EOFException e) {
+                System.out.println("End of file");
+            }
+
         }
 
     }

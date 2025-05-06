@@ -2,6 +2,9 @@ package org.example.io.iostream;
 
 import java.io.*;
 
+/**
+ * Bufferd Stream을 이용한 Character Stream 예제
+ */
 public class BufferedStream2 {
 
     private static final int DEFAULT_MAX_BUFFER_SIZE = 8 * 1024; // 8KB

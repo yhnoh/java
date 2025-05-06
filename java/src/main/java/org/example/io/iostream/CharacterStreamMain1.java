@@ -2,7 +2,7 @@ package org.example.io.iostream;
 
 import java.io.*;
 
-public class CharacterMain1 {
+public class CharacterStreamMain1 {
 
     public static void main(String[] args) throws IOException {
 

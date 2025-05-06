@@ -4,6 +4,9 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Bufferd Stream을 이용한 Byte Stream 예제
+ */
 public class BufferedStream1 {
 
     private static final int DEFAULT_MAX_BUFFER_SIZE = 8192;
