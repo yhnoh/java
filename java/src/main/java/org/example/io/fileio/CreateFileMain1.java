@@ -11,7 +11,7 @@ import java.nio.file.Path;
  * https://docs.oracle.com/javase/tutorial/essential/io/file.html#creating
  * tmp/fileio 를 삭제하고 실행하는 것을 권장
  */
-public class CreateFile1 {
+public class CreateFileMain1 {
 
     public static void main(String[] args) throws IOException {
 
