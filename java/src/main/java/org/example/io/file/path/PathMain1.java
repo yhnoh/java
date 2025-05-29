@@ -1,4 +1,4 @@
-package org.example.io.fileio.path;
+package org.example.io.file.path;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;

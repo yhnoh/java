@@ -1,4 +1,4 @@
-package org.example.io.fileio.file;
+package org.example.io.file.file;
 
 import java.io.*;
 import java.nio.file.Files;

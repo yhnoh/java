@@ -1,4 +1,4 @@
-package org.example.io.iostream;
+package org.example.io.stream;
 
 import java.io.*;
 
