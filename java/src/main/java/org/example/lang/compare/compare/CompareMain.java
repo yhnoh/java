@@ -1,4 +1,4 @@
-package org.example.api.compare;
+package org.example.lang.compare.compare;
 
 import java.util.Arrays;
 import java.util.Collections;

@@ -66,8 +66,8 @@
 
 ### 실사용 예제
 
-- [Compare를 이용한 IP 주소 비교 예제](../src/main/java/org/example/api/compare/CompareMain.java)
-- [Comparator을 이용한 IP 주소 비교 예제](../src/main/java/org/example/api/comparator/ComparatorMain.java)
+- [Compare를 이용한 IP 주소 비교 예제](compare/CompareMain.java)
+- [Comparator을 이용한 IP 주소 비교 예제](comparator/ComparatorMain.java)
 
 <br/>
 

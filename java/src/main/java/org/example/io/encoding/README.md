@@ -89,4 +89,4 @@
 - 참고로 charset을 명시하지 않을 경우 현재 시스템에서 사용하는 기본 문자 집합을 사용한다.
 
 > [Java Docs > java.nio.charset](https://docs.oracle.com/en/java/javase/21//docs/api/java.base/java/nio/charset/package-summary.html) <br/>
-> [예제](../src/main/java/org/example/io/encoding)
+> [예제]()

@@ -1,4 +1,4 @@
-package org.example.api.comparator.integer;
+package org.example.lang.compare.comparator.integer;
 
 import java.util.Arrays;
 
