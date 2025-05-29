@@ -1,4 +1,4 @@
-package org.example.io.fileio;
+package org.example.io.fileio.file;
 
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
