@@ -20,21 +20,16 @@
 ## 스레드 상태
 ![](./thread_state.png)
 
-### Java 스레드
+## Java 스레드
 - Java에서 동시성 애플리케이션을 만들기 위하여 `java.lang.Thread` 클래스를 제공한다.
 - `java.lang.Thread` 클래스를 이용하여 개발자가 직접 스레드를 생성하고 관리를 하거나, [고수준 동시성 API](https://docs.oracle.com/javase/tutorial/essential/concurrency/highlevel.html)를 통해서 동시성 애플리케이션을 제작하는 방법을 제공한다.
 
+### 스레드 생성 및 실행 방법
+- Java에서 스레드를 생성하고 실행하기 위해서는 `Thread` 클래스를 상속받아서 사용하거나 `Runnable` 인터페이스를 통해서 작업 내역을 정의하여 사용하는 두가지 방식이 존재한다.
+- 두가지 방식 모두 스레드를 생성하고 실행시킬 수 있지만, ***Runnable 인터페이스를 이용한 방식***은 다른 클래스를 상속 받을 수 있기 때문에 ***좀 더 유연한 구조***를 가질 수 있으며, Java에서 제공하는 ***동시성 고수준 API에서도 사용***할 수 있다는 장점이 있다.
+    > 참고로 run() 메서드를 직접 실행하게 되면 신규 스레드를 생성해서 실행시키는 것이 아니기 때문에 꼭 스레드를 사용하기 위해서는 꼭 start()를 활용하자.
 
-#### 스레드 생성 방법
-
-- java는 `java.lang.Thread`클래스를 통해서 스레드를 생성하고 실행할 수 있다.
-- 직접 Thread클래스를 상속받아서 스레드를 생성하거난 Runnable 인터페이스를 통해서 생성할 수 있으며 
-
-- java에서 스레드를 사용하기 위해서는 `java.lang.Thread`클래스를 통해서 생성할 수 있다.
-- java.lang.Runnable 인터페이스의 run()
-- java.lang.Thread 클래스의 run()
-- Runnable 인터페이스를 통해 구현한 구현체는 다른 클래스를 상속 받을 수 있다는 장점이 있으며, 이는 좀더 유연한 구조로 나아갈 수 있으며, Java에서 제공하는 동시성에 대한 고수준 API에도 적용할 수
-  있다는 장점이 있다.
+> [예제](./ThreadStartMain1.java)
 
 #### 스레드 대기/블록킹
 
@@ -50,3 +45,7 @@
   > IllegalArgumentException – if the value of millis is negative
   InterruptedException – if any thread has interrupted the current thread. The interrupted status of the current thread
   is cleared when this exception is thrown.
+
+
+> [완전희 정복하는 프로세스 vs 스레드 개념, inpa](https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%E2%9A%94%EF%B8%8F-%EC%93%B0%EB%A0%88%EB%93%9C-%EC%B0%A8%EC%9D%B4)
+> [Java Docs > Thread](https://docs.oracle.com/javase/tutorial/essential/concurrency/threads.html)
