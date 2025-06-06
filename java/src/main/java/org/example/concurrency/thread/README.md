@@ -31,7 +31,15 @@
 
 > [예제](./ThreadStartMain1.java)
 
-#### 스레드 대기/블록킹
+### 스레드 대기/블록킹
+- Java는 실행중인 스레드를 대기/블록킹할 수 있도록 만드는 `sleep(), join()`메서드를 제공한다.
+- `sleep(), join()` 메서드 둘다 작업에 대한 대기/블록킹을 할 수 있도록 제공하지만 목적이 조금 다르다.
+- `sleep()`은 Thread 정적 메서드로써 ***현재 실행 중인 스레드의 실행을 특정 시간 동안 대기*** 시킨다. 즉 자기 자신을 대기하기 위하여 사용하는 메서드이다.
+- `join()`은 Thread 인스턴스 메서드로써 ***다른 스레드의 작업이 완료될때까지 대기***할 수 있다. 예를 들어 메인 스레드 내에서 생성된 스레드의 작업이 완료될때 까지 메인 스레드는 대기할 수 있다.
+
+> [sleep 예제](./ThreadSleepMain1.java) <br/>
+> [join 예제](./ThreadSleepMain1.java) <br/>
+
 
 #### 스레드 인터럽트(Thread Interrupt)
 
@@ -47,5 +55,5 @@
   is cleared when this exception is thrown.
 
 
-> [완전희 정복하는 프로세스 vs 스레드 개념, inpa](https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%E2%9A%94%EF%B8%8F-%EC%93%B0%EB%A0%88%EB%93%9C-%EC%B0%A8%EC%9D%B4)
+> [완전희 정복하는 프로세스 vs 스레드 개념, inpa](https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%E2%9A%94%EF%B8%8F-%EC%93%B0%EB%A0%88%EB%93%9C-%EC%B0%A8%EC%9D%B4) <br/>
 > [Java Docs > Thread](https://docs.oracle.com/javase/tutorial/essential/concurrency/threads.html)
