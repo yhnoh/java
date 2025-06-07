@@ -43,16 +43,40 @@
 - 인터럽트는 스레드가 ***현재 진행중인 작업을 중지하고 개발자가 지정한 다른 작업을 수행해야한다는 신호***를 보내는 것을 의미한다.
   - 인터럽트를 활용하지 않고 스레드를 강제종료하게되면 스레드가 사용중이던 자원에 대한 정리가 제대로 이루어 지지 않을 수 있기 때문에, 강제종료보다는 인터럽트를 사용하여 작업을 진행중이던 스레드가 작업을 정리하고 종료할 수 있도록 설계하는 것이 좋다.
 - Java에서는 `java.lang.Thread` 클래스 내부의 `interrupted` 플래그 변수와 스레드를 ***인터럽트 상태로 만들 수 있는 `interrupt()` 인스턴스 메서드, 인터럽트 상태에 있는 스레드를 다시 원상태로 복구해주는 `interrupted()` 정적 메서드***를 제공한다. 또한 인터럽트의 상태를 확인할 수 있는 `isInterrupted()` 정적 메서드를 제공한다.
-- 스레드를 인터럽트 상태로 만들어도 인터럽트 상태가 해제되는 경우가 있다.
-  - `InterruptedException`을 발생시키는 모든 메서드는 외부에서 해당 스레드를 인터럽트 상태로 만들어도 해제된다. 
+- 스레드를 인터럽트 상태로 만들어도 인터럽트 상태가 해제되는 경우가 있다. `InterruptedException`을 발생시키는 모든 메서드는 외부에서 해당 스레드를 인터럽트 상태로 만들어도 해제된다. 
     > By convention, any method that exits by throwing an InterruptedException clears interrupt status when it does so. However, it's always possible that interrupt status will immediately be set again, by another thread invoking interrupt.
 
 > [interrupt 예제](./ThreadInterruptMain1.java) <br/>
 > [interrupted 예제](./ThreadInterruptMain2.java) <br/>
 > [InterruptedException 예제](./ThreadInterruptMain3.java) <br/>
 
-## Java를 이용한 스레드 상태
+## 스레드 상태
 ![](./thread_state.png)
+- 스레드는 생성/실행/대기/종료의 생명 주기를 가지고 있으며 각 상황에 따른 상태를 6가지로 표현할 수 있다.
+  - 일반적인 스레드의 생명주기에 따른 상태 변화: NEW -> RUNNABLE -> (BLOCKED / WAITING / TIMED_WAITING) -> RUNNABLE -> TERMINATED
+- 스레드의 단순 상태를 아는것도 중요하지만 ***왜 그런 상태가 되었는지를 이해하는것이 더 중요***하다. 만약 그렇지 못한다면 아래와같은 문제가 발생할 수 있다.
+  - 스레드가 왜 대기 상태에 빠졌는지 이해하지 못하고 불필요한 스레드를 지속적으로 생성으로 인한 성능 악화
+  - 데드락이나 스레드 기아(Starvation)와 같은 상황 발생시 문제에 대한 원인 파악의 어려움
+  - 위와 같은 이유로 멀티 스레드 프로그램 개발시 안정적인 애플리케이션 개발의 어려움
+
+### Java의 스레드 상태
+- NEW: 스레드 객체가 생성되었지만 `start()`메서드가 호출되지 않아 아직 실행되지 않은 상태
+- RUNNABLE: `start()` 메서드가 호출되어 실행 중인 상태
+- BLOCKED: syncronized 블록이나 메서드에 진입하기 위해서 모니터 락(monitor lock)이 해제되기를 기다리는 상태, `syncronized`
+- WAITING: 다른 스레드가 작업이 종료될때까지 무기한으로 대기하는 상태, `join()`
+- TIMED_WAITING: 지정된 시간동안 대기하는 상태, `sleep()`
+- TERMINATED: `run()`메서드가 실행을 완료했거나 예외 발생으로 스레드가 종료된 상태
+
+> [스레드 상태 및 생명 주기에 대한 예제](./ThreadState1.java)
+> [스레드 상태 WAITING, TIMED_WAITING 예제](./ThreadState1.java)
+> [스레드 상태 BLOCKED 예제](./ThreadState1.java)
+
+
+  
+
+
+- Java에서는 `getState()`메서드를 통해서 스레드의 상태를 확인할 수 있으며, 6가지의 상태를 가지게 된다.
+
 
 
 > [완전희 정복하는 프로세스 vs 스레드 개념, inpa](https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%E2%9A%94%EF%B8%8F-%EC%93%B0%EB%A0%88%EB%93%9C-%EC%B0%A8%EC%9D%B4) <br/>

@@ -2,12 +2,16 @@ package org.example.concurrency.thread;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * <p>스레드 상태 WAITING, TIMED_WAITING 예제<p/>
+ * 메인 스레드가 다른 스레드의 작업이 완료될때까지 대기하고 메인 스레드의 상태를 주기적으로 출력하는 예제
+ */
 public class ThreadState2 {
     public static void main(String[] args) throws InterruptedException {
         Thread thread = new Thread(new Task());
         thread.start();
 
-        Thread mainThreadState = new Thread(new MainThreadStateTask(Thread.currentThread()));
+        Thread mainThreadState = new Thread(new ThreadStatePrinter(Thread.currentThread()));
         mainThreadState.start();
 
 
@@ -26,10 +30,10 @@ public class ThreadState2 {
         }
     }
 
-    public static class MainThreadStateTask implements Runnable {
+    public static class ThreadStatePrinter implements Runnable {
         private final Thread thread;
 
-        public MainThreadStateTask(Thread thread) {
+        public ThreadStatePrinter(Thread thread) {
             this.thread = thread;
         }
 

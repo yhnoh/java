@@ -2,6 +2,9 @@ package org.example.concurrency.thread;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * <p>스레드 상태 및 생명 주기에 대한 예제</p>
+ */
 public class ThreadState1 {
 
     public static void main(String[] args) throws InterruptedException {
