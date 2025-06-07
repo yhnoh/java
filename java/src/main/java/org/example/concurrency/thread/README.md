@@ -72,11 +72,6 @@
 > [스레드 상태 BLOCKED 예제](./ThreadState1.java) <br/>
 
 
-  
-
-
-- Java에서는 `getState()`메서드를 통해서 스레드의 상태를 확인할 수 있으며, 6가지의 상태를 가지게 된다.
-
 
 
 > [완전희 정복하는 프로세스 vs 스레드 개념, inpa](https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%E2%9A%94%EF%B8%8F-%EC%93%B0%EB%A0%88%EB%93%9C-%EC%B0%A8%EC%9D%B4) <br/>
