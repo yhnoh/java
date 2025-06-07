@@ -67,9 +67,9 @@
 - TIMED_WAITING: 지정된 시간동안 대기하는 상태, `sleep()`
 - TERMINATED: `run()`메서드가 실행을 완료했거나 예외 발생으로 스레드가 종료된 상태
 
-> [스레드 상태 및 생명 주기에 대한 예제](./ThreadState1.java)
-> [스레드 상태 WAITING, TIMED_WAITING 예제](./ThreadState1.java)
-> [스레드 상태 BLOCKED 예제](./ThreadState1.java)
+> [스레드 상태 및 생명 주기에 대한 예제](./ThreadState1.java) <br/>
+> [스레드 상태 WAITING, TIMED_WAITING 예제](./ThreadState1.java) <br/>
+> [스레드 상태 BLOCKED 예제](./ThreadState1.java) <br/>
 
 
   
