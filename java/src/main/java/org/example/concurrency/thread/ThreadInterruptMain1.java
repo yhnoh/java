@@ -3,6 +3,9 @@ package org.example.concurrency.thread;
 import static java.lang.Thread.currentThread;
 import static java.lang.Thread.sleep;
 
+/**
+ * interrupt 활용 예제
+ */
 public class ThreadInterruptMain1 {
 
     public static void main(String[] args) throws InterruptedException {
