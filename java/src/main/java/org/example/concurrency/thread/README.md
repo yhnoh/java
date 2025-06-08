@@ -10,7 +10,7 @@
 ### 프로세스
 - 프로그램이 메모리에 로드되어 운영체제에 실행될때 이를 프로세스라고한다.
 - 프로세스는 운영체제로 부터 ***독립적인 자원을 할당받아 실행되기 때문에 자신만의 가상 주소 공간과 메모리를 공유하지 않는 특징***이 있기 때문에 프로세스간의 메모리에 직접 접근할 수 없다.
-- 프로세스가 생성될때 운영체제는 ***프로세스를 관리하기 위하여 프로세스에 대한 중요한 정보를 저장하고 관리하는데 이를 PCB(Process Control Block)***라고 한다.
+- 프로세스가 생성될때 운영체제는 ***프로세스를 관리하기 위하여 프로세스에 대한 중요한 정보를 저장하고 관리하는데 이를 PCB(Process Control Block)*** 라고 한다.
   - 운영체제는 PCB를 바탕으로 현재 작업중이던 프로세스의 상태를 저장하고 다음에 작업해야할 프로세스의 상태를 복원하는 과정을 통해서 Context Switching을 하며 멀티태스킹이 가능해진다.
 
 ### 스레드
@@ -79,5 +79,5 @@
 ## Reference
 > [완전희 정복하는 프로세스 vs 스레드 개념, inpa](https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%E2%9A%94%EF%B8%8F-%EC%93%B0%EB%A0%88%EB%93%9C-%EC%B0%A8%EC%9D%B4) <br/>
 > [How Java thread maps to OS thread?](https://medium.com/@unmeshvjoshi/how-java-thread-maps-to-os-thread-e280a9fb2e06)<br/>
-> [Java Docs > Thread](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html)
+> [Java Docs > Thread](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html) <br/>
 > [Java Docs > Concurrency Tutorial](https://docs.oracle.com/javase/tutorial/essential/concurrency/threads.html)
