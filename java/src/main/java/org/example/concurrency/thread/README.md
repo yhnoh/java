@@ -4,22 +4,25 @@
 - 운영체제는 프로세스를 관리하는 주체로써 ***자원(Resource)를 효율적으로 관리하는 역할을*** 한다.
   > 물론 자원 관리를 제외한 다른 역할도 한다. (사용자 인터페이스 제공, 보안, 네트워크 지원..)
 - 대표적인 자원 관리 역할로써 CPU 관리와 메모리 관리가 존재한다.
-  - CPU 관리: CPU 스케줄러를 통해서 여러 실행 가능한 작업들 중에서 어떤 ***작업(커널 수준 스레드: Kernel-level Thread)을 얼마동안 할당할지를 결정***하고, Context Switching으로 현재 ***작업중이던 작업을 저장하고 다른 작업을 수행***한다.
+  - CPU 관리: CPU 스케줄러를 통해서 여러 실행 가능한 작업들 중에서 어떤 ***작업(커널 수준 스레드: Kernel-level Thread, 프로세스)을 얼마동안 할당할지를 결정***하고, Context Switching으로 현재 ***작업중이던 작업을 저장하고 다른 작업을 수행***한다.
   - 메모리 관리: 프로세스별로 독립적인 메모리 공간을 할당하고, 프로세스간의 메모리 영역을 침범하지 못하도록 보호한다.
 
 ### 프로세스
 - 프로그램이 메모리에 로드되어 운영체제에 실행될때 이를 프로세스라고한다.
-- 프로세스는 운영체제로 부터 독립적인 자원을 할당받아 실행되기 때문에 메모리를 공유하지 않는 특징이 있다.
-
+- 프로세스는 운영체제로 부터 ***독립적인 자원을 할당받아 실행되기 때문에 자신만의 가상 주소 공간과 메모리를 공유하지 않는 특징***이 있기 때문에 프로세스간의 메모리에 직접 접근할 수 없다.
+- 프로세스가 생성될때 운영체제는 ***프로세스를 관리하기 위하여 프로세스에 대한 중요한 정보를 저장하고 관리하는데 이를 PCB(Process Control Block)***라고 한다.
+  - 운영체제는 PCB를 바탕으로 현재 작업중이던 프로세스의 상태를 저장하고 다음에 작업해야할 프로세스의 상태를 복원하는 과정을 통해서 Context Switching을 하며 멀티태스킹이 가능해진다.
 
 ### 스레드
 - ***스레드는 프로세스내에서 실행되는 하나의 경량 프로세스(lightweight process), 실행 단위***로써 하나의 프로세스는 하나 이상의 스레드를 가질 수 있다.
-- 스레드는 프로세스 내의 메모리를 공유할 수 있다는 특징이 있으며 이로 인해서 프로세스의 Context Switch보다 스레드의 Context Switch 비용이 저렴하다.
-- 
-- 프로세스는 하나이상의 스레드를 가진다.
+- 스레드는 ***프로세스 내에서 실행되기 때문에 동일한 가상 주고 공간과 메모리를 공유할 수 있다는 특징***이 있으며 이로 인해서 스레드의 Context Switching이 프로세스의 Context Switching 보다 저렴하다.
+  - 스레드의 Context Switching이 프로세스보다 저렴한 이유는 자원을 공유하기 때문에 진행중이던 작업의 상태 저장이나 다른 작업을 복원하는 과정이 프로세스 보다 간단하고 적기 때문이다.
+
 
 ## Java 스레드
-- Java에서 동시성 애플리케이션을 만들기 위하여 `java.lang.Thread` 클래스를 제공한다.
+- Java에서 동시성 애플리케이션을 만들기 위하여 `java.lang.Thread` 클래스를 제공한다. Java에서 제공하는 스레드는 운영체제에서 제공하는 커널 스레드와 1:1로 매핑되며 운영체제의 스케쥴러에 의해서 스레드를 관리하게 된다.
+    > Thread supports the creation of platform threads that are typically mapped 1:1 to kernel threads scheduled by the operating system
+    - 참고로 커널 수준 스레드와 1:1 매핑이되는데 Java에서 많은 수의 스레드를 생성하고 작업이 가능한 이유는 자바 서버 프로그래밍시 I/O 작업이 대부분인 I/O Bound 프로세스이기 때문이다. I/O 작업으로 인한 대기 발생시 다른 스레드가 작업을 수행가능하기 때문에 커널 수준 스레드의 개수보다 더 많은 스레드를 생성할 수 있다. 
 - `java.lang.Thread` 클래스를 이용하여 개발자가 직접 스레드를 생성하고 관리를 하거나, [고수준 동시성 API](https://docs.oracle.com/javase/tutorial/essential/concurrency/highlevel.html)를 통해서 동시성 애플리케이션을 제작하는 방법을 제공한다.
 
 ### Java 스레드 생성 및 실행 방법
@@ -73,6 +76,8 @@
 
 
 
-
+## Reference
 > [완전희 정복하는 프로세스 vs 스레드 개념, inpa](https://inpa.tistory.com/entry/%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%E2%9A%94%EF%B8%8F-%EC%93%B0%EB%A0%88%EB%93%9C-%EC%B0%A8%EC%9D%B4) <br/>
-> [Java Docs > Thread](https://docs.oracle.com/javase/tutorial/essential/concurrency/threads.html)
+> [How Java thread maps to OS thread?](https://medium.com/@unmeshvjoshi/how-java-thread-maps-to-os-thread-e280a9fb2e06)<br/>
+> [Java Docs > Thread](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.html)
+> [Java Docs > Concurrency Tutorial](https://docs.oracle.com/javase/tutorial/essential/concurrency/threads.html)
