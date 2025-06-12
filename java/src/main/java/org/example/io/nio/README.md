@@ -5,7 +5,7 @@
 #### Buffer의 특징
 - 원시 데이터 타입 버퍼 제공
     - Buffer의 하위 클래스로 `ByteBuffer, CharBuffer, DoubleBuffer, FloatBuffer, IntBuffer, LongBuffer, ShortBuffer`가 구현되어 있는것을 확인할 수 있듯이 다양한 원시 데이터 타입을 제공한다.
-- Non DirectBuffer & Direct Buffer
+- Non Direct Buffer & Direct Buffer
   - 
 - 인덱스 기반으로 하는 데이터 처리
   - Buffer에 데이터 저장전, 저장후, 읽기 및 쓰기, 자원정리등의 행위들을 인덱스기반으로 처리하게 된다.
@@ -31,4 +31,6 @@
 
 ## Reference
 
+
+> https://hbase.tistory.com/39
 > https://medium.com/@ujjawalr/java-nio-complete-tutorial-69c2c6a8d2a0
