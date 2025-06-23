@@ -10,11 +10,11 @@ import static java.lang.Thread.sleep;
  * 스레드 생성 이후 각 스레드는 값을 1씩 증가 시키는 작업을 수행 <br/>
  * 최종적으로 스레드가 생성된 수만큼 값이 증가되기를 기대하지만 동시성 이슈로 인하여 원하는 값이 반환되지 않음
  */
-public class SynchronizationMain1 {
+public class SynchronizationMain2 {
 
     public static void main(String[] args) throws InterruptedException {
 
-        Counter counter = new Counter();
+        Increment increment = new Increment();
 
         List<Thread> threads = new ArrayList<>();
         // 100개의 스레드 생성 및
@@ -22,7 +22,7 @@ public class SynchronizationMain1 {
             Thread thread = new Thread(() -> {
                 try {
                     sleep(10); // 10ms 대기
-                    counter.increment();
+                    increment.increase();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -39,14 +39,17 @@ public class SynchronizationMain1 {
         }
 
 
-        System.out.println("value = " + counter.getValue());
+        System.out.println("value = " + increment.getValue());
     }
 
-    public static class Counter {
+    public static class Increment {
+        private final Object lock = new Object();
         private int value;
 
-        public void increment() {
-            value++;
+        public void increase() {
+            synchronized (lock) {
+                value++;
+            }
         }
 
         public int getValue() {
