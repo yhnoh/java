@@ -1,14 +1,18 @@
 package org.example.concurrency.synchronization;
 
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.Thread.sleep;
 
 /**
- * <p>synchronized 키원드 사용 예제</p>
+ * <p>Lock을 통한 Mutex 구현</p>
+ * 스레드 생성 이후 각 스레드는 값을 1씩 증가 시키는 작업을 수행 <br/>
  */
-public class SynchronizationMain2 {
+public class MutexMain2 {
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -20,7 +24,7 @@ public class SynchronizationMain2 {
             Thread thread = new Thread(() -> {
                 try {
                     sleep(10); // 10ms 대기
-                    counter.increment();
+                    counter.increase();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -41,38 +45,21 @@ public class SynchronizationMain2 {
     }
 
     public static class Counter {
+        private final Lock lock = new ReentrantLock();
         private int value;
-        private final Object lock = new Object();
 
 
-        // synchronized 메서드로 동기화된 increment 메서드
-        public synchronized void increment() {
-            value++;
-        }
-
-
-        // synchronized 블록을 사용하여 동기화된 increment 메서드
-/*
-        public void increment() {
-            synchronized (this) {
+        public void increase() {
+            lock.lock();
+            try {
                 value++;
+            } finally {
+                lock.unlock();
             }
         }
-*/
-
-        // synchronized 블록을 사용하여 동기화된 increment 메서드
-/*
-        public void increment() {
-            synchronized (lock) {
-                value++;
-            }
-        }
-*/
 
         public int getValue() {
             return value;
         }
     }
-
-
 }

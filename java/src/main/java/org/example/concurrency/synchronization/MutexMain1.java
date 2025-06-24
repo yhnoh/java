@@ -6,9 +6,10 @@ import java.util.List;
 import static java.lang.Thread.sleep;
 
 /**
- * <p>synchronized 키원드 사용 예제</p>
+ * <p>syncronized를 통한 Mutex 구현</p>
+ * 스레드 생성 이후 각 스레드는 값을 1씩 증가 시키는 작업을 수행 <br/>
  */
-public class SynchronizationMain2 {
+public class MutexMain1 {
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -20,7 +21,7 @@ public class SynchronizationMain2 {
             Thread thread = new Thread(() -> {
                 try {
                     sleep(10); // 10ms 대기
-                    counter.increment();
+                    counter.increase();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -41,33 +42,19 @@ public class SynchronizationMain2 {
     }
 
     public static class Counter {
-        private int value;
         private final Object lock = new Object();
+        private int value;
+
+//        public synchronized void increase() {
+//            value++;
+//        }
 
 
-        // synchronized 메서드로 동기화된 increment 메서드
-        public synchronized void increment() {
-            value++;
-        }
-
-
-        // synchronized 블록을 사용하여 동기화된 increment 메서드
-/*
-        public void increment() {
-            synchronized (this) {
-                value++;
-            }
-        }
-*/
-
-        // synchronized 블록을 사용하여 동기화된 increment 메서드
-/*
-        public void increment() {
+        public void increase() {
             synchronized (lock) {
                 value++;
             }
         }
-*/
 
         public int getValue() {
             return value;
