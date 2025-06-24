@@ -197,29 +197,26 @@ Thread-2: value 저장 (value = 2, lock 해제)
 ![](./monitor.png)
 - 모니터는 객체의 ***공유 자원을 동기화하기 위하여 뮤텍스(Mutex: Mutual Exclusion)와 조건 변수(Condition Variable)를 사용하여 동기화를 구현***한다.
   - 뮤텍스(Mutex: Mutual Exclusion): 하나의 프로세스나 스레드만 공유 자원에 접근할 수 있도록 하는 동기화 기법
-  - 조건 변수(Condition Variable): 특정 조건이 만족될 때 스레드를 일시적으로 대기시키거나 깨우는 역할
+  - 조건 변수(Condition Variable): 특정 조건이 만족될 때 스레드를 일시적으로 대기시키거나 깨우는 역할 수행
     - `wait()`, `notify()`, `notifyAll()` 메서드를 통해서 스레드를 대기시키거나 깨울 수 있다.
 - 뮤텍스와 조건 변수를 사용하기 위해서는 스레드가 대기할 수 있는 ***Entry Set과 Wait Set이 필요***하다.
   - Entry Set: 스레드가 공유 자원에 접근하기 전에 대기하는 영역
   - Wait Set: 특정 조건이 만족되어 스레드가 대기하는 영역, 특정 조건이 만족되면 Wait Set에 있는 스레드를 깨워서 작업을 수행할 수 있다.
 
+> [Java Specifications > Synchronization](https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.1) <br/>
+> [](https://ionutbalosin.com/2018/06/contended-locks-explained-a-performance-approach/) <br/>
 
-
-> [Java Specifications > Synchronization](https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.1)
-> [](https://ionutbalosin.com/2018/06/contended-locks-explained-a-performance-approach/)
+### Synchronized의 장단점
 
 ## 동기화 기법
-
 - 동기화 기법은 경쟁 상태를 방지하고 임계 영역에 대한 접근을 제어하여 작업의 순서 및 데이터의 일관성을 유지하기 위한 방법이다.
-- 뮤텍스(Mutex: Mutual Exclusion): 상호 배제를 위한 동기화 기법으로, 한 번에 하나의 프로세스나 스레드만 공유 자원에 접근할 수 있도록 한다.
-- 세마포어(Semaphore): 공유 자원에 접근할 수 있는 프로세스나 스레드의 수를 제한하는 동기화 기법
-- 모니터(Monitor): 공유 자원에 대한 접근을 제어하는 객체로, 내부적으로 뮤텍스와 조건 변수를 사용하여 동기화를 구현한다.
-    - 조건 변수(Condition Variable): 특정 조건이 만족될 때까지 프로세스나 스레드를 대기시키는 동기화 기법
+  - 뮤텍스(Mutex: Mutual Exclusion): 상호 배제를 위한 동기화 기법으로, 한 번에 하나의 프로세스나 스레드만 공유 자원에 접근할 수 있도록 한다.
+  - 세마포어(Semaphore): 공유 자원에 접근할 수 있는 프로세스나 스레드의 수를 제한하는 동기화 기법
+  - 모니터(Monitor): 공유 자원에 대한 접근을 제어하는 객체로, 내부적으로 뮤텍스와 조건 변수를 사용하여 동기화를 구현한다.
+    - 조건 변수(Condition Variable): 특정 조건이 만족될 때까지 프로세스나 스레드를 대기시키는 역할 수행
+### 뮤텍스
+### 세마포어
 
 
-- 동기화를 하기위한 경쟁상태와 임계영역을 파악한 이후에는 여러 동기화 기법을 통해서 데이터 일관성을 유지할 수 있다.
-    - 뮤텍스(Mutex): 상호 배제를 위한 동기화 기법으로, 한 번에 하나의 프로세스나 스레드만 공유 자원에 접근할 수 있도록 한다.
-    - 세마포어(Semaphore): 공유 자원에 접근할 수 있는 프로세스나 스레드의 수를 제한하는 동기화 기법
-    - 모니터(Monitor): 공유 자원에 대한 접근을 제어하는 객체로, 내부적으로 뮤텍스와 조건 변수를 사용하여 동기화를 구현한다.
 
 > [Java Tutorial Docs > Synchronization](https://docs.oracle.com/javase/tutorial/essential/concurrency/sync.html)
