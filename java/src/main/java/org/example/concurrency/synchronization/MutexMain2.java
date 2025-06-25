@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.lang.Thread.sleep;
 
 /**
- * <p>Lock을 통한 Mutex 구현</p>
+ * <p>java.util.concurrent.locks을 통한 Mutex 구현</p>
  * 스레드 생성 이후 각 스레드는 값을 1씩 증가 시키는 작업을 수행 <br/>
  */
 public class MutexMain2 {

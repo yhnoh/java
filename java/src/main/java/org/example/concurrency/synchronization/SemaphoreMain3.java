@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
+/**
+ * <p>java.util.concurrent.Semaphore를 활용한 세마포어 예제</p>
+ */
 public class SemaphoreMain3 {
 
 
@@ -46,13 +49,13 @@ public class SemaphoreMain3 {
             try {
                 semaphore.acquire();
                 Thread.sleep(1000);
-                System.out.println("[" + Thread.currentThread().getName() + "]" + " 소비자 작업 시작: " + buffer.poll() + ", acquire permit = " + semaphore.availablePermits());
+                System.out.println("[" + Thread.currentThread().getName() + "]" + " 소비자 DB I/O 작업 수헹: " + buffer.poll() + ", acquire permit = " + semaphore.availablePermits());
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } finally {
                 semaphore.release();
-                System.out.println("[" + Thread.currentThread().getName() + "]" + " 소비자 작업 완료, release permit = " + semaphore.availablePermits());
+                System.out.println("[" + Thread.currentThread().getName() + "]" + " 소비자 DB I/O 작업 완료, release permit = " + semaphore.availablePermits());
             }
         }
     }
