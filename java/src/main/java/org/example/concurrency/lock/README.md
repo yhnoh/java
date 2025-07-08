@@ -2,8 +2,8 @@
 - `java.util.concurrent.locks` 패키지는 `synchronized` 키워드를 이용한 암묵적 동기화와 달리 ***명시적인 동기화 방법***이다.
   - 명시적이라는 의미는 개발자가 직접 ***락을 획득하고 해제하는 과정을 작성하고 제어***한다.
 - `synchronized` 키워드와 매우 유사하게 작동되지만, `synchronized`의 한계점을 보완하고 좀 더 유연하게 사용할 수 있다.
-  - ***타임아웃 설정 가능***
-  - ***인터럽트 가능***  
+  - ***락 획득에 대한 시도 및 대기 시간 설정 가능***
+  - ***인터럽트 가능***
   - 스레드의 공정성을 보장할 수 있는 방법 제공
   - 모니터락의 매커니즘 활용 가능 (Mutex + Condition Variable)하며, 하나의 Lock 객체에 여러 개의 Condition 객체 생성 가능
   - 
@@ -36,6 +36,53 @@ public static class Counter {
 }
 ```
 > [Lock 사용 예제](./LockMain1.java)
+
+## java.util.concurrent.locks 특징
+
+### 락 획득에 대한 시도 및 대기 시간 설정 가능
+- `Lock` 인터페이스는 `tryLock()` 메서드를 제공하여 ***락을 획득할 수 있는지 시도할 수 있다.***
+- 만약 락을 이미 획득하고 있어 스레드가 락을 획득하지 못하는 경우, `tryLock()` 메서드는 즉시 `false`를 반환한다. 또한 `tryLock(long timeout, TimeUnit unit)` 메서드를 사용하여 지정된 시간 동안 락을 획득할 수 있는지 시도할 수 있다.
+  - `synchronized` 키워드의 경우 이미 선점하고 있는 락이 있는 경우 락이 해제되기 전까지 다른 스레드가 락을 획득하기 위하여 대기해야 한다.
+  - 만약 락을 획득한 스레드가 데드락이 발생할거나 어떠한 문제로 인하여 락을 해제하지 못하는 경우, 다른 스레드는 락을 획득하지 못하여 다른 작업을 수행할 수 없다. 이는 시스템 전체의 성능을 저하시킬 수 있다.
+
+#### tryLock() 사용 예제
+```java
+private static class Task {
+
+    private final Lock lock = new ReentrantLock();
+
+    public void execute(int executionMillis) throws InterruptedException {
+        int lockTimeoutMillis = 1000;
+        // 지정 시간 동안 락 획득 시도
+        boolean isAcquiredLock = lock.tryLock(lockTimeoutMillis, TimeUnit.MILLISECONDS);
+        try {
+            if (isAcquiredLock) {
+                log.info("작업 처리중... 총 소요 시간 {} ms", executionMillis);
+                sleep(executionMillis);
+            } else {
+                log.info("락 획득 실패로 인한 작업 취소");
+            }
+        } finally {
+            if (isAcquiredLock) {
+                lock.unlock();
+                log.info("작업 완료");
+            }
+        }
+    }
+}
+```
+- 위 예제에서는 락 획득에 대한 시도를 1초 동안 시도하고, 만약 락을 획득하지 못한다면 작업이 취소되는 예제이다.
+```text
+executionMillis: 2000 일 경우
+Thread-1: 락 획득 성공 및 2000ms 동안 작업 수행
+Thread-2: 락 획득 시도하지만 Thread-1이 락을 획득하고 있어 대기
+Thread-2: 1000ms 동안 락 획득 시도하였지만 실패하여 작업 취소
+Thread-1: 작업 완료 후 락 해제
+```
+
+> [tryLock() 사용 예제](./LockMain2.java)
+
+## 인터럽트 가능
 
 
 ### java.util.concurrent.locks.Condition
