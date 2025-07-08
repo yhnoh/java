@@ -39,6 +39,7 @@ public class ReadWriteLockMain1 {
         }
 
         writerThread.start();
+        sleep(100);
         for (Thread readerThread : readerThreads) {
             readerThread.start();
         }
@@ -47,7 +48,6 @@ public class ReadWriteLockMain1 {
         for (Thread readerThread : readerThreads) {
             readerThread.join();
         }
-
     }
 
     public static class Post {
@@ -55,19 +55,19 @@ public class ReadWriteLockMain1 {
         private String content = "";
         private final Object lock = new Object();
 
-        public synchronized String read() {
+        public String read() {
             synchronized (lock) {
                 return content;
             }
         }
 
-        public synchronized void write(String content) throws InterruptedException {
+        public void write(String content) throws InterruptedException {
             // 글 작성 이후 5초 동안 대기
             synchronized (lock) {
                 this.content += content;
-                sleep(5000); // 글 작성 후 5초 대기
-//                lock.wait(10000);
+                sleep(5000); // 5초 대기
             }
         }
+
     }
 }

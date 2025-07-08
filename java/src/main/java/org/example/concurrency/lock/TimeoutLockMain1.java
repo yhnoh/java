@@ -1,4 +1,6 @@
 package org.example.concurrency.lock;
 
-public class LockMain2 {
+public class TimeoutLockMain1 {
+
+
 }

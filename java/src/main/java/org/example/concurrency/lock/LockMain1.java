@@ -5,49 +5,39 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.lang.Thread.sleep;
+
 /**
- * <p>java.util.concurrent.locks 패키지를 활요한 동기화</p>
+ * <p>java.util.concurrent.locks 패키지를 활용한 동기화</p>
  */
 public class LockMain1 {
 
     public static void main(String[] args) throws InterruptedException {
+
         Counter counter = new Counter();
 
-        List<Thread> incrementThreads = new ArrayList<>();
-        List<Thread> decrementThreads = new ArrayList<>();
-        int threadCount = 100;
-        for (int i = 0; i < threadCount; i++) {
-            Thread increamentThread = new Thread(() -> {
+        List<Thread> threads = new ArrayList<>();
+        // 100개의 스레드 생성 및
+        for (int i = 0; i < 100; i++) {
+            Thread thread = new Thread(() -> {
                 try {
-                    Thread.sleep(10); // 10ms 대기
+                    sleep(10); // 10ms 대기
                     counter.increment();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             });
-            incrementThreads.add(increamentThread);
-
-            Thread decrementThread = new Thread(() -> {
-                try {
-                    Thread.sleep(10);
-                    counter.decrement();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            decrementThreads.add(decrementThread);
+            threads.add(thread);
         }
 
-        for (int i = 0; i < 100; i++) {
-            incrementThreads.get(i).start();
-            decrementThreads.get(i).start();
+        for (Thread thread : threads) {
+            thread.start();
         }
 
-
-        for (int i = 0; i < 100; i++) {
-            incrementThreads.get(i).join();
-            decrementThreads.get(i).join();
+        for (Thread thread : threads) {
+            thread.join();
         }
+
 
         System.out.println("value = " + counter.getValue());
     }
@@ -57,24 +47,17 @@ public class LockMain1 {
         private int value;
         private final Lock lock = new ReentrantLock();
 
-        public void increment() throws InterruptedException {
+        public void increment() {
+            // 락 획득
             lock.lock();
             try {
                 value++;
             } finally {
+                // 락 해제
                 lock.unlock();
             }
         }
 
-        public void decrement() {
-
-            lock.lock();
-            try {
-                value--;
-            } finally {
-                lock.unlock();
-            }
-        }
 
         public int getValue() {
             return value;

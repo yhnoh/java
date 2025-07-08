@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.lang.Thread.sleep;
 
-public class ReadWriteLockMain2 {
-    private static final Logger log = LoggerFactory.getLogger(ReadWriteLockMain2.class);
+public class ReadWriteLockMain3 {
+    private static final Logger log = LoggerFactory.getLogger(ReadWriteLockMain3.class);
 
     public static void main(String[] args) throws InterruptedException {
         Post post = new Post();
@@ -55,27 +55,27 @@ public class ReadWriteLockMain2 {
     public static class Post {
 
         private String content = "";
-        private final ReentrantLock lock = new ReentrantLock();
-//        private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-//        private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+        private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
 
         public String read() {
-            lock.lock();
+            readLock.lock();
             try {
                 return content;
             } finally {
-                lock.unlock();
+                readLock.unlock();
             }
         }
 
         public void write(String content) throws InterruptedException {
             // 글 작성 이후 5초 동안 대기
-            lock.tryLock();
+            writeLock.tryLock();
             try {
                 this.content += content;
                 sleep(5000); // 글 작성 후 5초 대기
             } finally {
-                lock.unlock();
+                writeLock.unlock();
             }
         }
     }
