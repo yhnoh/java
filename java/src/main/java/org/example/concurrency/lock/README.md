@@ -3,7 +3,7 @@
   - 명시적이라는 의미는 개발자가 직접 ***락을 획득하고 해제하는 과정을 작성하고 제어***한다.
 - `synchronized` 키워드와 매우 유사하게 작동되지만, `synchronized`의 한계점을 보완하고 좀 더 유연하게 사용할 수 있다.
   - ***락 획득에 대한 시도 및 대기 시간 설정 가능***
-  - ***인터럽트 가능***
+  - ***락 획득에 대한 인터럽트 가능***
   - 스레드의 공정성을 보장할 수 있는 방법 제공
   - 모니터락의 매커니즘 활용 가능 (Mutex + Condition Variable)하며, 하나의 Lock 객체에 여러 개의 Condition 객체 생성 가능
   - 
@@ -80,10 +80,71 @@ Thread-2: 1000ms 동안 락 획득 시도하였지만 실패하여 작업 취소
 Thread-1: 작업 완료 후 락 해제
 ```
 
-> [tryLock() 사용 예제](./LockMain2.java)
+> [tryLock() 사용 예제](./TryLockMain1.java)
 
-## 인터럽트 가능
+### 락 획득에 대한 인터럽트 가능
+- `Lock` 인터페이스는 락을 획득을 시도하는 스레드를 대상으로 인터럽트를 발생시킬 수 있는 `lockInterruptibly(), tryLock(long timeout, TimeUnit unit)` 메서드를 제공한다.
+- 만약 락을 이미 획득하고 있어 스레드가 락을 획득하지 못하고 대기 중인 경우, 해당 스레드를 인터럽트하면 `InterruptedException` 예외가 발생하며 개발자가 의도한 동작을 수행할 수 있다.
+  - 락 획득 대시 시간 설정과 비슷한 이유로 락 획득 시도시 무한정 대기하는 것을 방지하여 스레드가 다른 작업을 수행할 수 있도록 한다.
 
+#### lockInterruptibly() 사용 예제 
+
+```java
+public static class WaitingInterrupter implements Runnable {
+
+    private final List<Thread> threads;
+
+    public WaitingInterrupter(List<Thread> threads) {
+        this.threads = threads;
+    }
+
+    @Override
+    public void run() {
+
+        threads.forEach(thread -> {
+            log.info("state = " + thread.getState());
+        });
+
+        threads.stream()
+                .filter(thread -> thread.getState().equals(Thread.State.WAITING))
+                .forEach(Thread::interrupt);
+    }
+}
+
+
+private static class Task {
+
+    private final Lock lock = new ReentrantLock();
+    private final long startTimeMills = System.currentTimeMillis();
+
+    public void execute(int executionMillis) throws InterruptedException {
+        // 락 획득 시도 진행, 락 획득 도중 인터럽트 발생시 InterruptedException 예외 발생
+        lock.lockInterruptibly();
+        try {
+            log.info("작업 처리중... 총 소요 시간 {} ms", executionMillis);
+            while (true) {
+                long endTimeMills = System.currentTimeMillis();
+                if (endTimeMills - startTimeMills > executionMillis) {
+                    break;
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+        log.info("작업 완료");
+    }
+}
+```
+- 위 예제는 하나의 스레드가 락을 획득하고 작업을 수행하는 동안, 락 획득을 시도하며 대기 중엔 스레드를 인터럽트 시키는 예제이다.
+```text
+Thread-1: 락 획득 성공 및 작업 수행
+Thread-2: 락 획득 시도 및 대기 중
+WaitingInterrupter Thread: 대기 중인 스레드 인터럽트
+Thread-2: 인터럽트 발생으로 InterruptedException 예외 발생 및 작업 취소
+Thread-1: 작업 완료 후 락 해제
+```
+
+> [lockInterruptibly() 사용 예제](./InterruptLockMain1.java.java)
 
 ### java.util.concurrent.locks.Condition
 > [Java Docs Tutorial > Lock](https://docs.oracle.com/javase/tutorial/essential/concurrency/newlocks.html)
