@@ -38,7 +38,7 @@ public static class Counter {
 
 ## java.util.concurrent.locks 특징
 - `java.util.concurrent.locks` 패키지는 `synchronized` 키워드와 유사하게 동작하지만, ***명시적인 락 획득과 해제 및 유연한 동기화 방법을 제공***한다.
-- `java.util.concurrent.locks`의 특징을 알아보는 것과 동시에 `synchronized` 키워드의 한계점에 대해서도 알아보자.
+- `java.util.concurrent.locks`의 특징을 알아보는 것과 동시에 `synchronized` 키워드와 비교하며 `synchronized`의 한계점에 대해서도 알아보자.
 
 ### 락 획득에 대한 시도 및 대기 시간 설정 가능
 - `Lock` 인터페이스는 `tryLock()` 메서드를 제공하여 ***락을 획득할 수 있는지 시도할 수 있다.***
@@ -211,7 +211,17 @@ public static class Buffer<T> {
 - 하나의 대기 집합만을 사용하기 때문에 생산자와 소비자가 `notifyAll()`를 호출할 때마다 ***생산자와 소비자 둘중 어떤 스레드가 깨워질지 예측할 수 없으며, 불필요한 대기와 깨어남이 발생할 수 있다.***
   - 버퍼가 가득찾을 경우 대기중이던 생산자 스레드가 락 획득 시도시 다시 대기 상태로 빠진다. 
   - 버퍼가 비어있을 경우 대기중이던 소비자 스레드가 락 획득 시도시 다시 대기 상태로 빠진다.
-- 이러한 ***비효율성을 해결하기 위해서는 모든 스레드를 깨우는 것이 아닌, 생산자 스레드는 대기중인 소비자 스레드를 깨우고 소비자 스레드는 대기중인 생산자 스레드를 깨우는 방식으로 구현***해야한다.
+```text
+대기중인 모든 스레드가 깨어남
+락 획득을 위한 경쟁이 발생
+락 획득 이후 조건에 의해 다시 대기 상태로 빠짐
+락 획득을 위한 경쟁이 발생
+락 획득 이후 조건에 의해 다시 대기 상태로 빠짐
+....
+....
+```
+
+- 이러한 비효율성을 해결하기 위해서는 모든 스레드를 깨우는 것이 아닌, ***생산자 스레드는 대기중인 소비자 스레드를 깨우고 소비자 스레드는 대기중인 생산자 스레드를 깨우는 방식으로 구현***해야한다.
 
 #### 다중 조건 변수 활용
 - `java.util.concurrent.locks.Condition` 인터페이스를 사용하면 ***다중 조건 변수(여러개의 대기 집합)를 사용할 수 있다.***
@@ -298,6 +308,13 @@ public static class Buffer<T> {
 ### 스레드의 공정성을 보장할 수 있는 방법 제공 
 
 
+## Lock 구현체
+
+### ReentrantLock
+
+### ReentrantReadWriteLock
+
+### StempedLock
 
 
 > [Java Docs Tutorial > Lock](https://docs.oracle.com/javase/tutorial/essential/concurrency/newlocks.html) <br/>

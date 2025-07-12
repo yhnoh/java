@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.lang.Thread.sleep;
 
@@ -18,9 +19,9 @@ public class ReadWriteLockMain2 {
         // 글 작성 스레드
         Thread writerThread = new Thread(() -> {
             try {
-                log.info("[" + Thread.currentThread().getName() + "]" + " 글 쓰기 요청");
-                post.write("Hello, World!");
-                log.info("[" + Thread.currentThread().getName() + "]" + " 글 쓰기 완료");
+                log.info("글 쓰기 요청");
+                post.write(" After Hello, World!!");
+                log.info("글 쓰기 완료");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -30,53 +31,55 @@ public class ReadWriteLockMain2 {
         List<Thread> readerThreads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             Thread readerThread = new Thread(() -> {
-                log.info("[" + Thread.currentThread().getName() + "]" + "  글 읽기 요청");
+                log.info("글 읽기 요청");
                 String content = post.read();
-                log.info("[" + Thread.currentThread().getName() + "]" + " 글 읽기 완료 = " + content);
-
+                log.info("글 읽기 완료: {}", content);
             });
             readerThreads.add(readerThread);
         }
-
-        writerThread.start();
-        sleep(100);
 
         for (Thread readerThread : readerThreads) {
             readerThread.start();
         }
 
-        writerThread.join();
+        sleep(500);
+        writerThread.start();
+
         for (Thread readerThread : readerThreads) {
             readerThread.join();
         }
 
+        writerThread.join();
+
     }
+
 
     public static class Post {
 
-        private String content = "";
-        private final ReentrantLock lock = new ReentrantLock();
-//        private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-//        private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+        private String content = "Hello, World!!";
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private final Lock readLock = lock.readLock();
+        private final Lock writeLock = lock.writeLock();
 
         public String read() {
-            lock.lock();
             try {
+                readLock.lock();
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                }
+
                 return content;
             } finally {
-                lock.unlock();
+                readLock.unlock();
             }
         }
 
         public void write(String content) throws InterruptedException {
-            // 글 작성 이후 5초 동안 대기
-            lock.tryLock();
-            try {
-                this.content += content;
-                sleep(5000); // 글 작성 후 5초 대기
-            } finally {
-                lock.unlock();
-            }
+            writeLock.lock();
+            this.content += content;
+            sleep(500);
+            writeLock.unlock();
         }
     }
 }

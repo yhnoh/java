@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.Thread.sleep;
 
@@ -17,10 +18,9 @@ public class ReadWriteLockMain1 {
         // 글 작성 스레드
         Thread writerThread = new Thread(() -> {
             try {
-                log.info("[" + Thread.currentThread().getName() + "]" + " 글 쓰기 요청");
-                post.write("Hello, World!");
-                log.info("[" + Thread.currentThread().getName() + "]" + " 글 쓰기 완료");
-//                System.out.println("[" + Thread.currentThread().getName() + "]" + " 글 쓰기 완료");
+                log.info("글 쓰기 요청");
+                post.write(" After Hello, World!!");
+                log.info("글 쓰기 완료");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -30,44 +30,51 @@ public class ReadWriteLockMain1 {
         List<Thread> readerThreads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             Thread readerThread = new Thread(() -> {
-                log.info("[" + Thread.currentThread().getName() + "]" + "  글 읽기 요청");
+                log.info("글 읽기 요청");
                 String content = post.read();
-                log.info("[" + Thread.currentThread().getName() + "]" + " 글 읽기 완료 = " + content);
-
+                log.info("글 읽기 완료: {}", content);
             });
             readerThreads.add(readerThread);
         }
 
-        writerThread.start();
-        sleep(100);
         for (Thread readerThread : readerThreads) {
             readerThread.start();
         }
 
-        writerThread.join();
+        sleep(500);
+        writerThread.start();
+
         for (Thread readerThread : readerThreads) {
             readerThread.join();
         }
+
+        writerThread.join();
     }
 
     public static class Post {
 
-        private String content = "";
-        private final Object lock = new Object();
+        private String content = "Hello, World!!";
+        private final ReentrantLock lock = new ReentrantLock();
 
         public String read() {
-            synchronized (lock) {
+            try {
+                lock.lock();
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                }
+
                 return content;
+            } finally {
+                lock.unlock();
             }
         }
 
         public void write(String content) throws InterruptedException {
-            // 글 작성 이후 5초 동안 대기
-            synchronized (lock) {
-                this.content += content;
-                sleep(5000); // 5초 대기
-            }
+            lock.lock();
+            this.content += content;
+            sleep(500);
+            lock.unlock();
         }
-
     }
 }
