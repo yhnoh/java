@@ -5,8 +5,7 @@
   - ***락 획득에 대한 시도 및 대기 시간 설정 가능***
   - ***락 획득에 대한 인터럽트 가능***
   - 모니터락의 매커니즘 활용 가능 (Mutex + Condition Variable)하며 `synchronized` 키워드와 달리 ***다중 조건 변수 사용 가능***
-  - 스레드의 공정성을 보장할 수 있는 방법 제공
-  - 
+  - ***스레드의 공정성을 보장할 수 있는 방법 제공***
 
 ### java.util.concurrent.locks 사용
 - `synchronized` 키워드와 달리 `Lock` 인터페이스의 구현체 사용하여 명시적으로 락을 획득하고 해제한다.
@@ -38,6 +37,8 @@ public static class Counter {
 > [Lock 사용 예제](./LockMain1.java)
 
 ## java.util.concurrent.locks 특징
+- `java.util.concurrent.locks` 패키지는 `synchronized` 키워드와 유사하게 동작하지만, ***명시적인 락 획득과 해제 및 유연한 동기화 방법을 제공***한다.
+- `java.util.concurrent.locks`의 특징을 알아보는 것과 동시에 `synchronized` 키워드의 한계점에 대해서도 알아보자.
 
 ### 락 획득에 대한 시도 및 대기 시간 설정 가능
 - `Lock` 인터페이스는 `tryLock()` 메서드를 제공하여 ***락을 획득할 수 있는지 시도할 수 있다.***
@@ -203,7 +204,7 @@ public static class Buffer<T> {
     }
 }
 ```
-> [단인 조건 변수의 한계](./ConditionMain1.java)
+> [단일 조건 변수의 한계 예제](./ConditionMain1.java)
 - 해당 예제는 생산자-소비자 문제를 `synchronized` 키워드를 사용하여 구현한 예제이다.
 - `produce()` 메서드는 버퍼가 가득 찾을 경우 `wait()` 메서드를 호출하여 대기하고, 아닐 경우 `notifyAll()` 메서드를 호출하여 대기 중인 스레드를 깨운다.
 - `consume()` 메서드는 버퍼가 비어있을 경우 `wait()` 메서드를 호출하여 대기하고, 아닐 경우 `notifyAll()` 메서드를 호출하여 대기 중인 스레드를 깨운다.
@@ -291,11 +292,13 @@ public static class Buffer<T> {
     }
 }
 ```
-[다중 조건 변수 활용](./ConditionMain2.java)
+[다중 조건 변수 활용 예제](./ConditionMain2.java)
 
 
-### java.util.concurrent.locks.Condition
-> [Java Docs Tutorial > Lock](https://docs.oracle.com/javase/tutorial/essential/concurrency/newlocks.html)
+### 스레드의 공정성을 보장할 수 있는 방법 제공 
 
 
-> https://www.baeldung.com/java-concurrent-locks
+
+
+> [Java Docs Tutorial > Lock](https://docs.oracle.com/javase/tutorial/essential/concurrency/newlocks.html) <br/>
+> [Baeldung > Guide to java.util.concurrent.Locks](https://www.baeldung.com/java-concurrent-locks)
