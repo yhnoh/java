@@ -5,7 +5,6 @@
   - ***락 획득에 대한 시도 및 대기 시간 설정 가능***
   - ***락 획득에 대한 인터럽트 가능***
   - 모니터락의 매커니즘 활용 가능 (Mutex + Condition Variable)하며 `synchronized` 키워드와 달리 ***다중 조건 변수 사용 가능***
-  - ***스레드의 공정성을 보장할 수 있는 방법 제공***
 
 ### java.util.concurrent.locks 사용
 - `synchronized` 키워드와 달리 `Lock` 인터페이스의 구현체 사용하여 명시적으로 락을 획득하고 해제한다.
@@ -305,16 +304,27 @@ public static class Buffer<T> {
 [다중 조건 변수 활용 예제](./ConditionMain2.java)
 
 
-### 스레드의 공정성을 보장할 수 있는 방법 제공 
 
 
 ## Lock 구현체
 
 ### ReentrantLock
+- `ReentrantLock`은 `synchronized` 키워드와 유사하게 동작하는 락 구현체로써 `java.util.concurrent.locks`의 특징을 가지고 있으며 추가적인 기능을 제공한다.
+  - 동일한 스레드가 여러 번 락을 획득할 수 있는 재진입(reentrant) 기능을 제공한다. `synchronized` 키워드도 재진입 기능을 제공한다.
+    - 만약 재진입성을 제공하지 않는다면 동일한 스레드가 락 해제를 하지 않은 상태에서 다시 락을 획득하려 할때 데드락이 발생할 수 있다.
+  - 공정성(fairness) 옵션을 제공하여, 대기 중인 스레드가 공정하게 락을 획득할 수 있도록 한다. 이를 통해서 스레드 기아를 방지할 수 있다.
 
 ### ReentrantReadWriteLock
+- `ReentrantReadWriteLock`은 `ReadLock`과 `WriteLock`을 제공하여 읽기 작업과 쓰기 작업을 분리하여 동기화할 수 있는 락 구현체이다.
+  - `WriteLock`: 하나의 스레드가 `WriteLock`을 획득하면 다른 스레드는 `ReadLock`과 `WriteLock`을 획득할 수 없다.
+    - 즉, `WriteLock`을 획득한 스레드가 작업을 수행하는 동안 다른 스레드는 해당 리소스에 접근할 수 없다. 
+  - `ReadLock`: 여러 스레드가 `ReadLock`을 획득할 수 있으며, 하나의 스레드가 `WriteLock`을 획득한 경우에는 `ReadLock`을 획득할 수 없다.
+    - 즉, `ReadLock`을 획득한 스레드가 작업을 수행하는 동안 다른 스레드는 해당 리소스에 접근할 수 있다.
+- 읽기 작업이 빈번하고 쓰기 작업이 드물지만 데이터 동기화가 필요한 경우에 유용하게 사용될 수 있다.
+  - 시스템 설정 정보
+  - 데이터 캐싱
 
-### StempedLock
+### StampedLock
 
 
 > [Java Docs Tutorial > Lock](https://docs.oracle.com/javase/tutorial/essential/concurrency/newlocks.html) <br/>
