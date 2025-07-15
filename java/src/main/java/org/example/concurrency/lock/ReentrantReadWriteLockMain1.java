@@ -5,119 +5,78 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * <p>ReentrantReadWriteLock ReadLock 예제</p>
+ * 읽기 잠금 획득시 다른 스레드는 읽기 잠금을 획득할 수 있지만, 쓰기 잠금은 획득할 수 없는 예제 <br/><br/>
+ * <p>가정</p>
+ * <ul>
+ *     <li>읽기 잠금 획득 이후 5초간 작업 수행</li>
+ *     <li>쓰기 잠금 획득 이후 5초간 작업 수행</li>
+ *     <li>읽기 스레드를 실행한 이후, 쓰기 스레드 실행</li>
+ * </ul>
+ */
 public class ReentrantReadWriteLockMain1 {
     private static final Logger log = LoggerFactory.getLogger(ReentrantReadWriteLockMain1.class);
 
     public static void main(String[] args) throws InterruptedException {
         Post post = new Post();
 
-        Thread writerThread = new Thread(new Writer(post));
-        Thread readerThread = new Thread(new Reader(post));
-
-        writerThread.start();
-        readerThread.start();
-
-        writerThread.join();
-        readerThread.join();
-    }
-
-    public static class Writer implements Runnable {
-
-        private final Post post;
-
-        public Writer(Post post) {
-            this.post = post;
+        List<Thread> readThreads = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            Thread readThread = new Thread(() -> post.read());
+            readThreads.add(readThread);
         }
 
-        @Override
-        public void run() {
-            while (true) {
-                // 글 작성 스레드
-                Thread writerThread = new Thread(() -> {
-                    try {
-                        log.info("글 쓰기 요청");
-                        post.write("Hello, World!!");
-                        log.info("글 쓰기 완료");
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+        for (Thread readThread : readThreads) {
+            readThread.start();
+        }
 
-                writerThread.start();
-                try {
-                    writerThread.join();
-                } catch (InterruptedException e) {
-                }
-            }
+        sleep(1000); // 읽기 스레드가 먼저 시작되도록 잠시 대기
+        Thread writeThread = new Thread(() -> post.write("Hello, World!!"));
+        writeThread.start();
+
+        for (Thread readThread : readThreads) {
+            readThread.join();
         }
     }
 
-    public static class Reader implements Runnable {
-
-        private final Post post;
-
-        public Reader(Post post) {
-            this.post = post;
-        }
-
-        @Override
-        public void run() {
-
-            while (true) {
-                // 글 읽기 스레드
-                List<Thread> readerThreads = new ArrayList<>();
-                for (int i = 0; i < 10; i++) {
-                    Thread readerThread = new Thread(() -> {
-                        log.info("글 읽기 요청");
-                        String content = post.read();
-                        log.info("글 읽기 완료: {}", content);
-                    });
-                    readerThreads.add(readerThread);
-                }
-
-                for (Thread readerThread : readerThreads) {
-                    readerThread.start();
-                }
-
-                for (Thread readerThread : readerThreads) {
-                    try {
-                        readerThread.join();
-                    } catch (InterruptedException e) {
-
-                    }
-                }
-            }
-        }
-    }
-
-    public static class Post {
+    private static class Post {
 
         private String content = "Hello, World!!";
-        private final ReentrantLock lock = new ReentrantLock();
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private final Lock readLock = lock.readLock();
+        private final Lock writeLock = lock.writeLock();
 
         public String read() {
             try {
-                lock.lock();
+                readLock.lock();
+                log.info("읽기 잠금 획득");
                 try {
-                    sleep(1000);
+                    sleep(5000);
                 } catch (InterruptedException e) {
                 }
 
                 return content;
             } finally {
-                lock.unlock();
+                readLock.unlock();
             }
         }
 
-        public void write(String content) throws InterruptedException {
-            lock.lock();
+        public void write(String content) {
+            writeLock.lock();
+            log.info("쓰기 잠금 획득");
             this.content += content;
-            sleep(2000);
-            lock.unlock();
+            try {
+                sleep(5000);
+            } catch (InterruptedException e) {
+
+            }
+            writeLock.unlock();
         }
     }
 }

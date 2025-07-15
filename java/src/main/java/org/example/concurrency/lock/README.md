@@ -312,20 +312,39 @@ public static class Buffer<T> {
 - `ReentrantLock`은 `synchronized` 키워드와 유사하게 동작하는 락 구현체로써 `java.util.concurrent.locks`의 특징을 가지고 있으며 추가적인 기능을 제공한다.
   - 동일한 스레드가 여러 번 락을 획득할 수 있는 재진입(reentrant) 기능을 제공한다. `synchronized` 키워드도 재진입 기능을 제공한다.
     - 만약 재진입성을 제공하지 않는다면 동일한 스레드가 락 해제를 하지 않은 상태에서 다시 락을 획득하려 할때 데드락이 발생할 수 있다.
-  - 공정성(fairness) 옵션을 제공하여, 대기 중인 스레드가 공정하게 락을 획득할 수 있도록 한다. 이를 통해서 스레드 기아를 방지할 수 있다.
+  - ***공정성(fairness) 옵션을 제공하여, 대기 중인 스레드가 공정하게 락을 획득할 수 있도록 한다.*** 이를 통해서 스레드 기아를 방지할 수 있다.
 
 ### ReentrantReadWriteLock
-- `ReentrantReadWriteLock`은 `ReadLock`과 `WriteLock`을 제공하여 읽기 작업과 쓰기 작업을 분리하여 동기화할 수 있는 락 구현체이다.
+- `ReentrantReadWriteLock`은 `ReentrantLock`과 유사하게 동작하며, ***`ReadLock`과 `WriteLock`을 제공하여 읽기 작업과 쓰기 작업을 분리하여 동기화할 수 있는 락 구현체***이다.
   - `WriteLock`: 하나의 스레드가 `WriteLock`을 획득하면 다른 스레드는 `ReadLock`과 `WriteLock`을 획득할 수 없다.
-    - 즉, `WriteLock`을 획득한 스레드가 작업을 수행하는 동안 다른 스레드는 해당 리소스에 접근할 수 없다. 
-  - `ReadLock`: 여러 스레드가 `ReadLock`을 획득할 수 있으며, 하나의 스레드가 `WriteLock`을 획득한 경우에는 `ReadLock`을 획득할 수 없다.
-    - 즉, `ReadLock`을 획득한 스레드가 작업을 수행하는 동안 다른 스레드는 해당 리소스에 접근할 수 있다.
+  - `ReadLock`: 여러 스레드가 `ReadLock`을 획득할 수 있으며, `WriteLock`은 획득할 수 없다.
 - 읽기 작업이 빈번하고 쓰기 작업이 드물지만 데이터 동기화가 필요한 경우에 유용하게 사용될 수 있다.
   - 시스템 설정 정보
   - 데이터 캐싱
 
+> [ReentrantReadWriteLock ReadLock 예제](./ReentrantReadWriteLockMain1.java) <br/>
+> [ReentrantReadWriteLock WriteLock 예제](./ReentrantReadWriteLockMain2.java)
+
 ### StampedLock
+- java 버전 8부터 지원되는 `StampedLock`은 `ReentrantReadWriteLock` 처럼 `ReadLock`과 `WriteLock`을 제공하며, ***낙관적 읽기(Optimistic Reading) 모드를 지원***한다.
+  - `ReentrantReadWriteLock`의 경우 `WriteLock`을 획득하게 되면 `ReadLock, WriteLock`을 획득할 수 없으며, `ReadLock`을 획득한 상태이면 `WriteLock`을 획득할 수 없다.
+  - 이는 읽기 작업이 오래 걸리는 경우에 쓰기 작업이 대기 하게되거나 쓰기 작업이 오래 걸리는 경우에는 읽기 작업이 대기하는 성는 저하를 발생시킬 수 있다.
+- `StampedLock`은 락 획드시 `long` 타입의 스탬프를 반환하게 되며, 해당 스탬프를 통해서만 락의 해제가 가능하다.
 
+> [Java Docs > StampedLock](https://docs.oracle.com/javase/8/docs/api/?java/util/concurrent/locks/StampedLock.html)
 
+#### 낙관적 읽기(Optimistic Reading) 모드 지원
+- `StampedLock`은 낙관적 읽기 모드를 지원하여, ***읽기 작업이 쓰기 락에 대하여 영향을 주지 않아 성능을 향상시킬 수 있다.***
+- 낙관적 읽기 모드에서는 `long tryOptimisticRead()` 메서드는 ***락을 획득하지 않고 읽기 작업을 수행***하며, 읽기 작업이 완료된 후에 `boolean validate(long stamp)`메서드를 호출하여 해당 **읽기 작업 도중 쓰기 작업이 발생했는지 확인**한다.
+- 때문에 만약 `validate()` 메서드가 `false`를 반환한다면, 읽기 작업 도중 쓰기 작업이 발생했음을 의미하며, 이 경우에는 `ReadLock`을 획득하여 다시 읽기 작업을 수행하거나, 재시도 로직 활용과 같은 후처리를 수행해야 한다.
+
+> [StampedLock 낙관적 락 모드 예제](./StampedLockMain1.java)
+
+#### 재진입성 불가
+- `StampedLock`은 `synchronized, ReentrantLock, ReentrantReadWriteLock`과 다르게 ***재진입성을 제공하지 않는다.*** 때문에 동일한 스레드가 `WriteLock`을 획득한 상태에서 다시 `WriteLock`을 획득하려 한다면 데드락이 발생할 수 있기 때문에 코드 작성시 유의해야한다.
+
+> [StampedLock 재진입성 불가 예제](./StampedLockMain1.java)
+
+## Reference
 > [Java Docs Tutorial > Lock](https://docs.oracle.com/javase/tutorial/essential/concurrency/newlocks.html) <br/>
 > [Baeldung > Guide to java.util.concurrent.Locks](https://www.baeldung.com/java-concurrent-locks)

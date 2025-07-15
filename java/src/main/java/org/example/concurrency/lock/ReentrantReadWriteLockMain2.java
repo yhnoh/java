@@ -10,96 +10,56 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * <p>ReentrantReadWriteLock WriteLock 예제</p>
+ * 쓰기 잠금 획득시 읽기 잠금 및 쓰기 잠금 획득을 획득할 수 없는 예제 <br/><br/>
+ * <p>가정</p>
+ * <ul>
+ *    <li>쓰기 잠금 획득 이후 5초간 작업 수행</li>
+ *    <li>읽기 잠금 획득 이후 5초간 작업 수행</li>
+ *    <li>쓰기 스레드를 실행한 이후, 읽기 스레드 실행</li>
+ * </ul>
+ */
 public class ReentrantReadWriteLockMain2 {
     private static final Logger log = LoggerFactory.getLogger(ReentrantReadWriteLockMain2.class);
 
     public static void main(String[] args) throws InterruptedException {
         Post post = new Post();
 
-        Thread writerThread = new Thread(new Writer(post));
-        Thread readerThread = new Thread(new Reader(post));
+        List<Thread> writeThreads = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            Thread writeThread = new Thread(() -> post.write("Hello, World!!"));
+            writeThreads.add(writeThread);
+        }
 
-        writerThread.start();
-        readerThread.start();
+        List<Thread> readThreads = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            Thread readThread = new Thread(() -> post.read());
+            readThreads.add(readThread);
+        }
 
-        writerThread.join();
-        readerThread.join();
+        for (Thread writeThread : writeThreads) {
+            writeThread.start();
+        }
+
+        sleep(1000); // 쓰기 스레드가 먼저 시작되도록 잠시 대기
+        for (Thread readThread : readThreads) {
+            readThread.start();
+        }
+
+        for (Thread writeThread : writeThreads) {
+            writeThread.join();
+        }
+
+        for (Thread readThread : readThreads) {
+            readThread.join();
+        }
 
     }
 
-    public static class Writer implements Runnable {
+    private static class Post {
 
-        private final Post post;
-
-        public Writer(Post post) {
-            this.post = post;
-        }
-
-        @Override
-        public void run() {
-            while (true) {
-                // 글 작성 스레드
-                Thread writerThread = new Thread(() -> {
-                    try {
-                        log.info("글 쓰기 요청");
-                        post.write("Hello, World!!");
-                        log.info("글 쓰기 완료");
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-                writerThread.start();
-                try {
-                    writerThread.join();
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-    }
-
-    public static class Reader implements Runnable {
-
-        private final Post post;
-
-        public Reader(Post post) {
-            this.post = post;
-        }
-
-        @Override
-        public void run() {
-
-            while (true) {
-                // 글 읽기 스레드
-                List<Thread> readerThreads = new ArrayList<>();
-                for (int i = 0; i < 10; i++) {
-                    Thread readerThread = new Thread(() -> {
-                        log.info("글 읽기 요청");
-                        String content = post.read();
-                        log.info("글 읽기 완료: {}", content);
-                    });
-                    readerThreads.add(readerThread);
-                }
-
-                for (Thread readerThread : readerThreads) {
-                    readerThread.start();
-                }
-
-                for (Thread readerThread : readerThreads) {
-                    try {
-                        readerThread.join();
-                    } catch (InterruptedException e) {
-
-                    }
-                }
-            }
-        }
-    }
-
-
-    public static class Post {
-
-        private String content = "Hello, World!!";
+        private String content;
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         private final Lock readLock = lock.readLock();
         private final Lock writeLock = lock.writeLock();
@@ -107,8 +67,9 @@ public class ReentrantReadWriteLockMain2 {
         public String read() {
             try {
                 readLock.lock();
+                log.info("읽기 잠금 획득");
                 try {
-                    sleep(1000);
+                    sleep(5000);
                 } catch (InterruptedException e) {
                 }
 
@@ -118,10 +79,15 @@ public class ReentrantReadWriteLockMain2 {
             }
         }
 
-        public void write(String content) throws InterruptedException {
+        public void write(String content) {
             writeLock.lock();
+            log.info("쓰기 잠금 획득");
             this.content += content;
-            sleep(2000);
+            try {
+                sleep(5000);
+            } catch (InterruptedException e) {
+
+            }
             writeLock.unlock();
         }
     }
