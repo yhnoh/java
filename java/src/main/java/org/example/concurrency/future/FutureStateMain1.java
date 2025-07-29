@@ -6,12 +6,13 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import static java.lang.Thread.sleep;
 
-public class FutureStateMain2 {
+public class FutureStateMain1 {
 
-    private static final Logger log = LoggerFactory.getLogger(FutureStateMain2.class);
+    private static final Logger log = LoggerFactory.getLogger(FutureStateMain1.class);
 
     public static void main(String[] args) {
 //        showDoneState();
@@ -64,6 +65,7 @@ public class FutureStateMain2 {
             log.info("showFailState() state = " + submit.state());
             while (submit.state() == Future.State.RUNNING) {
             }
+
             log.info("showFailState() state = " + submit.state());
             log.info("showFailState() isDone = " + submit.isDone());
             log.info("showFailState() isCancelled = " + submit.isCancelled());
@@ -74,24 +76,24 @@ public class FutureStateMain2 {
      * CANCEL 상태 확인
      */
     public static void showCancelState() {
-        try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
-            Future<?> submit = executor.submit(() -> {
-                try {
-                    log.info("작업 시작");
-                    sleep(1000);
-                    log.info("작업 완료");
-                } catch (InterruptedException e) {
-                }
-            });
 
-            log.info("showCancelState() state = " + submit.state());
-            while (submit.state() == Future.State.RUNNING) {
-                submit.cancel(false);
+        FutureTask<?> future = new FutureTask<>(() -> {
+            try {
+                log.info("작업 시작");
+                sleep(1000);
+                log.info("작업 완료");
+            } catch (InterruptedException e) {
             }
-            log.info("showCancelState() state = " + submit.state());
-            log.info("showCancelState() isDone = " + submit.isDone());
-            log.info("showCancelState() isCancelled = " + submit.isCancelled());
+        }, null);
+
+
+        log.info("showCancelState() state = " + future.state());
+        while (future.state() == Future.State.RUNNING) {
+            future.cancel(false);
         }
+        log.info("showCancelState() state = " + future.state());
+        log.info("showCancelState() isDone = " + future.isDone());
+        log.info("showCancelState() isCancelled = " + future.isCancelled());
     }
 
     /**

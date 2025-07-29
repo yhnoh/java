@@ -10,9 +10,9 @@ import java.util.concurrent.FutureTask;
 import static java.lang.Thread.sleep;
 
 
-public class FutureMain2 {
+public class FutureExceptionMain1 {
 
-    private static final Logger log = LoggerFactory.getLogger(FutureMain2.class);
+    private static final Logger log = LoggerFactory.getLogger(FutureExceptionMain1.class);
 
     public static void main(String[] args) {
 

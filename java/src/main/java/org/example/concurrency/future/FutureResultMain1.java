@@ -14,9 +14,9 @@ import static java.lang.Thread.sleep;
  * <p>Future 예제</p>
  * Callable을 사용하여 Future를 생성한 이후 작업의 결과물을 가져오는 예제 <br/>
  */
-public class FutureMain1 {
+public class FutureResultMain1 {
 
-    private static final Logger log = LoggerFactory.getLogger(FutureMain1.class);
+    private static final Logger log = LoggerFactory.getLogger(FutureResultMain1.class);
 
     public static void main(String[] args) {
 
