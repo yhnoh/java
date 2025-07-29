@@ -10,20 +10,16 @@ import java.util.concurrent.FutureTask;
 import static java.lang.Thread.sleep;
 
 
-/**
- * <p>Future 예제</p>
- * Callable을 사용하여 Future를 생성한 이후 작업의 결과물을 가져오는 예제 <br/>
- */
-public class FutureMain1 {
+public class FutureMain2 {
 
-    private static final Logger log = LoggerFactory.getLogger(FutureMain1.class);
+    private static final Logger log = LoggerFactory.getLogger(FutureMain2.class);
 
     public static void main(String[] args) {
 
         Callable<String> callable = () -> {
             log.info("작업 시작");
             sleep(1000);
-            return "작업 종료";
+            throw new IllegalStateException("작업 진행중 예외 발생");
         };
 
         FutureTask<String> future = new FutureTask<>(callable);
@@ -39,5 +35,4 @@ public class FutureMain1 {
 
         log.info("result = {}", result);
     }
-
 }
