@@ -14,10 +14,10 @@ public class FutureStateMain2 {
     private static final Logger log = LoggerFactory.getLogger(FutureStateMain2.class);
 
     public static void main(String[] args) {
-        showDoneState();
-        showFailState();
+//        showDoneState();
+//        showFailState();
         showCancelState();
-        showCancelStateAndInterrupt();
+//        showCancelStateAndInterrupt();
     }
 
 
@@ -77,7 +77,9 @@ public class FutureStateMain2 {
         try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
             Future<?> submit = executor.submit(() -> {
                 try {
+                    log.info("작업 시작");
                     sleep(1000);
+                    log.info("작업 완료");
                 } catch (InterruptedException e) {
                 }
             });
