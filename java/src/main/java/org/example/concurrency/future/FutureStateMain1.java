@@ -3,8 +3,6 @@ package org.example.concurrency.future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -15,9 +13,9 @@ public class FutureStateMain1 {
     private static final Logger log = LoggerFactory.getLogger(FutureStateMain1.class);
 
     public static void main(String[] args) {
-//        showDoneState();
+        showDoneState();
 //        showFailState();
-        showCancelState();
+//        showCancelState();
 //        showCancelStateAndInterrupt();
     }
 
@@ -27,49 +25,52 @@ public class FutureStateMain1 {
      */
     public static void showDoneState() {
 
-        try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
-
-            Future<?> submit = executor.submit(() -> {
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            log.info("showDoneState() state = " + submit.state());
-            while (submit.state() == Future.State.RUNNING) {
-
+        FutureTask<?> future = new FutureTask<>(() -> {
+            try {
+                log.info("작업 시작");
+                sleep(1000);
+                log.info("작업 완료");
+            } catch (InterruptedException e) {
             }
-            log.info("showDoneState() state = " + submit.state());
-            log.info("showDoneState() isDone = " + submit.isDone());
-            log.info("showDoneState() isCancelled = " + submit.isCancelled());
+        }, null);
+
+        Thread thread = new Thread(future);
+        thread.start();
+
+        log.info("showDoneState() state = " + future.state());
+        while (future.state() == Future.State.RUNNING) {
+
         }
+        log.info("showDoneState() state = " + future.state());
+        log.info("showDoneState() isDone = " + future.isDone());
+        log.info("showDoneState() isCancelled = " + future.isCancelled());
+
     }
 
     /**
      * FAIL 상태 확인
      */
     public static void showFailState() {
-        try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
-            Future<?> submit = executor.submit(() -> {
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
 
-                throw new IllegalArgumentException();
-            });
-
-            log.info("showFailState() state = " + submit.state());
-            while (submit.state() == Future.State.RUNNING) {
+        FutureTask<?> future = new FutureTask<>(() -> {
+            try {
+                log.info("작업 시작");
+                sleep(1000);
+                throw new RuntimeException("작업 진행중 예외 발생");
+            } catch (InterruptedException e) {
             }
+        }, null);
 
-            log.info("showFailState() state = " + submit.state());
-            log.info("showFailState() isDone = " + submit.isDone());
-            log.info("showFailState() isCancelled = " + submit.isCancelled());
+        Thread thread = new Thread(future);
+        thread.start();
+
+        log.info("showFailState() state = " + future.state());
+        while (future.state() == Future.State.RUNNING) {
         }
+
+        log.info("showFailState() state = " + future.state());
+        log.info("showFailState() isDone = " + future.isDone());
+        log.info("showFailState() isCancelled = " + future.isCancelled());
     }
 
     /**
@@ -86,6 +87,8 @@ public class FutureStateMain1 {
             }
         }, null);
 
+        Thread thread = new Thread(future);
+        thread.start();
 
         log.info("showCancelState() state = " + future.state());
         while (future.state() == Future.State.RUNNING) {
@@ -100,23 +103,28 @@ public class FutureStateMain1 {
      * CANCEL 상태 확인 및 인터럽트 발생 확인
      */
     public static void showCancelStateAndInterrupt() {
-        try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
-            Future<?> submit = executor.submit(() -> {
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    log.info("인터럽트 발생");
-                }
-            });
 
-            log.info("showCancelStateAndInterrupt() state = " + submit.state());
-            while (submit.state() == Future.State.RUNNING) {
-                submit.cancel(true);
+        FutureTask<?> future = new FutureTask<>(() -> {
+            try {
+                log.info("작업 시작");
+                sleep(1000);
+                log.info("작업 완료");
+            } catch (InterruptedException e) {
+                log.info("작업 도중 인터럽트 발생");
             }
-            log.info("showCancelStateAndInterrupt() state = " + submit.state());
-            log.info("showCancelStateAndInterrupt() isDone = " + submit.isDone());
-            log.info("showCancelStateAndInterrupt() isCancelled = " + submit.isCancelled());
+        }, null);
+
+        Thread thread = new Thread(future);
+        thread.start();
+
+        log.info("showCancelStateAndInterrupt() state = " + future.state());
+        while (future.state() == Future.State.RUNNING) {
+            future.cancel(true);
         }
+        log.info("showCancelStateAndInterrupt() state = " + future.state());
+        log.info("showCancelStateAndInterrupt() isDone = " + future.isDone());
+        log.info("showCancelStateAndInterrupt() isCancelled = " + future.isCancelled());
+
     }
 
 }
