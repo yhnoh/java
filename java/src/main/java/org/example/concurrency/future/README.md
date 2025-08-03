@@ -52,18 +52,59 @@
 
 > [작업 상태 확인 예제](./FutureExceptionMain1.java)
 
-### ForkJoinTask
 
 ### CompletableFuture
 - `CompletableFuture`는 자바 1.8이후부터 지원하는 구현체로써 `Future`를 확장하여 비동기 작업을 좀 더 유연하게 처리할 수 있는 기능을 제공한다. 
-- `Futrue`의 경우 비동기 작업의 반환된 결과를 처리하거나 예외를 처리하기 위해서는 `get()`을 호출하여 스레드를 블록킹한 상태에서만 처리가 가능하지만, `CompletableFuture`를 활용하면 이러한 단점을 해결할 수 있다.
-  - 작업의 결과 수행 이후 추가 로직 수행
+- `Futrue`의 경우 비동기 작업의 반환된 결과를 후 처리하거나 예외를 처리하기 위해서는 `get()`을 호출하여 스레드를 블록킹한 상태에서만 처리가 가능하지만, `CompletableFuture`를 활용하면 이러한 단점을 해결할 수 있다.
+  - 작업의 결과를 반환받아 추가 로직 수행
   - 여러 작업을 조합하여 처리
   - 작업의 완료 또는 예외에 따른 후처리 가능
 
+#### 작업의 결과를 반환받아 추가 로직 수행
+- `Future`의 경우에는 `get()` 메서드를 호출하여 작업이 완료될때까지 호출 스레드를 블록킹한 이후 추가 로직을 수행해야하지만, `CompletableFuture`는 호출 스레드를 블록킹하지 않고 메서드 체이닝을 통해 추가 로직을 수행할 수 있는 메서드를 제공한다.
+  - `thenApply(Function<? super T,? extends U> fn)`: 작업의 결과를 받아서 추가 로직을 수행, 새로운 결과를 반환
+  - `thenAccept(Consumer<? super T> action)`: 작업의 결과를 받아서 추가 로직을 수행, 새로운 결과를 반환하지 않음
+  - `thenRun(Runnable action)`: 작업의 결과를 무시하고 추가 로직을 수행, 새로운 결과를 반환하지 않음
+- `thenApply(Function<? super T,? extends U> fn)` 예제
+  - 해당 예제를 통해서 비동기 작업의 결과를 반환한 이후 추가 로직을 수행, 이후 새로운 결과를 반환하는 과정을 확인할 수 있다.
+  ```java
+    CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업 시작");
+        return 1;
+    }).thenApply(i -> {
+        log.info("추가 로직 수행");
+        return i + 1;
+    });
+  ```
+- `thenAccept(Consumer<? super T> action)` 예제
+  - 해당 예제를 통해서 비동기 작업의 결과를 반환한 이후 추가 로직을 수행, 이후 새로운 결과를 반환하지 않는 과정을 확인할 수 있다.
+  ```java
+    CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업 시작");
+        return 1;
+    }).thenAccept(i -> {
+        log.info("추가 로직 수행 i = {} ", i + 1);
+    });
+  ``` 
+- `thenRun(Runnable action)` 예제
+  - 해당 예제를 통해서 비동기 작업의 결과를 무시하고 추가 로직을 수행, 이후 새로운 결과를 반환하지 않는 과정을 확인할 수 있다.
+  ```java
+    CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업 시작");
+        return 1;
+    }).thenRun(() -> {
+        log.info("추가 로직 수행");
+    });
+  ```
+
+> [작업의 결과를 반환받아 추가 로직 수행 예제](../../../../../../test/java/org/example/concurrency/future/CompletableFutureAfterLogicMain1Test.java)
+
+#### 여러 작업을 조합하여 처리
+- `CompletableFuture`는 여러 비동기 작업을 조합하여 처리할 수 있는 메서드를 제공하며 작업의 결과를 조합하여 새로운 값을 반환하거나, 
 
 
-
+> [Java Docs > Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) <br/>
+> [Java Docs > CompletableFuture](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html) <br/>
 > [Baeldung > Guide to java.util.concurrent.Future](https://www.baeldung.com/java-future) <br/>
 > [MangKyu's Diary:티스토리 > Callable, Future 및 Executors, Executor, ExecutorService, ScheduledExecutorService에 대한 이해 및 사용법](https://mangkyu.tistory.com/259) <br/>
 > [MangKyu's Diary:티스토리 > CompletableFuture에 대한 이해 및 사용법](https://mangkyu.tistory.com/263) <br/>
