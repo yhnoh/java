@@ -255,6 +255,10 @@
 > [여러 작업을 조합하여 처리 예제](../../../../../../test/java/org/example/concurrency/future/CompletableFutureAfterLogicMain1Test.java)
 
 
+#### 작업의 완료 또는 예외에 따른 후처리 가능
+
+
+## References
 > [Java Docs > Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) <br/>
 > [Java Docs > CompletableFuture](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html) <br/>
 > [Baeldung > Guide to java.util.concurrent.Future](https://www.baeldung.com/java-future) <br/>
