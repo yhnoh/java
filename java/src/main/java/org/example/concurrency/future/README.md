@@ -65,8 +65,8 @@
   - `thenApply(Function<? super T,? extends U> fn)`: 작업의 결과를 받아서 추가 로직을 수행, 새로운 결과를 반환
   - `thenAccept(Consumer<? super T> action)`: 작업의 결과를 받아서 추가 로직을 수행, 새로운 결과를 반환하지 않음
   - `thenRun(Runnable action)`: 작업의 결과를 무시하고 추가 로직을 수행, 새로운 결과를 반환하지 않음
-- `thenApply(Function<? super T,? extends U> fn)` 예제
-  - 해당 예제를 통해서 비동기 작업의 결과를 반환한 이후 추가 로직을 수행, 이후 새로운 결과를 반환하는 과정을 확인할 수 있다.
+- `thenApply(Function<? super T,? extends U> fn)`
+  - `thenApply` 메서드를 활용하면 비동기 작업의 결과를 반환한 이후 추가 로직을 수행하고, 이후 새로운 결과를 반환할 수 있다.
   ```java
     CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
         log.info("작업 시작");
@@ -76,8 +76,8 @@
         return i + 1;
     });
   ```
-- `thenAccept(Consumer<? super T> action)` 예제
-  - 해당 예제를 통해서 비동기 작업의 결과를 반환한 이후 추가 로직을 수행, 이후 새로운 결과를 반환하지 않는 과정을 확인할 수 있다.
+- `thenAccept(Consumer<? super T> action)`
+  - `thenAccept` 메서드를 활용하면 비동기 작업의 결과를 반환한 이후 추가 로직을 수행하지만 새로운 결과를 반환하지는 않는다.
   ```java
     CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
         log.info("작업 시작");
@@ -86,8 +86,8 @@
         log.info("추가 로직 수행 i = {} ", i + 1);
     });
   ``` 
-- `thenRun(Runnable action)` 예제
-  - 해당 예제를 통해서 비동기 작업의 결과를 무시하고 추가 로직을 수행, 이후 새로운 결과를 반환하지 않는 과정을 확인할 수 있다.
+- `thenRun(Runnable action)`
+  - `thenRun` 메서드를 활용하면 비동기 작업의 결과를 무시하고 추가 로직을 수행할 수 있으며, 새로운 결과를 반환하지 않는다.
   ```java
     CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
         log.info("작업 시작");
@@ -100,15 +100,15 @@
 > [작업의 결과를 반환받아 추가 로직 수행 예제](../../../../../../test/java/org/example/concurrency/future/CompletableFutureAfterLogicMain1Test.java)
 
 #### 여러 작업을 조합하여 처리
-- `CompletableFuture`는 여러 비동기 작업을 조합하여 처리할 수 있는 메서드를 제공하며 작업의 결과를 조합하여 새로운 값을 반환하거나, 여러 작업 중 일부 또는 모든 작업이 완료된 이후에 후처리를 수행할 수 있다.
+- `Future`의 경우 여러 비동기 작업을 조합하여 처리하기 위해서는 여러개 생성된 `Future` 객체를 각각 `get()` 메서드를 호출하여 결과를 취합하거나 조합하여 사용할 수 있지만, `CompletableFuture`는 이러한 작업을 좀 더 간편하게 처리할 수 있는 메서드를 제공한다. 
   - `thenCombine(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)`: 두개의 작업의 반환값을 조합하여 새로운 결과를 반환
-  - `thenCompose(Function<? super T,? extends CompletionStage<U>> fn)`: 이전 작업의 결과를 사용하여 새로운 작업을 생성하고, 그 결과를 반환
+  - `thenCompose(Function<? super T,? extends CompletionStage<U>> fn)`: 새로운 작업에서 이전 작업의 결과를 사용하여 로직 수행 이후 결과를 반환
   - `acceptEither(CompletionStage<? extends T> other, Consumer<? super T> action)`: 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리 수행, 새로운 결과를 반환하지 않음
   - `applyToEither(CompletionStage<? extends T> other, Function<? super T, U> fn)`: 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리 수행, 새로운 결과를 반환
   - `anyOf(CompletableFuture<?>... cfs)`: 여러 작업 중 먼저 완료된 작업의 결과를 반환
   - `allOf(CompletableFuture<?>... cfs)`: 여러 작업이 모두 완료될 때까지 기다린 후, 새로운 결과를 반환하지 않음
-- `thenCombine(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)` 예제
-  - 해당 예제를 통해서 두개의 비동기 작업의 결과를 조합하여 새로운 결과를 반환하는 과정을 확인할 수 있다.
+- `thenCombine(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)`
+  - `thenCombine` 메서드를 활용하면 두개의 비동기 작업의 결과를 조합하여 새로운 결과를 반환할 수 있다.
   ```java
     CompletableFuture<Integer> future1 = CompletableFuture.supplyAsync(() -> {
         log.info("작업1 시작");
@@ -121,8 +121,8 @@
         return i1 + i2;
     });
   ```
-- `thenCompose(Function<? super T,? extends CompletionStage<U>> fn)` 예제
-  - 해당 예제를 통해서 이전 작업의 결과를 사용하여 새로운 작업을 생성하고, 그 결과를 반환하는 과정을 확인할 수 있다.
+- `thenCompose(Function<? super T,? extends CompletionStage<U>> fn)`
+  - `thenCompose` 메서드를 활용하면 새로운 작업에서 이전 작업의 결과를 사용하여 로직 수행 이후 결과를 반환할 수 있다.
   ```java
     CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
         log.info("작업1 시작");
@@ -132,8 +132,8 @@
         return String.valueOf(i);
     }));
   ```
-- `acceptEither(CompletionStage<? extends T> other, Consumer<? super T> action)` 예제
-  - 해당 예제를 통해서 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리 수행한 이후 새로운 결과를 반환하지 않은 것을 확인할 수 있다.
+- `acceptEither(CompletionStage<? extends T> other, Consumer<? super T> action)`
+  - `acceptEither` 메서드를 활용하면 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리를 수행할 수 있다. 새로운 결과를 반환하지 않는다.
   ```java
     CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
         log.info("작업1 시작");
@@ -159,7 +159,7 @@
 
   ```
 - `applyToEither(CompletionStage<? extends T> other, Function<? super T, U> fn)`
-  - 해당 예제를 통해서 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리를 수행한 이후 새로운 결과를 반환하는 것을 확인할 수 있다.
+  - `applyToEither` 메서드를 활용하면 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리를 수행한 이후 새로운 결과를 반환할 수 있다.
   ```java
     CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
       log.info("작업1 시작");
@@ -186,8 +186,8 @@
         return i * 2;
     });
   ```
-- `anyOf(CompletableFuture<?>... cfs)` 예제
-  - 해당 예제를 통해서 여러 작업 중 먼저 완료된 작업의 결과를 반환하는 것을 확인할 수 있다.
+- `anyOf(CompletableFuture<?>... cfs)`
+  - `anyOf` 메서드를 활용하면 여러 작업 중 먼저 완료된 작업의 결과를 반환받은 다음 후처리를 수행할 수 있다.
   ```java
     CompletableFuture<Integer> future1 = CompletableFuture.supplyAsync(() -> {
         log.info("작업1 시작");
@@ -221,8 +221,8 @@
 
     anyFuture.join();
   ```
-- `allOf(CompletableFuture<?>... cfs)` 예제
-  - 해당 예제를 통해서 모든 작업이 완료될 때까지 기다린 후 새로운 결과를 반환하지 않는 것을 확인할 수 있다.
+- `allOf(CompletableFuture<?>... cfs)`
+  - `allOf` 메서드를 활용하면 여러 작업이 모두 완료될 때까지 기다린 후 결과를 반환받지는 못하지만 메서드 체이닝을 통해서 추가 작업을 수행할 수 있다.
   ```java
     CompletableFuture<Integer> future1 = CompletableFuture.supplyAsync(() -> {
         log.info("작업1 시작");
@@ -316,6 +316,7 @@
     }).thenApply(i -> i * 2);
   ```
 
+> [작업의 완료 또는 예외에 따른 후처리 가능 예제](../../../../../../test/java/org/example/concurrency/future/CompletableFutureAfterLogicMain1Test.java)
 
 ## References
 > [Java Docs > Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) <br/>
