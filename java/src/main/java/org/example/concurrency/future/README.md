@@ -256,6 +256,65 @@
 
 
 #### 작업의 완료 또는 예외에 따른 후처리 가능
+- `Future`의 경우 작업이 정상적으로 완료되거나 예외가 발생하였을 경우 후처리를 위해서는 `get()` 메서드를 사용하여 호출 스레드를 블록킹한 이후 반환된 결과값(성공/예외)을 통해서 후처리를 수행해야하지만, `CompletableFuture`는 작업이 완료되거나 예외가 발생한 이후에 후처리를 수행할 수 있는 메서드를 제공한다.
+  - `handle(BiFunction<? super T, ? super Throwable, ? extends U> fn)`: 작업이 완료되거나 예외가 발생한 이후에 후처리를 수행하고, 새로운 결과를 반환
+  - `exceptionally(Function<Throwable, ? extends T> fn)`: 작업 중에 예외가 발생한 경우에만 후처리를 수행하고, 새로운 결과를 반환
+  - `whenComplete(BiConsumer<? super T, ? super Throwable> action)`: 작업이 완료되거나 예외가 발생한 이후에 후처리를 수행, 새로운 결과를 반환하지 않음
+
+- `handle(BiFunction<? super T, ? super Throwable, ? extends U> fn)` 
+  - handle 메서드를 사용하면 작업이 성공적으로 완료되었을 때와 예외가 발생하였을 때 모두 핸들링하여 새로운 결과를 반환할 수 있다.
+  - 이후 메서드 체이닝을 통해서 추가 로직을 수행할 수 있다.
+  ```java
+    CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업 시작");
+        if (isThrowException) {
+            throw new RuntimeException("작업 도중 예외 발생");
+        }
+        return 1;
+    }).handle((i, throwable) -> {
+        if (throwable == null) {
+            log.info("handle no exception : result = {}, throwable = {}", i, "No Exception");
+            return i;
+        }
+        log.error("throw exception", throwable);
+        return 2;
+    }).thenApply(i -> i * 2);
+  ```
+- `exceptionally(Function<Throwable, ? extends T> fn)`
+  - exceptionally 메서드를 사용하면 작업 중에 예외가 발생한 경우에만 핸들링하여 새로운 결과를 반환할 수 있다.
+  - 이후 메서드 체이닝을 통해서 추가 로직을 수행할 수 있다.
+  ```java
+    CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업 시작");
+        if (isThrowException) {
+            throw new RuntimeException("작업 도중 예외 발생");
+        }
+        return 1;
+    }).exceptionally((throwable) -> {
+        log.error("throw exception", throwable);
+        return 2;
+    }).thenApply(i -> i * 2);
+  ```
+- `whenComplete(BiConsumer<? super T, ? super Throwable> action)`
+  - `whenComplete` 메서드를 사용하면 작업이 완료되거나 예외가 발생한 이후에 대한 상황을 핸들링할 수 있지만, 새로운 결과를 반환하지 않는다.
+  - 때문에 이후 메서드 체이닝에 영향을 주지 않으며, 만약 예외가 발생할 경우에는 `CompletionException`이 발생하며 이후 작업을 수행할 수 없게 된다.
+  - `handle`과 `exceptionally`와는 다르게 예외가 발생하였을 경우 `whenComplete`는 `Future`의 상태를 `SUCCESS`로 변경하지 않기 때문에, 이후 작업을 수행할 수 없게 된다.
+  ```java
+    CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업 시작");
+        if (isThrowException) {
+            throw new RuntimeException("작업 도중 예외 발생");
+        }
+        return 1;
+    }).whenComplete((i, throwable) -> {
+        if (throwable == null) {
+            log.info("whenComplete no exception : result = {}, throwable = {}", i, "No Exception");
+            return;
+        }
+        
+        log.error("throw exception", throwable);
+    }).thenApply(i -> i * 2);
+  ```
 
 
 ## References
