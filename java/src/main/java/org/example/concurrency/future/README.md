@@ -100,7 +100,159 @@
 > [작업의 결과를 반환받아 추가 로직 수행 예제](../../../../../../test/java/org/example/concurrency/future/CompletableFutureAfterLogicMain1Test.java)
 
 #### 여러 작업을 조합하여 처리
-- `CompletableFuture`는 여러 비동기 작업을 조합하여 처리할 수 있는 메서드를 제공하며 작업의 결과를 조합하여 새로운 값을 반환하거나, 
+- `CompletableFuture`는 여러 비동기 작업을 조합하여 처리할 수 있는 메서드를 제공하며 작업의 결과를 조합하여 새로운 값을 반환하거나, 여러 작업 중 일부 또는 모든 작업이 완료된 이후에 후처리를 수행할 수 있다.
+  - `thenCombine(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)`: 두개의 작업의 반환값을 조합하여 새로운 결과를 반환
+  - `thenCompose(Function<? super T,? extends CompletionStage<U>> fn)`: 이전 작업의 결과를 사용하여 새로운 작업을 생성하고, 그 결과를 반환
+  - `acceptEither(CompletionStage<? extends T> other, Consumer<? super T> action)`: 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리 수행, 새로운 결과를 반환하지 않음
+  - `applyToEither(CompletionStage<? extends T> other, Function<? super T, U> fn)`: 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리 수행, 새로운 결과를 반환
+  - `anyOf(CompletableFuture<?>... cfs)`: 여러 작업 중 먼저 완료된 작업의 결과를 반환
+  - `allOf(CompletableFuture<?>... cfs)`: 여러 작업이 모두 완료될 때까지 기다린 후, 새로운 결과를 반환하지 않음
+- `thenCombine(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)` 예제
+  - 해당 예제를 통해서 두개의 비동기 작업의 결과를 조합하여 새로운 결과를 반환하는 과정을 확인할 수 있다.
+  ```java
+    CompletableFuture<Integer> future1 = CompletableFuture.supplyAsync(() -> {
+        log.info("작업1 시작");
+        return 1;
+    }).thenCombine(CompletableFuture.supplyAsync(() -> {
+        log.info("작업2 시작");
+        return 2;
+    }), (i1, i2) -> {
+        log.info("작업1 결과 = {}, 작업2 결과 = {}", i1, i2);
+        return i1 + i2;
+    });
+  ```
+- `thenCompose(Function<? super T,? extends CompletionStage<U>> fn)` 예제
+  - 해당 예제를 통해서 이전 작업의 결과를 사용하여 새로운 작업을 생성하고, 그 결과를 반환하는 과정을 확인할 수 있다.
+  ```java
+    CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업1 시작");
+        return 1;
+    }).thenCompose(i -> CompletableFuture.supplyAsync(() -> {
+        log.info("작업2 시작");
+        return String.valueOf(i);
+    }));
+  ```
+- `acceptEither(CompletionStage<? extends T> other, Consumer<? super T> action)` 예제
+  - 해당 예제를 통해서 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리 수행한 이후 새로운 결과를 반환하지 않은 것을 확인할 수 있다.
+  ```java
+    CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+        log.info("작업1 시작");
+        try {
+            sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        int result = 1;
+        log.info("작업1 완료, 결과 = {}", result);
+        return result;
+    }).acceptEither(CompletableFuture.supplyAsync(() -> {
+        log.info("작업2 시작");
+        try {
+            sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        int result = 2;
+        log.info("작업2 완료, 결과 = {}", result);
+        return result;
+    }), i -> log.info("작업1 또는 작업2 결과 = {}", i));
+
+  ```
+- `applyToEither(CompletionStage<? extends T> other, Function<? super T, U> fn)`
+  - 해당 예제를 통해서 두개의 작업 중 먼저 완료된 작업의 결과를 사용하여 후처리를 수행한 이후 새로운 결과를 반환하는 것을 확인할 수 있다.
+  ```java
+    CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+      log.info("작업1 시작");
+      try {
+          sleep(1000);
+      } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+      }
+      int result = 1;
+      log.info("작업1 완료, 결과 = {}", result);
+      return result;
+    }).applyToEither(CompletableFuture.supplyAsync(() -> {
+      log.info("작업2 시작");
+      try {
+          sleep(2000);
+      } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+      }
+      int result = 2;
+      log.info("작업2 완료, 결과 = {}", result);
+      return result;
+    }), i -> {
+        log.info("작업1 또는 작업2 결과 = {}", i);
+        return i * 2;
+    });
+  ```
+- `anyOf(CompletableFuture<?>... cfs)` 예제
+  - 해당 예제를 통해서 여러 작업 중 먼저 완료된 작업의 결과를 반환하는 것을 확인할 수 있다.
+  ```java
+    CompletableFuture<Integer> future1 = CompletableFuture.supplyAsync(() -> {
+        log.info("작업1 시작");
+        try {
+            sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        int result = 1;
+        log.info("작업1 완료, 결과 = {}", result);
+        return result;
+    });
+
+    CompletableFuture<Integer> future2 = CompletableFuture.supplyAsync(() -> {
+        log.info("작업2 시작");
+        try {
+            sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        int result = 2;
+        log.info("작업2 완료, 결과 = {}", result);
+        return result;
+    });
+
+    CompletableFuture<Object> anyFuture = CompletableFuture.anyOf(future1, future2);
+
+    anyFuture.thenAccept(i -> {
+        log.info("먼저 완료된 작업의 결과 = {}", i);
+    });
+
+    anyFuture.join();
+  ```
+- `allOf(CompletableFuture<?>... cfs)` 예제
+  - 해당 예제를 통해서 모든 작업이 완료될 때까지 기다린 후 새로운 결과를 반환하지 않는 것을 확인할 수 있다.
+  ```java
+    CompletableFuture<Integer> future1 = CompletableFuture.supplyAsync(() -> {
+        log.info("작업1 시작");
+        try {
+            sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        int result = 1;
+        log.info("작업1 완료, 결과 = {}", result);
+        return result;
+    });
+
+    CompletableFuture<Integer> future2 = CompletableFuture.supplyAsync(() -> {
+        log.info("작업2 시작");
+        try {
+            sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        int result = 2;
+        log.info("작업2 완료, 결과 = {}", result);
+        return result;
+    });
+
+    CompletableFuture<Void> allFuture = CompletableFuture.allOf(future1, future2);
+
+    allFuture.join();
+  ```
+> [여러 작업을 조합하여 처리 예제](../../../../../../test/java/org/example/concurrency/future/CompletableFutureAfterLogicMain1Test.java)
 
 
 > [Java Docs > Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) <br/>
