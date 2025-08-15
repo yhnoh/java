@@ -7,14 +7,111 @@
 - Java 1.5부터 제공되는 `java.util.concurrent` 패키지의 `Executor`는 이러한 문제를 해결하기 위한 고수준 비동기 API를 제공한다.
 
 ## 스레드 풀
-- 현대의 웹 애플맄에션에서 서버의 역할은 동시에 많은 클라이언트의 요청을 처리하여 빠른 응답을 제공하는 것이다.
-## Executor
-- `Executor`는 비동기 작업을 실행하기 위한 인터페이스로써 직접 스레드를 생성하거나 관리하지 않고도 비동기 작업을 수행할 수 있다.
-- 
-- 현대의 애플리케이션에서 서버의 역할은 동시에 많은 클라이언트의 요청을 처리하는 것이다. 때문에 아래의 문제를 해결하기 위한 무언가가 필요하다
-  - 클라이언트 요청 마다 스레드를 생성하는 것은 비효율적이기 때문에 스레드의 재사용성이 필요하다.
-  - 클라이언트 요청 마다 스레드를 생성할 경우 서버 자원이 고갈될 수 있기 때문에 스레드의 갯수 관리가 필요한다.
-- 이를 해결하기 위하여 스레드 풀(Thread Pool)이라는 개념이 등장했으며 
+- 현대의 웹 애플리케이션에서 서버의 역할은 동시에 많은 클라이언트의 요청을 처리하여 빠른 응답을 제공하는 것이다.
+- 만약 사용자의 요청에 따라 매번 새로운 스레드를 생성한다면 아래와 같은 문제가 발생할 수 있다.
+  - 스레드 생성 비용으로 인한 성능 저하 발생
+  - 스레드 갯수 관리의 어려움으로 인한 서버 자원 고갈
+- 이러한 문제를 해결하기 위해서는 애플리케이션의 실행시점 부터 종료 시점까지 스레드를 관리할 수 있는 스레드 풀(Thread Pool)이 필요하다.
+  - 스레드 풀은 요청 시점 마다 스레드를 생성하는 것이 아닌, 미리 생성된 스레드를 재사용할 수 있다.
+  - 스레드 풀은 스레드의 갯수를 관리하여 서버 자원의 고갈을 방지할 수 있다.
+
+### 스레드 풀의 동작 방식
+
+![](./image/threadpool.png)
+- 스레드 풀의 
+
+- 클라이언트는 작업을 제출하면, 작업 큐에 저장한다.
+- 제출된 작업은 작업 큐에 저장한 후, 스레드 풀에 있는 스레드가 작업 큐에서 작업을 가져와 실행한다.
+- 스레드 풀에 있는 스레드는 
+- 스레드가 작업을 수행한 이후 스레드를 재사용하기 위하여 스레드를 종료시키지 않고 새로운 작업이 들어올때까지 대기한다.
+- 스레드는 작업이 완료된 이후에도 
+
+### 간단한 스레드 풀 구현해보기
+```java
+public class MyThreadPool {
+
+
+    private final BlockingQueue<Runnable> taskQueue;
+    private final List<Worker> workers = new ArrayList<>();
+    private boolean isShutdown = false;
+
+    public MyThreadPool(int corePoolSize, int taskSize) {
+        taskQueue = new LinkedBlockingQueue<>(taskSize);
+
+        // 스레드를 미리 생성한 이후 실행하여, Thread를 RUNNABLE 상태로 만들어 작업을 수행할 수 있도록 한다.
+        for (int i = 0; i < corePoolSize; i++) {
+            Worker worker = new Worker();
+            workers.add(worker);
+            worker.thread.start();
+        }
+
+    }
+
+    public void submit(Runnable task) {
+        if (task == null) {
+            throw new IllegalArgumentException("task cannot be null");
+        }
+
+        // BlockingQueue의 offer() 메서드는 큐가 가득 찼을 경우, 작업을 추가하지 않고 false를 반환
+        if (!taskQueue.offer(task)) {
+            throw new IllegalStateException("taskQueue is full");
+        }
+    }
+
+    public synchronized boolean isShutdown() {
+        return isShutdown;
+    }
+
+    // shutdown 메서드는 스레드 풀이 관리하고 있는 모든 스레드를 종료시키기 위한 메서드
+    public synchronized void shutdown() {
+        isShutdown = true;
+        for (Worker worker : workers) {
+            worker.shutdown();
+        }
+    }
+
+    class Worker implements Runnable {
+
+        private boolean isShutdown = false;
+        private final Thread thread = new Thread(this);
+
+        @Override
+        public void run() {
+            while (!isShutdown) {
+                Runnable task = null;
+                try {
+                    // BlockingQueue의 take() 메서드는 큐가 비어있을 경우, 작업이 추가될 때까지 대기한다.
+                    // shutdown() 메서드가 호출 되면, 작업이 추가될 때까지 대기하지 않는다.
+                    task = taskQueue.take();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
+                if (task != null) {
+                    task.run();
+                }
+            }
+        }
+
+        // shutdown 메서드는 Worker 스레드를 인터럽트 시켜 작업을 중지하기위한 메서드
+        public synchronized void shutdown() {
+            isShutdown = true;
+            thread.interrupt();
+        }
+    }
+}
+
+```
+
+
+## Java에서 제공하는 스레드풀
+- `Executor`는 Java 1.5부터 제공되는 인터페이스로, 대부분의 구현체들이 쓰레드의 생성과 관리를 위한 스레드풀을 제공한다.
+- 때문에 개발자가 직접 스레드풀을 구현할 필요 없이, `Executor` 인터페이스의 구현체를 사용하여 스레드풀을 쉽게 사용할 수 있다.
+
+### Executor 인터페이스
+- `Executor`는 작업을 실행하기 위한 단순한 인터페이스로, `Runnable` 객체를 실행하는 메서드인 `execute(Runnable command)`를 제공한다.
+- 때문에 
+### ExecutorService 인터페이스
   
 
 ### ExecutorService
@@ -23,4 +120,5 @@
 
 - `Executor`는 단순히 새로운 작업을 실행하기 위한 인터페이스로써, 
 > [The Java Tutorials > Executors](https://docs.oracle.com/javase/tutorial/essential/concurrency/executors.html)
-> []
+> [Baeldung > Introduction to Thread Pools in Java](https://www.baeldung.com/thread-pool-java-and-guava)
+> [Baeldung > A Guide to the Java ExecutorService](https://www.baeldung.com/java-executor-service-tutorial)
