@@ -109,16 +109,35 @@ public class MyThreadPool {
 - 클라이언트는 `submit(Runnable task)` 메서드를 통해 작업을 제출할 수 있으며, 해당 작업을 작업 큐에 추가한다. 만약 작업 큐가 가득 찼을 경우 예외가 발생한다.
 
 
+## Executor, ExecutorService, Executors
+- `Executor` 와 `ExecutorService`는 Java 1.5부터 제공되는 인터페이스로, 대부분의 구현체들이 쓰레드의 생성과 관리를 위한 스레드풀을 제공한다.
+  - 때문에 개발자가 스레드 풀을 직접 구현할 필요 없이, 해당 구현체를 사용하여 스레드 풀을 쉽게 사용할 수 있다.
+- `Executors` 클래스는 다양한 스레드 풀을 생성하기 위한 유틸리티 클래스로, `Executor`와 `ExecutorService`의 구현체를 생성하는 메서드를 제공한다.
 
-
-## Java에서 제공하는 스레드풀
-- `Executor`는 Java 1.5부터 제공되는 인터페이스로, 대부분의 구현체들이 쓰레드의 생성과 관리를 위한 스레드풀을 제공한다.
-- 때문에 개발자가 직접 스레드풀을 구현할 필요 없이, `Executor` 인터페이스의 구현체를 사용하여 스레드풀을 쉽게 사용할 수 있다.
-
-### Executor 인터페이스
+### Executor
 - `Executor`는 작업을 실행하기 위한 단순한 인터페이스로, `Runnable` 객체를 실행하는 메서드인 `execute(Runnable command)`를 제공한다.
-- 때문에 
-### ExecutorService 인터페이스
+
+### ExecutorService
+- `ExecutorService`는 `Executor`의 하위 인터페이스로, 제출된 작업을 비동기로 실행하고 관리하며, 작업의 종료를 관리할 수 있는 메서드를 제공한다.
+
+#### 제출된 작업을 비동기로 실행 및 관리
+- `ExecutorService`를 통해서 작업을 제출하게 되면 비동기로 실행되며, 작업의 결과를 `Future` 객체로 반환한다.
+  - `Future` 객체를 통해서 작업의 결과를 가져오거나, 작업의 상태를 확인하거나 관리할 수 있다.
+- `Future<T> submit(Callable<T> task);`
+  - 작업을 제출하고, 결과를 `Future` 객체로 반환한다.
+- `<T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException;`
+  - 여러 개의 작업을 제출하고, 가장 먼저 완료된 작업의 결과를 반환한다.
+- `<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException;`
+  - 여러 개의 작업을 제출하고, 모든 작업의 결과를 `Future` 객체로 반환한다.
+
+#### 작업의 종료 관리
+- `void shutdown();`
+- `List<Runnable> shutdownNow();`
+- `boolean isShutdown();`
+- `boolean isTerminated();`
+- `boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException;`
+
+
   
 
 ### ExecutorService
