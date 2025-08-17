@@ -9,13 +9,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * <p>간단한 스레드 풀 구현</p>
  * <p>
- * 스레드를 미리 생성하고, 작업 큐에 작업이 추가되면 해당 작업을 수행할 수 있도록 한다.
- * 작업 큐에 작업이 없으면 스레드를 종료 시키지 않고 대기 상태로 유지한다.
- * 스레드 풀을 종료할 때는 작업 큐에 작업이 없더라도 대기하지 않고 종료한다.
- * 이미 실행 중인 작업의 경우는 작업이 완료될때까지 수행한다.
+ * 스레드를 미리 생성하고, 작업 큐에 작업이 추가되면 해당 작업을 수행할 수 있도록 한다. <br/>
+ * 작업 큐에 작업이 없으면 스레드를 종료 시키지 않고 대기 상태로 유지한다. <br/>
+ * 스레드 풀을 종료할 때는 작업 큐에 작업이 없더라도 대기하지 않고 종료한다. <br/>
+ * 이미 실행 중인 작업의 경우는 작업이 완료될때까지 수행한다. <br/>
  */
 public class MyThreadPool {
-
 
     private final BlockingQueue<Runnable> taskQueue;
     private final List<Worker> workers = new ArrayList<>();
