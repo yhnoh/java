@@ -131,11 +131,22 @@ public class MyThreadPool {
   - 여러 개의 작업을 제출하고, 모든 작업의 결과를 `Future` 객체로 반환한다.
 
 #### 작업의 종료 관리
+
+
 - `void shutdown();`
+  - 해당 메서드를 호출한 이후에는 더이상 작업을 제출할 수 없다.
+  - 현재 실행 중이거나 대기 중인 작업이 완료된 이후 종료된다.
 - `List<Runnable> shutdownNow();`
+  - 해당 메서드를 호출한 이후에는 더이상 작업을 제출할 수 없으며, 대기중인 작업을 취소한다.
+  - 현재 실행 중인 작업의 스레드를 인터럽트 시켜 작업 중단을 시도한다.
+  - 대기 중인 작업 리스를 반환하여 어떻게 해당 작업을 처리할지 결정할 수 있다.
 - `boolean isShutdown();`
+  - `Executor`의 `shutdown(), shutdownNow()` 메서드가 호출되었는지 여부를 반환한다.
 - `boolean isTerminated();`
+  - `Executor`의 `shutdown(), shutdownNow()` 메서드가 호출된 이후, 모든 작업이 완료되었는지 여부를 반환한다.
 - `boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException;`
+  - `Executor`의 종료 요청 이후, 지정된 시간 만큼 호출 스레드를 대기 시킨다.
+  - 이후 모든 작업이 완료되었는지에 대한 여부를 반환한다.
 
 
   
