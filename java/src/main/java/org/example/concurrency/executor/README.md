@@ -177,9 +177,9 @@ public ThreadPoolExecutor(int corePoolSize,
 - workQueue 추가: `corePoolSize` 이상의 스레드가 실행 중인 경우, 작업은 `workQueue`에 추가 되어 대기하게 된다.
 - maximumPoolSize 확인: `workQueue`가 가득 차고 `corePoolSize` 만큼 스레드가 실행 중인 경우, `maximumPoolSize`를 확인하여 추가 스레드를 생성할 수 있는지 여부를 결정한다.
 - 작업 거부 정책: `maximumPoolSize`에 도달한 이후에도 작업이 제출되면, 설정된 작업 거부 정책에 따라 작업을 처리하게 된다.
-- 유휴 상태 확인: `keepAliveTime`이 설정되어 있는 경우, `corePoolSize` 이상의 스레드는 유휴 상태로 전환되어 종료될 수 있다.
+- 유휴 상태 전환: `keepAliveTime`이 설정되어 있는 경우, `corePoolSize` 이상의 스레드는 유휴 상태로 전환되어 종료될 수 있다.
 
-#### ThreadPool 사이즈 설정 및 확인
+#### ThreadPoolExecutor 사이즈 설정 및 확인
 
 ```java
 // corePoolSize: 1, maximumPoolSize: 2, workQueue: 1
@@ -209,6 +209,50 @@ pool size = 1, active threads = 1, queued tasks = 1, 작업1 진행중, 작업2 
 pool size = 2, active threads = 2, queued tasks = 1, 작업1 진행중, 작업2 진행중, 작업3 workQueue에 추가
 ....
 ```
+- 스레드 풀의 크기 설정은 각 시스템 자원에 따라 적재적소로 설정해야 자원을 효율적으로 사용할 수 있다.
+  - 만약 대기열의 크기를 크게 설정하고 풀 사이즈를 작게 설정하게 될 경우, 작업이 대기열에 쌓여 처리량이 낮아질 수 있다.
+  - 반대로 대기열의 크기를 작세 설정하고 풀 사이즈를 크게 설정하게 될 경우, 자원을 많이 소모하게 되며 작업이 거부될 수 있는 있다.
+
+> [ThreadPoolExecutor 사이즈 설정 및 확인](../../../../../../test/java/org/example/concurrency/executor/ThreadPoolExecutorMain1.java)
+
+#### ThreadPoolExecutor의 keepAliveTime 설정을 유휴 상태 전환
+- `ThreadPoolExecutor`의 `keepAliveTime`을 설정하여, `corePoolSize` 이상의 활성화 되어 있는 스레드를 유휴 상태로 전환할 수 있다.
+  - `keepAliveTime`이 끝나기 전에 새로운 작업이 들어오면, 해당 스레드는 유휴 상태로 전환되지 않고 계속 유지된다.
+  - `keepAliveTime`이 끝나고 새로운 작업이 들어오지 않으면, 해당 스레드는 종료된다.
+```java
+// corePoolSize: 1, maximumPoolSize: 2, workQueue: 1, keepAliveTime: 1초
+ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1,
+        2,
+        1L,
+        TimeUnit.SECONDS,
+        new LinkedBlockingQueue<>(1));
+
+threadPoolExecutor.submit(() -> {
+    // 작업1 시작...
+});
+
+threadPoolExecutor.submit(() -> {
+    // 작업2 시작...
+});
+
+threadPoolExecutor.submit(() -> {
+    // 작업3 시작...
+});
+```
+- 위 예시는 `corePoolSize`가 1, `maximumPoolSize`가 2, `workQueue`의 크기가 1, `keepAliveTime`이 1초인 `ThreadPoolExecutor`를 생성한 예시이다.
+```text
+pool size = 0, active threads = 0, queued tasks = 0, ThreadPoolExecutor 초기화
+pool size = 1, active threads = 1, queued tasks = 0, 작업1 진행중
+pool size = 1, active threads = 1, queued tasks = 1, 작업1 진행중, 작업2 workQueue에 추가
+pool size = 2, active threads = 2, queued tasks = 1, 작업1 진행중, 작업2 진행중, 작업3 workQueue에 추가
+pool size = 2, active threads = 2, queued tasks = 0, 작업1 작업 완료, 작업2 진행중, 작업3 진행중
+pool size = 2, active threads = 2, queued tasks = 0, 작업1 작업 완료, 작업2 진행중, 작업3 진행중
+pool size = 2, active threads = 1, queued tasks = 0, 작업1 작업 완료, 작업2 작업 완료, 작업3 진행중
+pool size = 1, active threads = 0, queued tasks = 0, 작업1 작업 완료, 작업2 작업 완료, 작업3 작업 완료, corePoolSize 이상의 스레드가 keepAliveTime(1초) 이후 유휴 상태로 전환
+```
+
+> [ThreadPoolExecutor의 keepAliveTime 설정을 유휴 상태 전환](../../../../../../test/java/org/example/concurrency/executor/ThreadPoolExecutorMain1.java)
+
 
 ### ScheduledThreadPoolExecutor
 
