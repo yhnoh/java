@@ -253,6 +253,15 @@ pool size = 1, active threads = 0, queued tasks = 0, 작업1 작업 완료, 작�
 
 > [ThreadPoolExecutor의 keepAliveTime 설정을 유휴 상태 전환](../../../../../../test/java/org/example/concurrency/executor/ThreadPoolExecutorMain1.java)
 
+#### ThreadPoolExecutor의 작업 거부 정책 설정
+- `ThreadPoolExecutor`는 현재 스레드 풀 내의 모든 스레드가 작업을 수행하고 작업 큐가 가득 찬 경우, 이후에 들어오는 작업에 대해서 작업 거부 정책을 설정할 수 있다.
+- 작업 거부 정책은 `RejectedExecutionHandler` 인터페이스를 구현하여 설정하여 직접 구현도 가능하고, 기본적으로 제공하는 구현체를 사용할 수 있다.
+  - `CallerRunsPolicy`: 작업이 거부되면 호출한 스레드가 작업을 직접 실행한다.
+  - `AbortPolicy`: 작업이 거부되면 `RejectedExecutionException` 예외를 발생시킨다.
+  - `DiscardPolicy`: 작업이 거부되면 해당 작업을 무시한다.
+  - `DiscardOldestPolicy`: 작업이 거부되면 가장 오래된 작업을 제거하고, 거부된 작업을 `execute()` 메서드를 통해 다시 시도한다.
+    - 이 정책은 작업 큐가 가득 찼을 때 가장 오래된 작업을 제거하고 새로운 작업을 추가하는 방식으로 동작한다.
+
 
 ### ScheduledThreadPoolExecutor
 
