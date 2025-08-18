@@ -148,8 +148,78 @@ public class MyThreadPool {
   - `Executor`의 종료 요청 이후, 지정된 시간 만큼 호출 스레드를 대기 시킨다.
   - 이후 모든 작업이 완료되었는지에 대한 여부를 반환한다.
 
+### ThreadPoolExecutor
+- `ThreadPoolExecutor`는 `ExecutorService`의 구현체로, 여러 스레드를 사용하여 작업을 병렬로 처리할때, 시스템 자원을 효율적으로 관리할 수 있는 기능을 제공한다.
+- `ExecutorService`의 구현체이므로 작업의 제출 및 관리, 종료뿐만 아니라 스레드의 갯수 제한, 작업 큐 설정, 작업 거부 정책 등을 설정할 수 있다.
+
+#### ThreadPoolExecutor 구성 요소
+```java
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime,
+                          TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory,
+                          RejectedExecutionHandler handler)
+```
+- `corePoolSize`: 스레드 풀 내에서 항상 유지되는 최소한의 스레드 수
+- `maximumPoolSize`: 스레드 풀이 가질 수 있는 최대 스레드 수
+- `keepAliveTime`: 스레드가 작업을 수행하지 않을 때 스레드가 유지되는 시간
+- `unit`: `keepAliveTime`의 시간 단위
+- `workQueue`: 작업을 저장하는 큐 (예: `SynchronousQueue`, `LinkedBlockingQueue`, `ArrayBlockingQueue` 등)
+- `threadFactory`: 스레드를 생성하는 팩토리 클래스
+- `handler`: 작업이 거부되었을 때의 처리 정책 (예: `AbortPolicy`, `CallerRunsPolicy`, `DiscardPolicy`, `DiscardOldestPolicy`)
+
+
+#### ThreadPoolExecutor의 동작 방식
+- 작업 요청: `submit()` 메서드르 통해서 작업을 제출하게 되면, `execute()` 메서드를 통해 작업 처리 여부를 결정하게 된다.
+- corePoolSize 확인: `corePoolSize` 이하의 스레드가 실행 중인 경우, 새로운 스레드를 생성하여 작업을 수행하게 된다.
+- workQueue 추가: `corePoolSize` 이상의 스레드가 실행 중인 경우, 작업은 `workQueue`에 추가 되어 대기하게 된다.
+- maximumPoolSize 확인: `workQueue`가 가득 차고 `corePoolSize` 만큼 스레드가 실행 중인 경우, `maximumPoolSize`를 확인하여 추가 스레드를 생성할 수 있는지 여부를 결정한다.
+- 작업 거부 정책: `maximumPoolSize`에 도달한 이후에도 작업이 제출되면, 설정된 작업 거부 정책에 따라 작업을 처리하게 된다.
+- 유휴 상태 확인: `keepAliveTime`이 설정되어 있는 경우, `corePoolSize` 이상의 스레드는 유휴 상태로 전환되어 종료될 수 있다.
+
+#### ThreadPool 사이즈 설정 및 확인
+
+```java
+// corePoolSize: 1, maximumPoolSize: 2, workQueue: 1
+ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(1,
+        2,
+        0L,
+        TimeUnit.SECONDS,
+        new LinkedBlockingQueue<>(1));
+
+threadPoolExecutor.submit(() -> {
+    // 작업1 시작...
+});
+
+threadPoolExecutor.submit(() -> {
+    // 작업2 시작...
+});
+
+threadPoolExecutor.submit(() -> {
+    // 작업3 시작...
+});
+```
+- 위 예시는 `corePoolSize`가 1, `maximumPoolSize`가 2, `workQueue`의 크기가 1인 `ThreadPoolExecutor`를 생성한 예시이다.
+```text
+pool size = 0, active threads = 0, queued tasks = 0, ThreadPoolExecutor 초기화
+pool size = 1, active threads = 1, queued tasks = 0, 작업1 진행중
+pool size = 1, active threads = 1, queued tasks = 1, 작업1 진행중, 작업2 workQueue에 추가
+pool size = 2, active threads = 2, queued tasks = 1, 작업1 진행중, 작업2 진행중, 작업3 workQueue에 추가
+....
+```
+
+### ScheduledThreadPoolExecutor
+
+
+
+### Executors
+- 
+
 
   
+
 
 ### ExecutorService
 - `ExecutorService`는 `Executor`의 하위 인터페이스로, 스레드 풀을 관리하고 작업을 제출할 수 있는 기능을 제공한다.
