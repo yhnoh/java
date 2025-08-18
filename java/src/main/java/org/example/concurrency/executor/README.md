@@ -26,6 +26,10 @@
    - 생성된 스레드 수만큼 작업을 동시에 수행할 수 있다.
 4. 작업 큐에 작업이 없을 경우, 생성된 스레드를 종료시키지 않고 대기 상태로 만들어 새로운 작업이 들어올 때까지 기다린다.
 
+### Graceful Shutdown (우아한 종료)
+- 
+
+
 ### 간단한 스레드 풀 구현해보기
 - 위 동작 방식을 기반으로 [간단한 스레드 풀 구현](./MyThreadPool.java)을 구현해보자.
 
@@ -264,21 +268,33 @@ pool size = 1, active threads = 0, queued tasks = 0, 작업1 작업 완료, 작�
 
 
 ### ScheduledThreadPoolExecutor
+- `ScheduledThreadPoolExecutor`는 `ThreadPoolExecutor`의 하위 클래스이며, `ScheduledExecutorService` 인터페이스를 구현한 클래스다.
+- `ScheduledThreadPoolExecutor`를 활용하면 작업을 일정 시간 후에 실행하거나, 주기적을 실행할 수 있다.
 
+#### ScheduledThreadPoolExecutor 메서드  
+- `schedule`
+  - 지정된 시간 후에 작업을 수행한다.
+- `scheduleAtFixedRate`
+  - 지정된 시간 간격으로 작업을 반복적으로 수행한다.
+  - 작업을 시작한 시점부터 지정된 시간 간격으로 작업을 수행한다.
+  - 정확한 시간에 작업을 수행해야할 경우 사용한다.
+- `scheduleWithFixedDelay`
+  - 지정된 시간 간격으로 작업을 반복적으로 수행한다.
+  - 이전 작업이 완료된 시점부터 지정된 시간 간격으로 작업을 수행한다.
+  - 이전 작업이 종료된 이후 지정된 시간 간격으로 작업을 수행해야할 경우 사용한다.
+
+> [ScheduledThreadPoolExecutor 메서드 테스트](../../../../../../test/java/org/example/concurrency/executor/ScheduledThreadPoolExecutorMain1.java)
+
+
+### ForkJoinPool
 
 
 ### Executors
-- 
+
 
 
   
-
-
-### ExecutorService
-- `ExecutorService`는 `Executor`의 하위 인터페이스로, 스레드 풀을 관리하고 작업을 제출할 수 있는 기능을 제공한다.
-
-
-- `Executor`는 단순히 새로운 작업을 실행하기 위한 인터페이스로써, 
 > [The Java Tutorials > Executors](https://docs.oracle.com/javase/tutorial/essential/concurrency/executors.html)
 > [Baeldung > Introduction to Thread Pools in Java](https://www.baeldung.com/thread-pool-java-and-guava)
 > [Baeldung > A Guide to the Java ExecutorService](https://www.baeldung.com/java-executor-service-tutorial)
+> [Bealdung > Guide to the Fork/Join Framework in Java](https://www.baeldung.com/java-fork-join)
