@@ -1,83 +1,108 @@
 package org.example.reflection;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ClassReflectionMain2 {
 
 
     public static void main(String[] args) {
-        Class<? extends String> classObject = "String".getClass();
+        Class<?> classObject = null;
+        try {
+            classObject = Class.forName("java.util.HashMap");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
         // Class
-        System.out.println("Class");
+
+        printClassName(classObject);
+        printModifier(classObject);
+        printTypeParameters(classObject);
+        printInterfaces(classObject);
+        printSuperClasses(classObject);
+        printAnnotations(classObject);
+        printConstructors(classObject);
+        printFields(classObject);
+        printMethods(classObject);
+    }
+
+    private static void printClassName(Class<?> classObject) {
+        System.out.println("Class Name: ");
         System.out.println("classObject.toString() = " + classObject);
         System.out.println("classObject.toGenericString() = " + classObject.toGenericString());
         System.out.println("classObject.getName() = " + classObject.getName());
-        System.out.println("classObject.getSimpleName() = " + classObject.getSimpleName());
         System.out.println("classObject.getPackage() = " + classObject.getPackage());
-
-        // Modifier
-        System.out.println("classObject.getModifiers() = " + Modifier.toString(classObject.getModifiers()));
-
-        // Type Parameters
-        TypeVariable<?>[] typeParameters = classObject.getTypeParameters();
-        for (TypeVariable<?> typeParameter : typeParameters) {
-            System.out.println("typeParameter.getName() = " + typeParameter.getName());
-        }
-
-        // Generic Interfaces
-        Type[] genericInterfaces = classObject.getGenericInterfaces();
-        for (Type genericInterface : genericInterfaces) {
-            System.out.println("genericInterface.getTypeName() = " + genericInterface.toString());
-        }
-
-        Class<?> superclass = classObject.getSuperclass();
-        System.out.println("superclass = " + superclass);
-
-        Annotation[] annotations = classObject.getAnnotations();
-        for (Annotation annotation : annotations) {
-            System.out.println("annotation = " + annotation);
-        }
-
+        System.out.println("classObject.getSimpleName() = " + classObject.getSimpleName());
+        System.out.println();
     }
 
+    private static void printModifier(Class<?> classObject) {
+        System.out.println("Modifier: ");
+        System.out.println("classObject.getModifiers() = " + Modifier.toString(classObject.getModifiers()));
+        System.out.println();
+    }
 
-    public static class Member {
-        private String name;
-        private int age;
+    private static void printTypeParameters(Class<?> classObject) {
+        System.out.println("Generic Declaration: ");
+        System.out.println("classObject.getTypeParameters() = " + Arrays.toString(classObject.getTypeParameters()));
+        System.out.println();
+    }
 
-        public Member() {
+    private static void printInterfaces(Class<?> classObject) {
+        System.out.println("Interfaces: ");
+        System.out.println("classObject.getInterfaces() = " + Arrays.toString(classObject.getInterfaces()));
+        System.out.println();
+    }
+
+    private static void printSuperClasses(Class<?> classObject) {
+        System.out.println("Superclasses: ");
+
+        List<Class<?>> superclasses = new ArrayList<>();
+        Class<?> superclass = classObject.getSuperclass();
+        if (superclass != null) {
+            superclasses.add(superclass);
         }
 
-        public Member(String name) {
-            this.name = name;
+        while (superclass != null) {
+            superclass = superclass.getSuperclass();
+            if (superclass != null) {
+                superclasses.add(superclass);
+            }
         }
 
-        public Member(int age, String name) {
-            this.age = age;
-            this.name = name;
-        }
+        System.out.println("classObject.getSuperclass() = " + superclasses);
+        System.out.println();
+    }
 
+    private static void printAnnotations(Class<?> classObject) {
+        System.out.println("Annotations: ");
+        System.out.println("classObject.getAnnotations() = " + Arrays.toString(classObject.getAnnotations()));
 
-        public void setAttributes(String name) {
-            this.name = name;
-        }
+        System.out.println();
+    }
 
-        public void setAttributes(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
+    private static void printConstructors(Class<?> classObject) {
+        System.out.println("Constructors: ");
+        System.out.println("classObject.getDeclaredConstructors() = " + Arrays.toString(classObject.getDeclaredConstructors()));
+        System.out.println("classObject.getConstructors() = " + Arrays.toString(classObject.getConstructors()));
+        System.out.println();
+    }
 
-        public String getName() {
-            return name;
-        }
+    private static void printFields(Class<?> classObject) {
+        System.out.println("Fields: ");
+        System.out.println("classObject.getDeclaredFields() = " + Arrays.toString(classObject.getDeclaredFields()));
+        System.out.println("classObject.getFields() = " + Arrays.toString(classObject.getFields()));
+        System.out.println();
+    }
 
-        public int getAge() {
-            return age;
-        }
+    private static void printMethods(Class<?> classObject) {
+        System.out.println("Methods: ");
+        System.out.println("classObject.getDeclaredMethods() = " + Arrays.toString(classObject.getDeclaredMethods()));
+        System.out.println("classObject.getMethods() = " + Arrays.toString(classObject.getMethods()));
+        System.out.println();
     }
 
 }
