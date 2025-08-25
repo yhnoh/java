@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 public class FieldReflectionMain1 {
 
+
     public static void main(String[] args) {
         Member member = new Member();
         System.out.println("member = " + member);
@@ -15,7 +16,7 @@ public class FieldReflectionMain1 {
 
             name.set(member, "steve");
             age.set(member, 18);
-            
+
             System.out.println("member = " + member);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
