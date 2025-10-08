@@ -34,7 +34,6 @@ public class ProgrammersLevel2 {
 
     }
 
-
     @Nested
     class 올바른_괄호 {
 
@@ -80,8 +79,9 @@ public class ProgrammersLevel2 {
 
     @Nested
     class 최솟값_만들기 {
-        //https://school.programmers.co.kr/learn/courses/30/lessons/12941
-
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/12941
+         */
         @Test
         public void solution() {
             //given
@@ -89,612 +89,1681 @@ public class ProgrammersLevel2 {
             //when
 
             //then
+
+            int[] A = {1, 4, 2};
+            int[] B = {5, 4, 4};
+            int solution = this.solution(A, B);
+            System.out.println("answer = " + solution);
         }
 
+        //A: 1 2 4
+        //B: 5 4 4
+        // 결과: 1*4 + 2*4 + 4*5 = 4 + 8 + 20 = 32
         public int solution(int[] A, int[] B) {
             int answer = 0;
 
-            // [실행] 버튼을 누르면 출력 값을 볼 수 있습니다.
-            System.out.println("Hello Java");
+            int length = A.length;
+            Arrays.sort(A);
+            Arrays.sort(B);
+
+            for (int i = 0; i < length; i++) {
+                System.out.println("A = " + A[i] + ", B = " + B[length - i - 1]);
+                answer += A[i] * B[length - i - 1];
+            }
 
             return answer;
         }
     }
 
-    public int function1(int n) {
-        if (n == 0) {
-            return 0;
-        } else if (n == 1) {
-            return 1;
+    @Nested
+    class JadenCase_문자열_만들기 {
+
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/12951
+         */
+        @Test
+        public void solution() {
+            //given
+
+            //when
+            String solution = this.solution("for the last week");
+            System.out.println("solution = " + solution);
+            //then
         }
 
-        return function1(n - 1) + function1(n - 2);
+        public String solution(String s) {
+            StringBuilder answer = new StringBuilder();
+            char[] chars = s.toCharArray();
+            boolean isFirst = true;
+            for (char c : chars) {
+                if (c == ' ') {
+                    isFirst = true;
+                    answer.append(c);
+                    continue;
+                }
+
+                if (isFirst) {
+                    answer.append(Character.toUpperCase(c));
+                } else {
+                    answer.append(Character.toLowerCase(c));
+                }
+                isFirst = false;
+            }
+
+            return answer.toString();
+        }
     }
 
-    public int function2(int n) {
+    @Nested
+    class 이진_변환_반복 {
 
-        Stack<Integer> stack = new Stack<>();
-        stack.push(0);
-        stack.push(1);
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/70129
+         */
+        @Test
+        public void solution() {
+            //given
 
-        for (int i = 0; i < n - 1; i++) {
-            Integer f_1 = stack.pop();
-            Integer f_2 = stack.pop();
-            int f = f_1 + f_2;
+            //when
+//            System.out.println(this.solution("0111010"));
 
-            stack.push(f_1);
-            stack.push(f % 1234567);
+            System.out.println(Arrays.toString(this.solution("110010101001")));
+//            this.solution("100");
+//            this.solution("11");
+//            this.solution("0");
+            //then
         }
 
-        return stack.pop();
+        public int[] solution(String s) {
+
+            int deletedZeroCount = 0;
+            int replacedCount = 0;
+
+            while (!s.equals("1")) {
+                String tempS = s;
+                //0으로 변환
+                String deletedZeroString = s.replace("0", "");
+
+                //길이를 바이트로 변환
+                int deletedZeroLength = deletedZeroString.length();
+                s = Integer.toBinaryString(deletedZeroLength);
+
+                deletedZeroCount += tempS.length() - deletedZeroString.length();
+                replacedCount++;
+            }
+
+            return new int[]{replacedCount, deletedZeroCount};
+        }
     }
 
-    @Test
-    public void 피보니치_수() {
-//        System.out.println("n = 2일 뗴 = " + function1(2));
-//        System.out.println("n = 3일 뗴 = " + function1(3));
-//        System.out.println("n = 4일 뗴 = " + function1(4));
-//        System.out.println("n = 5일 뗴 = " + function1(5));
+    @Nested
+    class 숫자의_표현 {
 
-        System.out.println("n = 2일 뗴 = " + function2(2) % 1234567);
-        System.out.println("n = 3일 뗴 = " + function2(3) % 1234567);
-        System.out.println("n = 4일 뗴 = " + function2(4) % 1234567);
-        System.out.println("n = 5일 뗴 = " + function2(5) % 1234567);
-        System.out.println("n = 6일 뗴 = " + function2(6) % 1234567);
-        System.out.println("n = 7일 뗴 = " + function2(7) % 1234567);
-        System.out.println("n = 10000일 뗴 = " + function2(10000) % 1234567);
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/12924
+         */
 
+        @Test
+        public void solution() {
+            int answer = this.solution(15);
+            System.out.println("answer = " + answer);
+        }
+
+        /**
+         * stopN = 15일 경우
+         * n = 1이 들어올 경우, n = 2, stopN = 14
+         * n = 2이 들어올 경우, n = 3, stopN = 12
+         * n = 3이 들어올 경우, n = 4, stopN = 9
+         * n = 4이 들어올 경우, n = 5, stopN = 4
+         * n = 5이 들어올 경우, n = 6, stopN = 0
+         */
+        public int reclusive(int n, int stopN) {
+            if (stopN < 0) {
+                return 0;
+            } else if (stopN == 0) {
+                return 1;
+            }
+
+            return reclusive(n + 1, stopN - n);
+        }
+
+        public int solution(int n) {
+            if (n == 1) {
+                return 1;
+            }
+
+            int answer = 0;
+
+            for (int i = 1; i <= n; i++) {
+                answer += this.reclusive(i, n);
+            }
+
+            return answer;
+        }
+    }
+
+    @Nested
+    class 다음_큰_숫자 {
+        @Test
+        public void solution() {
+            //given
+
+            //when
+//            this.solution1(78);
+//            this.solution2(78);
+            this.solution3(78);
+            //then
+        }
+
+        /**
+         * 1. n 보다 큰 숫자 중
+         * 2. n과 n보다 큰 숫자를 이진수로 변환했을때 1의 개수가 같은 숫자
+         * 3. 1번과 2번의 조건을 만족하는 가장 작은 숫자
+         */
+        public int solution1(int n) {
+
+            String nBinary = Integer.toBinaryString(n);
+            int nextN = n + 1;
+            String nextBinary = Integer.toBinaryString(nextN);
+            while (!nBinary.replace("0", "").equals(nextBinary.replace("0", ""))) {
+                nextN++;
+                nextBinary = Integer.toBinaryString(nextN);
+//                System.out.println("nextN = " + nextN + " nextBinary = " + nextBinary);
+            }
+
+            return nextN;
+        }
+
+        public int solution2(int n) {
+
+            String nBinary = Integer.toBinaryString(n);
+            String deletedZeroNBinary = nBinary.replace("0", "");
+            int nextN = n + 1;
+            String nextBinary = Integer.toBinaryString(nextN);
+
+            while (true) {
+                if (deletedZeroNBinary.equals(nextBinary.replace("0", ""))) {
+                    break;
+                }
+
+                nextN++;
+                nextBinary = Integer.toBinaryString(nextN);
+//                System.out.println("nextN = " + nextN + " nextBinary = " + nextBinary);
+            }
+
+            return nextN;
+        }
+
+
+        /**
+         * Integer.bitCount: 정수를 2진수로 변환한 이후 1의 개수를 반환
+         */
+        public int solution3(int n) {
+
+            int nBitCount = Integer.bitCount(n);
+            int nextN = n + 1;
+            int nextBitCount = Integer.bitCount(nextN);
+            while (nBitCount != nextBitCount) {
+                nextN++;
+                nextBitCount = Integer.bitCount(nextN);
+//                System.out.println("nBitCount = " + nBitCount + " nextN = " + nextN + " nextBitCount = " + nextBitCount);
+            }
+            return nextN;
+        }
+    }
+
+    @Nested
+    class 피보나치_수 {
+        @Test
+        public void solution() {
+
+            System.out.println("i = " + this.solution1(10000));
+        }
+
+        /**
+         * F(2) = F(0) + F(1)
+         * F(3) = F(1) + F(2)
+         * F(4) = F(2) + F(3)
+         * F(n) = F(n-2) + F(n-1)
+         */
+        public int solution1(int n) {
+
+            long n1 = 0; //F(n - 2)
+            long n2 = 1; //F(n - 1)
+            long sum = 0; //F(n)
+
+            for (int i = 2; i <= n; i++) {
+                System.out.print("i = " + i + " n1 = " + n1 + " n2 = " + n2);
+//                System.out.print(" n1 = " + (n1 % 1234567) + " n2 = " + n2 % 1234567);
+
+                sum = (n1 + n2) % 1234567;
+                n1 = n2;
+                n2 = sum;
+                System.out.println(" sum = " + sum);
+            }
+
+            return (int) sum;
+        }
 
     }
 
-    /**
-     * n = 목표위치
-     * p = 현재위치
-     * k = 점프거리, 점프시 k만큼의 배터리 소모
-     * 순간이동 가능, 현재 위치에서 * 2만큼 이동
-     */
+    @Nested
+    class 짝지어_제거하기 {
+        @Test
+        public void solution() {
+
+            this.solution("cdcd");
+        }
+
+        /**
+         * stack = [b]
+         * stack = [b, a]
+         * stack = [b]
+         * stack = []
+         * stack = [a]
+         * stack = []
+         */
+        public int solution(String s) {
+
+            char[] chars = s.toCharArray();
+            Stack<Character> stack = new Stack<>();
+            for (char c : chars) {
+
+                if (stack.isEmpty()) {
+                    stack.push(c);
+                    System.out.println("stack " + stack);
+                    continue;
+                }
+
+                Character pop = stack.pop();
+                if (pop != c) {
+                    stack.push(pop);
+                    stack.push(c);
+                }
+                System.out.println("stack " + stack);
+            }
+
+
+            return stack.isEmpty() ? 1 : 0;
+        }
+    }
+
+    @Nested
+    class 카펫 {
+
+        @Test
+        public void solution() {
+            this.solution(24, 24);
+        }
+
+        /**
+         * brown = (x * 2) + (y - 2) * 2
+         * <p>
+         * 0 0 0
+         * 0 1 0
+         * 0 0 0
+         * <p>
+         * 0 0 0 0
+         * 0 1 1 0
+         * 0 0 0 0
+         * <p>
+         * 0 0 0 0 0
+         * 0 1 1 1 0
+         * 0 0 0 0 0
+         * <p>
+         * 0 0 0 0
+         * 0 1 1 0
+         * 0 1 1 0
+         * 0 0 0 0
+         */
+        public int[] solution(int brown, int yellow) {
+
+            int length = brown + yellow;
+
+            for (int x = 3; x <= length; x++) {
+                for (int y = 3; y <= length; y++) {
+                    //사각형이 만들어지지 않는 조건
+                    if (x * y != length) {
+                        continue;
+                    }
+                    System.out.println("x = " + x + " y = " + y);
+                    //사각형이 만들어 졌을때
+                    if (brown == x * 2 + (y - 2) * 2) {
+                        return new int[]{y, x};
+                    }
+                }
+            }
+            return new int[]{0, 0};
+        }
+    }
+
+
     @Nested
     class 점프와_순간_이동 {
         @Test
-        public void 결과() {
-
-            // [실행] 버튼을 누르면 출력 값을 볼 수 있습니다.
-            int n = 5000000;
-            int result = result(n);
+        public void solution() {
+            this.solution(6);
         }
 
-        public int result(int n) {
-            int result = 1;
-            if (n == 1) {
-                return result;
-            }
-            //n과 k 데이터를 저장하기 위한 Queue
+        /**
+         * n = 목표 거리
+         * p = 현재 위치
+         * k = 배터리 사용량
+         * 순간이동할 경우 현재 위치에서 * 2, 배터리 사용하지 않음
+         * 그냥 이동할 경우 배터리 사용
+         * <p>
+         * depth = 0, {(Node=k=1, p=1)}
+         * depth = 1, {(Node=k=1, p=2), (Node=k=2, p=2)}
+         * depth = 2, {(Node=k=1, p=4), (Node=k=2, p=3), (Node=k=2, p=4), (Node=k=3, p=3)}
+         */
+        public int solution(int n) {
+
             Queue<Node> queue = new LinkedList<>();
-            //k를 정렬하기 위한 Set
-            SortedSet<Node> sortedSet = new TreeSet<>();
-            queue.offer(new Node(1, 1));
+            queue.add(new Node(1, 1));
 
-            //경우의수는 2가지, 에너지를 소비하고 한칸 가냐? 아니면 2배씩 순간이동 하냐?
-            int way = 2;
-            while (sortedSet.isEmpty()) {
+            while (true) {
+                int length = queue.size();
+                int depth = (length * 2) / 2;
 
-                for (int i = 0; i < way / 2; i++) {
+                for (int i = 0; i < depth; i++) {
                     Node node = queue.poll();
-                    Node jumpNode = node.getJumpNode();
-                    Node teleportNode = node.getTeleportNode();
 
-                    queue.offer(jumpNode);
-                    queue.offer(teleportNode);
+                    //목표지점이 동일하면 리턴
+                    if (node.getP() == n) {
+                        return node.getK();
+                    }
 
-                    if (jumpNode.getN() == n) {
-                        sortedSet.add(jumpNode);
-                    }
-                    if (teleportNode.getN() == n) {
-                        sortedSet.add(teleportNode);
-                    }
+                    //순간이동
+                    Node leftNode = node.createTeleportingNode(node);
+                    //점프
+                    Node rightNode = node.createJumpingNode(node);
+
+                    queue.offer(leftNode);
+                    queue.offer(rightNode);
+
                 }
-
-                way = way * 2;
+//                System.out.println("queue = " + queue);
             }
 
-            return sortedSet.first().getK();
+//            return 1;
         }
 
-        public static class Node implements Comparable<Node> {
-            private final int n;
-            private final int k;
 
-            public Node(int n, int k) {
-                this.n = n;
+        public static class Node {
+            int k;
+            int p;
+
+            public Node(int k, int p) {
                 this.k = k;
+                this.p = p;
             }
 
-            public Node getJumpNode() {
-                return new Node(n + 1, k + 1);
+            public Node createJumpingNode(Node node) {
+                return new Node(node.k + 1, node.p + 1);
             }
 
-            public Node getTeleportNode() {
-                return new Node(n * 2, k);
+            public Node createTeleportingNode(Node node) {
+                return new Node(node.k, node.p * 2);
             }
 
-            @Override
-            public int compareTo(Node o) {
-                return Integer.compare(k, o.k);
-            }
-
-            public int getN() {
-                return n;
-            }
 
             public int getK() {
                 return k;
             }
 
+            public int getP() {
+                return p;
+            }
+
+
             @Override
             public String toString() {
                 return "Node{" +
-                        "n=" + n +
-                        ", k=" + k +
+                        "k=" + k +
+                        ", p=" + p +
                         '}';
             }
         }
-    }
 
-
-    @Test
-    public void 튜플() {
-        String s = "{{2},{2,1},{2,1,3},{2,1,3,4}}";
-        TupleResult tupleResult = new TupleResult(s);
-        System.out.println("tupleResult = " + tupleResult);
-        System.out.println(Arrays.toString(tupleResult.getResult()));
-    }
-
-    public static class TupleResult {
-        private final TreeMap<Integer, Tuple> tuples = new TreeMap<>();
-
-        public TupleResult(String s) {
-            String[] tuples = s.substring(2, s.length() - 2).split("},\\{");
-            for (String tuple : tuples) {
-                Tuple item = new Tuple(tuple);
-                this.tuples.put(item.getSize(), item);
-            }
-        }
-
-        public int[] getResult() {
-            Integer size = tuples.lastKey();
-            int[] result = new int[size];
-            for (int i = 1; i <= size; i++) {
-                Tuple tuple = tuples.get(i);
-                Integer data = tuple.getFirstData();
-                result[i - 1] = data;
-
-                for (int j = i; j <= size; j++) {
-                    tuples.get(j).remove(data);
-                }
-            }
-
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("[");
-
-            Integer lastKey = tuples.lastKey();
-            tuples.forEach((k, v) -> {
-                sb.append(v);
-                if (!lastKey.equals(k)) {
-                    sb.append(",");
-                }
-            });
-            sb.append("]");
-            return sb.toString();
-        }
-    }
-
-    public static class Tuple implements Comparable<Tuple> {
-        private final Set<Integer> tuple = new HashSet<>();
-        private int size = 0;
-
-        public Tuple(String tuple) {
-            String[] split = tuple.split(",");
-            for (String s : split) {
-                this.tuple.add(Integer.valueOf(s));
-                size++;
-            }
-        }
-
-        public int getSize() {
-            return size;
-        }
-
-        public Integer getFirstData() {
-            return tuple.iterator().next();
-        }
-
-        public void remove(Integer data) {
-            tuple.remove(data);
-        }
-
-        @Override
-        public int compareTo(Tuple tuple) {
-            return Integer.compare(size, tuple.size);
-        }
-
-        @Override
-        public String toString() {
-            return tuple.toString();
-        }
     }
 
 
     @Nested
-    public class 전화번호_목록 {
+    class 구명보트 {
+        @Test
+        public void solution() {
+
+            System.out.println(this.solution2(new int[]{70, 50, 80, 50}, 100));
+
+        }
+
+        public int solution1(int[] people, int limit) {
+            int answer = 0;
+
+            Arrays.sort(people);
+
+            int start = 0;
+            int end = people.length - 1;
+
+            while (start <= end) {
+                int startWeight = people[start];
+                int endWeight = people[end];
+
+                if (startWeight == 0 && endWeight == 0) {
+                    break;
+                }
+
+                int sum = startWeight + endWeight;
+
+
+                if (sum <= limit) {
+                    people[start] = 0;
+                    people[end] = 0;
+                    start++;
+                    end--;
+                    answer++;
+                } else {
+                    people[end] = 0;
+                    end--;
+                    answer++;
+                }
+            }
+
+            if (people[start] != 0) {
+                answer++;
+            }
+
+
+            return answer;
+        }
+
+
+        public int solution2(int[] people, int limit) {
+            int answer = 0;
+
+            Arrays.sort(people);
+            LinkedList<Integer> weights = new LinkedList<>();
+            for (Integer weight : people) {
+                weights.add(weight);
+            }
+
+            while (!weights.isEmpty()) {
+                // 더이상 꺼내올 몸무게가 없으면
+                Integer minWeight = weights.pollFirst();
+                if (weights.isEmpty()) {
+//                    System.out.println(weights);
+                    answer++;
+                    break;
+                }
+
+                // sum이 limit보다 작거나 같으면
+                Integer maxWeight = weights.pollLast();
+                if (minWeight + maxWeight <= limit) {
+//                    System.out.println(weights);
+                    answer++;
+                    continue;
+                }
+
+                weights.addFirst(minWeight);
+                answer++;
+//                System.out.println(weights);
+            }
+
+            return answer;
+        }
+
+    }
+
+    @Nested
+    class 귤_고르기 {
+        @Test
+        public void solution() {
+            this.solution3(6, new int[]{1, 3, 2, 5, 4, 5, 2, 3});
+        }
 
         /**
-         * String[] phone_book 전화번호 배열이 담겨 있음
-         * 전번화부 배열에 어떤 번호가 다른 번호의 접두어인 경우 false
-         * 아닌 경우 ture
+         * {1, 3, 2, 5, 4, 5, 2, 3} => {1, 2, 2, 3, 3, 4, 5, 5}
+         * 2 => 2, 3, 5
+         * 1 => 1, 4
          * <p>
-         * 1. 문자열 정렬을 통해서 사전순으로 정렬
-         * 2. 정렬된 배열을 순회하면서 다음 문자열이 접두사인지 확인
+         * 2 => 3
+         * 1 => 2
          */
+        public int solution1(int k, int[] tangerine) {
+
+            if (k == 1 || tangerine.length == 1) {
+                return 1;
+            }
+
+            int answer = 0;
+            Arrays.sort(tangerine);
+
+            int now = tangerine[0];
+            int nowCount = 1;
+
+            TreeMap<Integer, Integer> treeMap = new TreeMap<>();
+            int length = tangerine.length;
+
+            for (int i = 1; i < length; i++) {
+                if (tangerine[i] == now) {
+                    nowCount++;
+                    if (i == length - 1) {
+                        treeMap.put(nowCount, treeMap.getOrDefault(nowCount, 0) + 1);
+                    }
+                    continue;
+                }
+
+                treeMap.put(nowCount, treeMap.getOrDefault(nowCount, 0) + 1);
+                now = tangerine[i];
+                nowCount = 1;
+            }
+
+//            System.out.println("treeMap = " + treeMap);
+            while (k > 0) {
+                Map.Entry<Integer, Integer> lastEntry = treeMap.pollLastEntry();
+                Integer count = lastEntry.getKey();
+                Integer kinds = lastEntry.getValue();
+
+                for (int i = 0; i < kinds; i++) {
+                    if (k <= 0) {
+                        break;
+                    }
+
+                    k -= count;
+                    answer++;
+                }
+
+            }
+
+
+            return answer;
+        }
+
+        public int solution2(int k, int[] tangerine) {
+
+            if (k == 1) {
+                return 1;
+            }
+
+            int answer = 0;
+            Arrays.sort(tangerine);
+
+            int now = tangerine[0];
+            int nowCount = 1;
+
+            int length = tangerine.length;
+            TreeMap<Integer, Integer> treeMap = new TreeMap<>();
+            for (int i = 1; i < length; i++) {
+
+                int kind = tangerine[i];
+                if (kind == now) {
+                    nowCount++;
+                    if (length - 1 == i) {
+//                        System.out.println("i = " + i + " now = " + now + " nowCount = " + nowCount);
+                        treeMap.put(nowCount, treeMap.getOrDefault(nowCount, 0) + 1);
+                    }
+                    continue;
+                }
+
+//                System.out.println("i = " + i + " now = " + now + " nowCount = " + nowCount);
+                treeMap.put(nowCount, treeMap.getOrDefault(nowCount, 0) + 1);
+                now = kind;
+                nowCount = 1;
+            }
+
+            while (k > 0) {
+                Map.Entry<Integer, Integer> lastEntry = treeMap.pollLastEntry();
+                if (lastEntry == null) {
+                    answer = 0;
+                    break;
+                }
+
+                Integer count = lastEntry.getKey();
+                Integer kinds = lastEntry.getValue();
+
+                for (int i = 0; i < kinds; i++) {
+                    if (k <= 0) {
+                        break;
+                    }
+
+                    k -= count;
+                    answer++;
+                }
+            }
+
+            return answer;
+        }
+
+        public int solution3(int k, int[] tangerine) {
+
+            int answer = 0;
+            Map<Integer, Integer> map = new HashMap<>();
+            for (Integer i : tangerine) {
+                map.put(i, map.getOrDefault(i, 0) + 1);
+            }
+
+            List<Integer> counts = new ArrayList<>(map.values());
+            counts.sort(Collections.reverseOrder());
+
+//            System.out.println("counts = " + counts);
+            for (Integer count : counts) {
+                if (k <= 0) {
+                    break;
+                }
+
+                k -= count;
+                answer++;
+            }
+            return answer;
+        }
+
+    }
+
+    @Nested
+    class 멀리_뛰기 {
         @Test
-        public void 결과() {
-            String[] phone_book = {"1235", "567", "88", "123", "12"};
-            Arrays.sort(phone_book);
+        public void solution() {
+            //given
 
-//            System.out.println("sorted phone_book = " + Arrays.toString(phone_book));
-            boolean result = true;
-            for (int i = 0; i < phone_book.length - 1; i++) {
-                String str1 = phone_book[i];
-                String str2 = phone_book[i + 1];
+            //when
+            this.solution2(4);
+            //then
+        }
 
-                if (str2.startsWith(str1)) {
-                    result = false;
+
+        /**
+         * stack = {0}
+         * depth = 1 stack = {1, 2}
+         * depth = 2 stack = {2, 3, 3, 4} answer = 1
+         * depth = 3 stack = {3, 4, 4, 5, 4, 5, 5, 6}, answer = 4
+         * depth = 4 stack = {4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8}
+         */
+        public long solution1(int n) {
+            long answer = 0;
+
+            Queue<Integer> queue = new LinkedList<>();
+            queue.add(0);
+
+            int depth = 1;
+
+            while (depth <= n) {
+                int size = queue.size();
+                for (int i = 0; i < size; i++) {
+                    Integer poll = queue.poll();
+                    int leftNode = poll + 1;
+                    int rightNode = poll + 2;
+
+                    if (leftNode == n) {
+                        answer++;
+                    }
+
+                    if (rightNode == n) {
+                        answer++;
+                    }
+
+                    queue.add(leftNode);
+                    queue.add(rightNode);
+
+                }
+
+//                System.out.println("depth = " + depth + " queue = " + queue + " answer = " + answer);
+                depth++;
+
+            }
+
+
+            return answer % 1234567;
+        }
+
+        public long solution2(int n) {
+            long answer = 0;
+            if (n <= 2) {
+                return n;
+            }
+            Queue<Integer> leftQueue = new LinkedList<>();
+            leftQueue.add(1);
+
+            Queue<Integer> rightQueue = new LinkedList<>();
+            rightQueue.add(2);
+
+            int depth = 2;
+            while (depth <= n) {
+                int size = leftQueue.size();
+                for (int i = 0; i < size; i++) {
+                    answer += this.getAnswer(n, leftQueue);
+                    answer += this.getAnswer(n, rightQueue);
+                }
+
+
+//                System.out.println("depth = " + depth + " leftQueue = " + leftQueue + " rightQueue = " + rightQueue + " answer = " + answer);
+                depth++;
+            }
+
+            return answer % 1234567;
+        }
+
+        public long getAnswer(int n, Queue<Integer> queue) {
+            long answer = 0;
+            Integer poll = queue.poll();
+            int leftNode = poll + 1;
+            int rightNode = poll + 2;
+
+            if (leftNode == n) {
+                answer++;
+            }
+
+            if (rightNode == n) {
+                answer++;
+            }
+
+            queue.add(leftNode);
+            queue.add(rightNode);
+            return answer;
+        }
+
+    }
+
+    @Nested
+    class N개의_최소공배수 {
+
+        @Test
+        public void solution() {
+            //given
+
+            //when
+            int solution = this.solution(new int[]{2, 6, 8, 14});
+            System.out.println("solution = " + solution);
+            //then
+        }
+
+        public int solution(int[] arr) {
+            int answer = 1;
+
+            Arrays.sort(arr);
+
+            int length = arr.length;
+
+            int min = 2;
+            int max = arr[length - 1];
+            boolean isContinue = true;
+            while (isContinue) {
+
+                int divideValue = 1;
+                for (int i = min; i <= max; i++) {
+                    boolean can = true;
+                    int[] tempArr = new int[length];
+
+                    for (int j = 0; j < length; j++) {
+                        //최소공배수가 가능하냐에 대한 여부
+                        if (arr[j] % i != 0) {
+                            can = false;
+                            break;
+                        }
+
+                        tempArr[j] = arr[j] / i;
+                    }
+
+                    //최소공배수가 가능하다면
+                    if (can) {
+                        arr = tempArr;
+                        max = tempArr[length - 1];
+                        divideValue = i;
+                        break;
+                    }
+
+                    //더이상 나눌것이 없다면
+                    if (i == max) {
+                        isContinue = false;
+                        break;
+                    }
+                }
+
+                answer *= divideValue;
+//                System.out.println("arr" + Arrays.toString(arr) + " divideValue = " + divideValue + " answer = " + answer);
+            }
+
+            for (int i = 0; i < length; i++) {
+                answer *= arr[i];
+            }
+
+            return answer;
+        }
+
+    }
+
+    @Nested
+    class 영어_끝말잇기 {
+
+        @Test
+        public void solution() {
+            int n = 3;
+            String[] words = {"tank", "kick", "know", "wheel", "land", "dream", "mother", "robot", "tank"};
+            this.solution(n, words);
+        }
+
+        /**
+         * 한글자인 단어는 인정되지 않음
+         * <p>
+         * 끝말있기가 가능행야함
+         * 이전에 사용한 단어는 인정되지 않음
+         * <p>
+         * {"tank", "kick", "know", "wheel", "land", "dream", "mother", "robot", "tank"}
+         */
+        public int[] solution(int n, String[] words) {
+
+            int number = 1;
+            int turn = 1;
+
+            String firstWord = words[0];
+            Set<String> set = new HashSet<>();
+            set.add(firstWord);
+            boolean isSuccess = true;
+            char lastChar = firstWord.charAt(firstWord.length() - 1);
+
+            for (int i = 1; i < words.length; i++) {
+
+                if (number == n) {
+                    number = 1;
+                    turn++;
+                } else {
+                    number++;
+                }
+
+                String word = words[i];
+
+                //중복 체크
+                if (set.contains(word)) {
+                    isSuccess = false;
+                    break;
+                }
+
+                //끝말있기가 가능한지 여부 확인
+                if (lastChar != word.charAt(0)) {
+                    isSuccess = false;
+                    break;
+                }
+
+                set.add(word);
+                lastChar = word.charAt(word.length() - 1);
+//                System.out.println("number = " + number + " turn = " + turn + " word = " + word + " set = " + set + " lastChar = " + lastChar);
+            }
+
+            return isSuccess ? new int[]{0, 0} : new int[]{number, turn};
+        }
+
+        public int[] solution2(int n, String[] words) {
+
+            Checker checker = new Checker(words[0]);
+            boolean isSuccess = true;
+
+            int number = 1;
+            int turn = 1;
+
+            for (int i = 1; i < words.length; i++) {
+                if (number == n) {
+                    number = 1;
+                    turn++;
+                } else {
+                    number++;
+                }
+
+                String word = words[i];
+                if (!checker.isSuccess(word)) {
+                    isSuccess = false;
                     break;
                 }
             }
 
-
-            System.out.println("result = " + result);
+            return isSuccess ? new int[]{0, 0} : new int[]{number, turn};
         }
 
-        public static class PhoneNumber implements Comparable<PhoneNumber> {
+        public static class Checker {
+            private final Set<String> words = new HashSet<>();
+            private char lastChar;
 
-            private final String phoneNumber;
-
-            public PhoneNumber(String phoneNumber) {
-                this.phoneNumber = phoneNumber;
+            public Checker(String word) {
+                words.add(word);
+                lastChar = word.charAt(word.length() - 1);
             }
 
-            @Override
-            public String toString() {
-                return phoneNumber;
-            }
-
-            @Override
-            public int compareTo(PhoneNumber o) {
-                //접두사일 경우 정렬하지 않는다.
-                if (this.phoneNumber.startsWith(o.phoneNumber)) {
-                    return 0;
+            public boolean isSuccess(String nextWord) {
+                if (words.contains(nextWord)) {
+                    return false;
                 }
 
-                return this.phoneNumber.compareTo(o.phoneNumber);
+                if (lastChar != nextWord.charAt(0)) {
+                    return false;
+                }
+
+                words.add(nextWord);
+                lastChar = nextWord.charAt(nextWord.length() - 1);
+                return true;
             }
+
+        }
+    }
+
+    @Nested
+    class 예상_대진표 {
+        @Test
+        public void solution() {
+            this.solution(8, 4, 7);
+        }
+
+        /**
+         * n = 8, a = 4, b = 7
+         * aPos = 2, bPos = 4, answer = 1
+         * aPos = 1, bPos = 2, answer = 2
+         * aPos = 1, bPos = 1, answer = 3
+         */
+        public int solution(int n, int a, int b) {
+            int answer = 1;
+
+            while (Math.pow(2, answer) <= n) {
+                //현재의 a, b의 위치를 구함
+                int aPos = a % 2 == 0 ? a / 2 : a / 2 + 1;
+                int bPos = b % 2 == 0 ? b / 2 : b / 2 + 1;
+//                System.out.println("aPos = " + aPos + " bPos = " + bPos + " answer = " + answer);
+                //a와 b의 위치가 같으면 break
+                if (aPos == bPos) {
+                    break;
+                }
+
+                a = aPos;
+                b = bPos;
+                answer++;
+            }
+
+            return answer;
+        }
+
+    }
+
+    @Nested
+    class 연속_부분_수열_합의_개수 {
+
+        @Test
+        public void solution() {
+            this.solution(new int[]{7, 9, 1});
+//            this.solution(new int[]{7, 9, 1, 1, 4});
+        }
+
+
+        /**
+         * elements = {7, 9, 1, 1, 4}
+         */
+        public int solution(int[] elements) {
+            SortedSet<Integer> set = new TreeSet<>();
+            int length = elements.length;
+            int start = 1;
+
+            while (start <= length) {
+                LinkedList<Integer> list = new LinkedList<>();
+                for (int i = 0; i < length; i++) {
+                    list.add(elements[i]);
+                }
+
+                //연속도니 합의 수열을 구하는 방법
+                for (int i = 0; i < length; i++) {
+                    int sum = 0;
+                    for (int j = 0; j < start; j++) {
+                        Integer value = list.pollFirst();
+                        sum += value;
+                        list.addLast(value);
+                    }
+                    set.add(sum);
+                }
+
+                System.out.println("start = " + start + " set = " + set);
+                start++;
+            }
+
+            return set.size();
+        }
+    }
+
+    @Nested
+    class 할인_행사 {
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/131127
+         * <ul>
+         * <li>회원을 대상으로 매일 한가지 제품을 할인</li>
+         * <li>할인한 제품은 하루에 하나씩 구매 가능</li>
+         * <ul/>
+         */
+        @Test
+        public void solution() {
+
+            this.solution(new String[]{"banana", "apple", "rice", "pork", "pot"},
+                    new int[]{3, 2, 2, 2, 1},
+                    new String[]{"chicken", "apple", "apple", "banana", "rice", "apple", "pork", "banana", "pork", "rice", "pot", "banana", "apple", "banana"});
+        }
+
+        /**
+         * @param want:     원하는 제품들
+         * @param number:   원하는 제품의 수량
+         * @param discount: 할인된 제품들
+         * @return 원하는 제품을 모두 할인 받을 있는 회원등록 날짜
+         */
+        public int solution(String[] want, int[] number, String[] discount) {
+
+            int totalNumber = 0;
+            Map<String, Integer> wants = new HashMap<>();
+            for (int i = 0; i < want.length; i++) {
+                wants.put(want[i], number[i]);
+                totalNumber += number[i];
+            }
+
+
+            int discountLength = discount.length;
+            int startIndex = 0;
+            int endIndex = 10;
+            int answer = 0;
+
+            while (endIndex <= discountLength) {
+
+                //열흘치의 할인된 제품과 수량
+                Map<String, Integer> discounts = new HashMap<>();
+                for (int i = startIndex; i < endIndex; i++) {
+                    String discountItem = discount[i];
+                    int discountNumber = discounts.getOrDefault(discountItem, 0) + 1;
+                    discounts.put(discountItem, discountNumber);
+                }
+
+                //두가지를 비교
+                boolean isSame = true;
+                for (String s : want) {
+                    Integer wantNumber = wants.get(s);
+                    Integer discountNumber = discounts.getOrDefault(s, 0);
+                    if (wantNumber > discountNumber) {
+                        isSame = false;
+                        break;
+                    }
+                }
+
+//                System.out.println("discounts = " + discounts + " wants = " + wants + " isSame = " + isSame);
+
+                if (isSame) {
+                    answer++;
+                }
+
+                startIndex++;
+                endIndex++;
+            }
+
+            return answer;
+        }
+
+    }
+
+    @Nested
+    class 괄호_회전하기 {
+        @Test
+        public void solution() {
+
+
+//            int i1 = "()".indexOf("()");
+//            int i2 = "{}".indexOf("{}");
+//            int i3 = "[]".indexOf("[]");
+//            int i4 = "{}()[]".indexOf("()");
+//            int i5 = "{}()[]".indexOf("{}");
+//            int i6 = "{}()[]".indexOf("[]");
+//            int i7 = "{{".indexOf("()");
+//            int i8 = "))".indexOf("{}");
+//            int i9 = "]]".indexOf("[]");
+//
+//            System.out.println("i1 = " + i1);
+//            System.out.println("i2 = " + i2);
+//            System.out.println("i3 = " + i3);
+//            System.out.println("i4 = " + i4);
+//            System.out.println("i5 = " + i5);
+//            System.out.println("i6 = " + i6);
+//            System.out.println("i7 = " + i7);
+//            System.out.println("i8 = " + i8);
+//            System.out.println("i9 = " + i9);
+
+
+//            System.out.println(this.isMatch("(({{}}))"));
+//            System.out.println(this.isMatch("((}}"));
+
+            this.solution("0123");
+            //
+//            boolean matches3 = "()".matches("\\(\\)");
+//            boolean matches4 = "()[]{}".matches("^(\\(\\)|\\{\\}|\\[\\])$");
+//            boolean matches4 = "()[]{}".matches("^\\(\\)$");
+
+
+//            System.out.println("matches1 = " + matches1);
+//            System.out.println("matches2 = " + matches2);
+//            System.out.println("matches3 = " + matches3);
+//            System.out.println("matches4 = " + matches4);
+
+        }
+
+        /**
+         * 1. 0 1 2 3
+         * 2. 1 2 3 0
+         * 3. 2 3 0 1
+         * 4. 3 0 1 2
+         */
+        public int solution(String s) {
+            int length = s.length();
+            //홀수일 경우에는 괄호 매칭이 불가
+            if (length % 2 == 1) {
+                return 0;
+            }
+
+            int answer = 0;
+            //처음 셋팅
+            if (this.isMatch(s)) {
+                answer++;
+            }
+
+
+            for (int i = 1; i < length; i++) {
+                char firstChar = s.charAt(0);
+                s = s.substring(1, length) + firstChar;
+
+                if (this.isMatch(s)) {
+                    answer++;
+                }
+
+            }
+
+            return answer;
+        }
+
+        public boolean isMatch(String s) {
+
+            String replacedStr = s;
+            while (true) {
+
+                String tempStr = replacedStr;
+
+                if (replacedStr.contains("()")) {
+                    tempStr = replacedStr;
+                    replacedStr = replacedStr.replace("()", "");
+                }
+
+                if (replacedStr.contains("{}")) {
+                    tempStr = replacedStr;
+                    replacedStr = replacedStr.replace("{}", "");
+                }
+
+                if (replacedStr.contains("[]")) {
+                    tempStr = replacedStr;
+                    replacedStr = replacedStr.replace("[]", "");
+                }
+
+                if (replacedStr.equals(tempStr)) {
+                    break;
+                }
+            }
+            return replacedStr.isEmpty();
+        }
+    }
+
+    @Nested
+    class n2_배열_자르기 {
+
+        /**
+         * https://school.programmers.co.kr/learn/courses/30/lessons/87390?language=java
+         */
+        @Test
+        public void solution() {
+
+//            System.out.println(this.calRow(0, 5));
+//            System.out.println(this.calRow(1, 5));
+//            System.out.println(this.calRow(2, 5));
+//            System.out.println(this.calRow(3, 5));
+//            System.out.println(this.calRow(4, 5));
+
+//            System.out.println(Arrays.toString(this.solution1(3, 2, 5)));
+//            System.out.println(Arrays.toString(this.solution2(3, 2, 5)));
+            System.out.println(Arrays.toString(this.solution2(4, 7, 14)));
+        }
+
+
+        public int[] solution1(int n, long left, long right) {
+            int[] answer = new int[(int) (right - left + 1)];
+
+            ArrayList<Integer> list = new ArrayList<>();
+            int nowLength = 0;
+            for (int i = 0; i < n; i++) {
+                if (nowLength >= right) {
+                    break;
+                }
+
+                list.addAll(this.calRow(i, n));
+                nowLength += n;
+            }
+
+            int j = 0;
+            for (long i = left; i <= right; i++) {
+                answer[j] = list.get((int) i);
+                j++;
+            }
+
+            return answer;
+        }
+
+        /**
+         * 시작 지점과 끝 지점을 정하고 난뒤
+         */
+        public int[] solution2(int n, long left, long right) {
+            int[] answer = new int[(int) (right - left + 1)];
+
+            int startN = (int) (left / n);
+            int endN = ((int) (right / n)) + 1;
+
+
+            ArrayList<Integer> list = new ArrayList<>();
+            for (int i = startN; i < endN; i++) {
+                List<Integer> row = this.calRow(i, n);
+//                System.out.println("row = " + row);
+                list.addAll(row);
+            }
+
+
+            left = left - (long) startN * n;
+            right = right - (long) startN * n;
+
+//            System.out.println("left = " + left + " right = " + right + " list = " + list);
+            int j = 0;
+            for (long i = left; i <= right; i++) {
+                answer[j] = list.get((int) i);
+                j++;
+            }
+
+            return answer;
+        }
+
+        /**
+         * 1 2 3 4 5 2 2 3 4 5 3 3 3 4 5
+         * <p>
+         * 1 2 3 4 5
+         * 2 2 3 4 5
+         * 3 3 3 4 5
+         * 4 4 4 4 5
+         * 5 5 5 5 5
+         */
+        public List<Integer> calRow(int row, int n) {
+            ArrayList<Integer> list = new ArrayList<>();
+            int start = row + 1;
+            int num = row + 1;
+            for (int i = 0; i < start; i++) {
+                list.add(num);
+            }
+
+            num += 1;
+            for (int i = start; i < n; i++) {
+                list.add(num);
+                num += 1;
+            }
+
+            return list;
         }
     }
 
     @Nested
     class 행렬의_곱셈 {
 
+        private int[][] arr1;
+        private int[][] arr2;
+        private int colLength;
+        private int rowLength;
+
         @Test
-        public void 결과() {
+        public void solution() {
+
             int[][] arr1 = {{2, 3, 2}, {4, 2, 4}, {3, 1, 4}};
             int[][] arr2 = {{5, 4, 3}, {2, 4, 1}, {3, 1, 1}};
 
-            int arr1RowCount = arr1.length;
-            int arr1ColumLenth = arr1[0].length;
-            int arr2RowLenth = arr2.length;
+//            this.arr1 = arr1;
+//            this.arr2 = arr2;
+//            this.colLength = arr1[0].length;
+//            this.rowLength = arr1.length;
 
-            int[][] result = new int[arr1RowCount][arr1ColumLenth];
 
-            for (int i = 0; i < arr1RowCount; i++) {
-                for (int j = 0; j < arr1ColumLenth; j++) {
-                    int value = 0;
-                    for (int k = 0; k < arr2RowLenth; k++) {
-//                        System.out.print("arr1[" + j + "][" + k + "] = " + arr1[j][k] + " ");
-//                        System.out.print("arr2[" + k + "][" + j + "] = " + arr2[k][j] + " ");
-//                        System.out.print("value = " + (arr1[i][k] * arr2[k][j]) + " ");
-                        value += arr1[i][k] * arr2[k][j];
-                    }
-//                    System.out.println();
-
-                    result[i][j] = value;
-//                    System.out.println("i = " + i + " j = " + j + " value = " + value);
-                }
-            }
-
+            this.solution(arr1, arr2);
         }
 
+        /**
+         * 행렬 곱셈
+         * 첫째 행렬의 열의 갯수와 둘째 행렬의 행의 갯수가 동일해야한다.
+         * <p>
+         * arr1     arr2
+         * 1 4      3 3
+         * 3 2      3 3
+         * 4 1
+         * <p>
+         * x = 0,
+         * arr1[0][0] * arr2[0][0] + arr1[0][1] * arr2[1][0]
+         * arr1[0][0] * arr2[0][1] + arr1[0][1] * arr2[1][1]
+         * arr1[1][0] * arr2[0][1] + arr1[0][1] * arr2[1][1]
+         */
+        public int[][] solution(int[][] arr1, int[][] arr2) {
 
+            this.arr1 = arr1;
+            this.arr2 = arr2;
+            this.colLength = arr2[0].length;
+            this.rowLength = arr1.length;
+
+            int[][] answer = new int[rowLength][colLength];
+            for (int i = 0; i < rowLength; i++) {
+                answer[i] = this.calculateRow(i);
+            }
+
+            return answer;
+        }
+
+        public int[] calculateRow(int y) {
+            int[] row = new int[colLength];
+            for (int i = 0; i < colLength; i++) {
+                row[i] = calculateCell(y, i);
+            }
+
+//            System.out.println("row = " + Arrays.toString(row));
+            return row;
+        }
+
+        public int calculateCell(int x, int y) {
+            int cell = 0;
+            for (int i = 0; i < colLength; i++) {
+                int tempCell = arr1[x][i] * arr2[i][y];
+//                System.out.println("arr1[" + x + "][" + i + "] * arr2[" + i + "][" + y + "] = " + tempCell);
+                cell += tempCell;
+
+            }
+            return cell;
+        }
+    }
+
+    @Nested
+    class H_Index {
+
+
+        @Test
+        public void solution() {
+            this.solution(new int[]{3, 0, 6, 1});
+        }
+
+        public int solution(int[] citations) {
+            int answer = 0;
+            Arrays.sort(citations);
+            int n = citations.length;
+
+            int rightN = 1;
+            int leftN = n - rightN;
+            for (int i = n - 1; i >= 0; i--) {
+                //인용된 횟수
+                int h = citations[i];
+
+                if (rightN >= h && leftN <= h) {
+                    return h;
+                }
+
+                rightN++;
+                leftN--;
+            }
+
+            return 0;
+        }
     }
 
 
     @Nested
-    class 프로세스 {
-
-        /**
-         * 큐에서 프로세스를 하나 꺼낸다.
-         * 만약 우선순위가 더 높은 프로세스가 있다면 방금 꺼낸 프로세스는 다시 큐에 넣는다.
-         * 만약 그런 프로세스가 없다면 방금 꺼낸 프로세스를 실행한다.
-         */
+    class 기능_개발 {
         @Test
-        public void 결과() {
-            int[] priorities;
-            int location;
+        public void solution() {
+
+//            this.solution(new int[]{93, 30, 55}, new int[]{1, 30, 5});
+            this.solution(new int[]{93}, new int[]{1});
         }
 
+        public int[] solution(int[] progresses, int[] speeds) {
+
+            Queue<Integer> queue = new LinkedList<>();
+
+
+            for (int i = 0; i < progresses.length; i++) {
+                int progress = progresses[i];
+                int speed = speeds[i];
+
+                int restWork = 100 - progress;
+                int restDay = restWork % speed == 0 ? restWork / speed : restWork / speed + 1;
+                queue.offer(restDay);
+            }
+
+//            System.out.println("queue = " + queue);
+
+            //시작 셋팅
+            LinkedList<Integer> answer = new LinkedList<>();
+            answer.add(1);
+
+            Integer maxRestDay = queue.poll();
+            while (!queue.isEmpty()) {
+
+                Integer restDay = queue.poll();
+                //뒤의 기능이 앞의 기능보다 먼저 개발된 경우
+                if (restDay <= maxRestDay) {
+                    int completedCount = answer.pollLast() + 1;
+                    answer.add(completedCount);
+                } else {
+                    maxRestDay = restDay;
+                    answer.add(1);
+                }
+            }
+
+//            System.out.println("answer = " + answer);
+
+
+            return answer.stream().mapToInt(Integer::intValue).toArray();
+        }
+    }
+
+    @Nested
+    class 피로도 {
+
+
+        /**
+         * 일정 피로도가 있어야 던전 탐험 가능
+         * <p>
+         * 던전 탕험을 위한 "최소 필요 피로도"와 던전 탐험을 마쳤을 때 소모되는 "소모 피로도"
+         *
+         * @param k:        현재 피로도
+         * @param dungeons: {최소 필요 피로도, 소모 피로도}
+         *                  최소 필요 피로도 >= 소모 피로도
+         *                  1 <= 피로도 <= 1000
+         * @return 유저가 탐험할 수 있는 최대 던전 수
+         */
+        public int solution(int k, int[][] dungeons) {
+            int answer = 0;
+
+            return answer;
+        }
+
+        public boolean canExplore(int currentFatigue, int need, int use) {
+            return currentFatigue >= need && currentFatigue - use >= 0;
+        }
 
     }
 
     @Nested
     class 캐시 {
 
-        //        private LinkedHashSet<String> caches = new LinkedHashSet<>();
-        private final Queue<String> caches = new LinkedList<>();
-
         @Test
-        public void 결과() {
-            int cacheSize = 3;
-            String[] cities = {"Jeju", "Pangyo", "Seoul", "NewYork", "LA", "Jeju", "Pangyo", "Seoul", "NewYork", "LA"};
+        public void solution() {
+            //given
 
-            int result = 0;
-            int hit = 1;
-            int miss = 5;
+
+            System.out.println(solution(3, new String[]{"A", "B", "C", "D", "E", "A", "B", "C", "D", "E"}));
+            //when
+
+            //then
+        }
+
+        public int solution(int cacheSize, String[] cities) {
+            int answer = 0;
+            // 캐시 사이즈가 0일 경우, 모든 도시 캐시 미스 처리
+            if (cacheSize == 0) {
+                return cities.length * 5;
+            }
+
+            LinkedList<String> cache = new LinkedList<>();
             for (String city : cities) {
-                if (cacheSize == 0) {
-                    result += miss;
-                    continue;
-                }
 
-                String lowerCaseCity = city.toLowerCase();
+                String lowerCityName = city.toLowerCase();
+                boolean cacheHit = cache.contains(lowerCityName);
 
-                if (caches.contains(lowerCaseCity)) {
-                    result += hit;
-                    //LRU 알고리즘 적용
-                    caches.offer(caches.poll());
+                if (cacheHit) {
+                    answer += 1;
                 } else {
-                    int nowCacheSize = caches.size();
-                    if (nowCacheSize >= cacheSize) {
-                        //LRU 알고리즘 적용
-                        caches.poll();
+                    answer += 5;
+                }
+
+                // LRU 알고리즘에 따라, 캐시 히트가 발생한 경우, 해당 캐시를 가장 최근에 사용된 캐시로 변경
+                if (cacheHit) {
+                    cache.remove(lowerCityName);
+                    cache.add(lowerCityName);
+                } else {
+                    // LRU 알고리즘에 따라, 캐시 공간이 없을 경우, 가장 오랫동안 사용되지 않은 캐시 제거
+                    if (cache.size() == cacheSize) {
+                        cache.pollFirst();
                     }
-                    caches.add(lowerCaseCity);
 
-                    result += miss;
+                    cache.add(lowerCityName);
                 }
+
             }
 
-            System.out.println("result = " + result);
+            return answer;
         }
     }
 
     @Nested
-    class 멀리_뛰기 {
-
-        @Test
-        void 결과() {
-
-        }
-
-        public static class Node {
-
-            private final List<Integer> items = new LinkedList<>();
-            private final int start = 0;
-            private final int count = 0;
-
-            public Node(int n) {
-                items.add(0);
-
-            }
-
-            public void exclusive(int level) {
-                items.add(start);
-                for (int i = 0; i < level; i++) {
-                    int root = items.get(i);
-
-                }
-            }
-
-            public void addItem(int item) {
-
-            }
-
-
-        }
+    class 프로세스 {
 
     }
 
-
     @Nested
-    class 뉴스_클러스터링 {
+    class 방문_길이 {
 
         @Test
-        public void 결과() {
-            String str1 = "E=M*C^2";
-            String str2 = "e=m*c^2";
+        public void solution() {
+            //given
 
-
-            JakadSet jakadSet1 = new JakadSet(str1);
-            JakadSet jakadSet2 = new JakadSet(str2);
-
-            System.out.println("set1 = " + new JakadSet(str1));
-            System.out.println("set2 = " + new JakadSet(str2));
-
-            Map<String, Integer> set1 = jakadSet1.getSet();
-            Map<String, Integer> set2 = jakadSet2.getSet();
-
-            Set<String> keys = new HashSet<>();
-            keys.addAll(set1.keySet());
-            keys.addAll(set2.keySet());
-
-            int setSum = 0;
-            int allSum = 0;
-            for (String key : keys) {
-                if (set1.containsKey(key) && set2.containsKey(key)) {
-                    setSum += Math.min(set1.get(key), set2.get(key));
-                    allSum += Math.max(set1.get(key), set2.get(key));
-                } else if (set1.containsKey(key)) {
-                    allSum += set1.get(key);
-                } else if (set2.containsKey(key)) {
-                    allSum += set2.get(key);
-                }
-            }
-
-//            System.out.println("setSum = " + setSum);
-//            System.out.println("allSum = " + allSum);
-
-            float jakad = allSum == 0 ? 1 : (float) setSum / allSum;
-            int result = (int) (jakad * 65536);
-            System.out.println("result = " + result);
+            //when
+            System.out.println(this.solution("ULURRDLLU"));
+            //then
         }
-
 
         /**
-         * 다중 집합을 만들어야 한다.
-         * 다중 집합 규칙
-         * 1. 두글자씩 끊어서 다중 집합을 만든다.
-         * 2. 대소문자를 구분하지 않는다.
-         * 3. 영문자로 된 글자만 가능하다.
+         *
+         * @param dirs: U(위, 1), D(아래, -1), R(오른쪽, -1), L(왼쪽, 1)
+         * @return 방문한 길이의 수
+         * 이미 방문한 길은 카운팅에서 제외
+         * 좌표를 벗어난는 움직임은 무시
          */
-        public static class JakadSet {
+        public int solution(String dirs) {
 
-            private final Map<String, Integer> set = new LinkedHashMap<>();
+            Set<Path> paths = new HashSet<>();
+            Position now = new Position(0, 0);
+            char[] directions = dirs.toCharArray();
 
-            public JakadSet(String str) {
-
-                int length = str.length();
-                for (int i = 0; i < length - 1; i++) {
-                    char c1 = str.charAt(i);
-                    char c2 = str.charAt(i + 1);
-
-                    if (isAlphabet(c1) && isAlphabet(c2)) {
-                        String key = String.valueOf(c1).toUpperCase() + String.valueOf(c2).toUpperCase();
-                        set.put(key, set.getOrDefault(key, 0) + 1);
-                    }
+            for (char direction : directions) {
+                Position move = now.move(direction);
+                if (move.canMove()) {
+                    paths.add(new Path(now, move));
+                    now = move;
                 }
             }
 
-            public Map<String, Integer> getSet() {
-                return set;
+            return paths.size();
+        }
+
+        public static class Path {
+            private final Position p1;
+            private final Position p2;
+
+            public Path(Position p1, Position p2) {
+                this.p1 = p1;
+                this.p2 = p2;
             }
 
-            private boolean isAlphabet(char c) {
-                return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+            /**
+             * equals와 hashCode를 오버라이딩하여, p1과 p2의 순서에 상관없이 동일한 경로로 인식
+             */
+            @Override
+            public boolean equals(Object o) {
+                if (o == null || getClass() != o.getClass()) return false;
+                Path path = (Path) o;
+                return (Objects.equals(p1, path.p1) && Objects.equals(p2, path.p2))
+                        || (Objects.equals(p1, path.p2) && Objects.equals(p2, path.p1));
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(p1.hashCode() + p2.hashCode());
             }
 
             @Override
             public String toString() {
-                return set.toString();
+                return "Path{" +
+                        "p1=" + p1 +
+                        ", p2=" + p2 +
+                        '}';
             }
         }
-    }
 
+        public static class Position {
+            private final int x;
+            private final int y;
 
-    @Nested
-    class 의상 {
+            public Position(int x, int y) {
+                this.x = x;
+                this.y = y;
+            }
 
-        /**
-         * 코니는 매일 의상을 갈아입는다.
-         * -
-         * - 의상은 종류별(얼굴, 상의, 하의, 겉옷)로 하나만 입을 수 있다.
-         * - 매일 옷을 갈아 입을 때 종류를 변경하거나 종류를 추가할 경우 다른 의상으로 판단한다.
-         * - 하루에 최소 한개의 의상을 입는다.
-         */
-        @Test
-        public void 결과() {
-
-//            String[][] clothes = {{"yellow_hat", "headgear"}, {"blue_sunglasses", "eyewear"}, {"green_turban", "headgear"}};
-//            String[][] clothes = {{"yellow_hat", "headgear"}};
-//            String[][] clothes = {{"headgear1", "headgear"}, {"eyewear1", "eyewear"}};
-            String[][] clothes = {{"검정 선글라스", "얼굴"}, {"동그란 안경", "얼굴"}, {"파란색 티셔츠", "상의"}, {"청바지", "하의"}, {"긴코트", "겉옷"}};
-//            String[][] clothes = {{"yellow_hat", "headgear"}, {"yellow_hat2", "headgear"}};
+            public Position move(char dir) {
+                if (dir == 'U') {
+                    return new Position(x, y + 1);
+                } else if (dir == 'D') {
+                    return new Position(x, y - 1);
+                } else if (dir == 'R') {
+                    return new Position(x + 1, y);
+                } else if (dir == 'L') {
+                    return new Position(x - 1, y);
+                }
+                throw new IllegalArgumentException("해당 위치로 이동할 수 없습니다. dir = " + dir);
+            }
 
             /**
-             * headgear : yellow_hat, green_turban
-             * eyewear : blue_sunglasses
+             * @return x, y 좌표가 -5 ~ 5 사이인지 여부 확인
              */
-
-            LinkedHashMap<String, List<String>> clotheMap = new LinkedHashMap<>();
-
-            for (String[] clothe : clothes) {
-                String name = clothe[0];//의상 이름
-                String key = clothe[1];//의상 종류
-
-                List<String> value = clotheMap.getOrDefault(key, new ArrayList<>());
-                value.add(name);
-                clotheMap.put(key, value);
+            public boolean canMove() {
+                return x >= -5 && x <= 5 && y >= -5 && y <= 5;
             }
 
-            System.out.println("clotheMap = " + clotheMap);
-
-            Set<String> keys = clotheMap.keySet();
-
-            for (int i = 1; i < clotheMap.size(); i++) {
-                int result = 0;
-
+            @Override
+            public boolean equals(Object o) {
+                if (o == null || getClass() != o.getClass()) return false;
+                Position position = (Position) o;
+                return x == position.x && y == position.y;
             }
 
-
-            int result1 = 0;
-            int result2 = 1;
-            for (String key : clotheMap.keySet()) {
-                List<String> value = clotheMap.get(key);
-                result1 += value.size();
-                result2 *= value.size();
+            @Override
+            public int hashCode() {
+                return Objects.hash(x, y);
             }
 
-            if (clotheMap.size() >= 2) {
-                System.out.println("result1 = " + result1 + " result2 = " + result2);
-            } else {
-                System.out.println("result1 = " + result1);
+            @Override
+            public String toString() {
+                return "Position{" +
+                        "x=" + x +
+                        ", y=" + y +
+                        '}';
             }
-
-            int result = clotheMap.size() >= 2 ? result1 + result2 : result1;
-
         }
     }
-
-    @Nested
-    class 주식가격 {
-        @Test
-        void 결과() {
-            int[] prices = {1, 2, 3, 2, 3};
-            int[] result = new int[prices.length];
-
-            for (int i = 0; i < prices.length; i++) {
-
-                int price1 = prices[i];
-                int seconds = 0;
-                for (int j = i + 1; j < prices.length; j++) {
-                    int price2 = prices[j];
-                    if (price1 <= price2) {
-                        seconds++;
-                    } else {
-                        seconds++;
-                        break;
-                    }
-                }
-
-                result[i] = seconds;
-            }
-
-            System.out.println("result = " + Arrays.toString(result));
-        }
-
-
-    }
-
 }
