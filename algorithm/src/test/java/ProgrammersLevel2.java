@@ -1,7 +1,11 @@
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ProgrammersLevel2 {
 
@@ -1644,6 +1648,165 @@ public class ProgrammersLevel2 {
     @Nested
     class 프로세스 {
 
+        @Test
+        public void solution() {
+            //given
+
+            //when
+            System.out.println(this.solution(new int[]{2, 1, 3, 2}, 2));
+            System.out.println(this.solution(new int[]{1, 1, 9, 1, 1, 1}, 0));
+            //then
+        }
+
+        /**
+         *
+         * @param priorities 프로세스 우선순위 배열
+         * @param location 프로세스의 위치
+         * @return location 위치에 있는 프로세스가 몇 번째로 실행되는지 확인
+         * 우선 순위가 높은 프로세스 실행
+         * 큐에서 프로세스를 꺼내고 난뒤 큐에 존재하는 프로세스 우선 순위 비교
+         */
+        public int solution(int[] priorities, int location) {
+            int answer = 0;
+
+            // 우선순위 최대 값
+            int max = Arrays.stream(priorities).max().getAsInt();
+            LinkedList<Process> processes = new LinkedList<>();
+
+            int n = 0;
+            for (int priority : priorities) {
+                Process process = new Process(priority, n);
+                processes.add(process);
+                n++;
+            }
+
+            while (!processes.isEmpty()) {
+                Process process = processes.pollFirst();
+
+                if (process.getPriority() < max) {
+                    //실행하지 못하고 큐에 진입
+                    processes.addLast(process);
+                    continue;
+                }
+
+                answer++;
+
+                //실행
+                if (process.getLocation() == location) {
+                    break;
+                }
+
+                max = processes.stream()
+                        .mapToInt(Process::getPriority)
+                        .max()
+                        .getAsInt();
+
+            }
+
+            return answer;
+        }
+
+
+        public static class Process implements Comparable<Process> {
+            private final int priority;
+            private final int location;
+
+            public Process(int priority, int location) {
+                this.priority = priority;
+                this.location = location;
+            }
+
+            @Override
+            public int compareTo(Process o) {
+                return Integer.compare(priority, o.priority);
+            }
+
+            public String toString() {
+                return "Process[" +
+                        "priority=" + priority + ", " +
+                        "location=" + location + ']';
+            }
+
+            public int getPriority() {
+                return priority;
+            }
+
+            public int getLocation() {
+                return location;
+            }
+
+
+        }
+
+
+    }
+
+    @Nested
+    class 롤케이크_자르기 {
+
+        @Test
+        public void solution() {
+            //given
+
+            //when
+            System.out.println(this.solution(new int[]{1, 2, 1, 3, 1, 4, 1, 2}));
+            //then
+        }
+
+        /**
+         *
+         * @param topping 토핑 번호를 저장한 정수 배열
+         * @return 공평하게 자르는 방법의 수
+         * 롤케이크를 잘랐을때, 동일한 토핑의 가짓수가 동일해야 공평한다고 판단
+         */
+        public int solution(int[] topping) {
+            int answer = 0;
+
+            int toppingLength = topping.length;
+            if(toppingLength <= 1) {
+                return answer;
+            }
+
+            Map<Integer, Integer> rightToppings = new HashMap<>();
+            for (int i = 0; i < toppingLength; i++) {
+                rightToppings.put(topping[i], rightToppings.getOrDefault(topping[i], 0) + 1);
+            }
+
+
+            int sliceCount = toppingLength - 1;
+
+            Set<Integer> leftToppings = new HashSet<>();
+            leftToppings.add(topping[0]);
+
+            for (int i = 0; i < sliceCount; i++) {
+
+                //왼쪽 토핑 가짓수 추가
+                leftToppings.add(topping[i]);
+
+                //오른쪽 토핑 개수 감소 or 제거
+                if(rightToppings.containsKey(topping[i])) {
+                    int decreasedCount = rightToppings.get(topping[i]) - 1;
+                    if(decreasedCount == 0) {
+                        rightToppings.remove(topping[i]);
+                    }else {
+                        rightToppings.put(topping[i], decreasedCount);
+                    }
+                }
+
+                // 조건이 충족할 경우 answer 증가
+                if(leftToppings.size() == rightToppings.size()) {
+                    answer++;
+                }
+
+                //왼쪽 토핑 가짓수가 많아지면 종료
+                if(leftToppings.size() > rightToppings.size()) {
+                    break;
+                }
+            }
+
+
+            return answer;
+        }
     }
 
     @Nested
@@ -1765,5 +1928,374 @@ public class ProgrammersLevel2 {
                         '}';
             }
         }
+    }
+
+    @Nested
+    class 뒤에_있는_큰_수_찾기 {
+
+        @Test
+        public void solution(){
+            this.solution(new int[]{2, 3, 3, 5});
+        }
+
+        public int[] solution(int[] numbers) {
+            int numberLength = numbers.length;
+
+            int[] answer = new int[numberLength];
+
+            /**
+             * {2, 3, 3, 5}
+             *
+             * 2 -> 0
+             * 3 -> 1, 2
+             * 5 -> 3
+             */
+            TreeMap<Integer, SortedSet<Integer>> map = new TreeMap<>();
+
+            for (int i = 0; i < numberLength; i++) {
+                int number = numbers[i];
+                SortedSet<Integer> numberIndexes = map.getOrDefault(number, new TreeSet<>());
+                numberIndexes.add(i);
+                map.put(number, numberIndexes);
+            }
+
+            for (int i = 0; i < numberLength; i++) {
+
+                int number = numbers[i];
+                Integer higherNumber = map.higherKey(number);
+                // 현재 요소보다 큰 숫자가 존재하지 않는 경우 -1
+                if(higherNumber == null) {
+                    answer[i] = -1;
+                    this.removeIfEmpty(map, number, i);
+                    continue;
+                }
+
+                // 큰 숫자의 모든 인덱스를 저장
+                TreeSet<Integer> higherNumberIndexes = new TreeSet<>();
+                while (higherNumber != null) {
+                    higherNumberIndexes.addAll(map.get(higherNumber));
+                    higherNumber = map.higherKey(higherNumber);
+                }
+
+                Integer higherIndex = higherNumberIndexes.higher(i);
+                if(higherIndex == null) {
+                    // 현재 요소보다 큰 숫자는 존재하지만, 현재 요소 뒤에 존재하는 큰 숫자가 없는 경우 -1
+                    answer[i] = -1;
+                    this.removeIfEmpty(map, number, i);
+                }else {
+                    // 현재 요소보다 큰 숫자는 존재하며, 현재 요소 뒤에 존재하는 큰 숫자가 있는 경우 해당 숫자
+                    answer[i] = numbers[higherIndex];
+                    this.removeIfEmpty(map, number, i);
+                }
+
+            }
+            return answer;
+        }
+
+        private void removeIfEmpty(TreeMap<Integer, SortedSet<Integer>> map, int number, int index) {
+            SortedSet<Integer> set = map.get(number);
+            set.remove(index);
+            if(set.isEmpty()) {
+                map.remove(number);
+            }
+        }
+    }
+
+    @Nested
+    class N진수_게임 {
+
+        @Test
+        public void test() {
+
+            System.out.println(Integer.toString(30, 16));
+            System.out.println(Integer.toHexString(1000));
+            this.solution(2, 4, 2, 1);
+//            this.solution(16, 16, 2, 1);
+//            this.solution(16, 16, 2, 2);
+        }
+
+        /**
+         *
+         * @param n 진법
+         * @param t 미리 구할 숫자의 갯수
+         * @param m 게임에 참가하는 인원
+         * @param p 튜브의 순서
+         * @return
+         */
+        public String solution(int n, int t, int m, int p) {
+            String answer = "";
+
+            String totalStr = "";
+            // n진법으로 변환한 문자열의 길이를 대략적으로 측정
+            int totalLength = t * m;
+            int i = 0;
+            while (totalStr.length() < totalLength) {
+                totalStr += Integer.toString(i, n).toUpperCase();
+                i++;
+            }
+
+            totalStr = totalStr.substring(0, totalLength);
+            totalStr = " " + totalStr;
+
+            for (int j = 0; j < t; j++) {
+                answer += totalStr.charAt(m * j + p);
+            }
+
+
+            return answer;
+        }
+    }
+
+    @Nested
+    class 압축 {
+
+
+
+        public int[] solution(String msg) {
+            int[] answer = {};
+            return answer;
+        }
+    }
+
+    @Nested
+    class 가장_큰_수 {
+
+
+
+
+        public String solution(int[] numbers) {
+            String answer = "";
+
+            for (int i = 0; i < numbers.length; i++) {
+
+            }
+            return answer;
+        }
+    }
+
+    @Nested
+    class 베스트앨범 {
+
+        @Test
+        public void solution() {
+            int[] result1 = this.solution(new String[]{"classic", "pop", "classic", "classic", "pop"}, new int[]{500, 600, 150, 800, 2500});
+            System.out.println("result1 = " + Arrays.toString(result1));
+        }
+
+        public int[] solution(String[] genres, int[] plays) {
+            List<Integer> answer = new ArrayList<>();
+
+            Map<String, Genre> genreMap = new HashMap<>();
+            Map<String, SortedSet<Play>> playMap = new HashMap<>();
+            int length = genres.length;
+            for (int i = 0; i < length; i++) {
+
+                String genreName = genres[i];
+                int playCount = plays[i];
+
+                Genre genre = genreMap.getOrDefault(genreName, new Genre(genreName));
+                genre.addPlayCount(playCount);
+                genreMap.put(genreName, genre);
+
+                Play play = new Play(i, playCount);
+                SortedSet<Play> playSet = playMap.getOrDefault(genreName, new TreeSet<>());
+                playSet.add(play);
+                playMap.put(genreName, playSet);
+            }
+
+            List<Genre> genreList = genreMap.values().stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            for (Genre genre : genreList) {
+                String name = genre.getName();
+                SortedSet<Play> playSet = playMap.get(name);
+
+                int i = 0;
+                for (Play play : playSet) {
+                    if(i == 2) {
+                        break;
+                    }
+                    answer.add(play.getIndex());
+                    i++;
+                }
+            }
+
+
+            return answer.stream()
+                    .mapToInt(Integer::intValue)
+                    .toArray();
+        }
+
+        static class Genre implements Comparable<Genre>{
+            private final String name;
+            private int playCount;
+
+            public Genre(String name) {
+                this.name = name;
+            }
+
+            public void addPlayCount(int playCount) {
+                this.playCount += playCount;
+            }
+
+            @Override
+            public int compareTo(Genre o) {
+                return Integer.compare(playCount, o.playCount) * -1;
+            }
+
+            @Override
+            public String toString() {
+                return "Genre{" +
+                        "name='" + name + '\'' +
+                        ", playCount=" + playCount +
+                        '}';
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public int getPlayCount() {
+                return playCount;
+            }
+        }
+
+        static class Play implements Comparable<Play>{
+            private final int index;
+            private final int playCount;
+
+            public Play(int index, int playCount) {
+                this.index = index;
+                this.playCount = playCount;
+            }
+
+            @Override
+            public int compareTo(Play o) {
+                if(playCount != o.playCount) {
+                    return Integer.compare(playCount, o.playCount) * -1;
+                }
+
+                return Integer.compare(index, o.index);
+            }
+
+            public int getPlayCount() {
+                return playCount;
+            }
+
+            public int getIndex() {
+                return index;
+            }
+
+            @Override
+            public String toString() {
+                return "Play{" +
+                        "index=" + index +
+                        ", playCount=" + playCount +
+                        '}';
+            }
+        }
+    }
+
+    @Nested
+    class 호텔_대실 {
+
+
+        @Test
+        public void solution() {
+            BookingTime bookingTime = new BookingTime(LocalTime.of(21, 00), LocalTime.of(23, 50));
+            bookingTime.isNextDay();
+//            String[][] bookTime = {
+//                    {"15:00", "17:00"},
+//                    {"16:40", "18:20"},
+//                    {"14:20", "15:20"},
+//                    {"14:10", "19:20"},
+//                    {"18:20", "21:20"}
+//            };
+//            this.solution(bookTime);
+        }
+
+
+        public int solution(String[][] book_time) {
+            PriorityQueue<BookingTime> bookingTimeQueue = new PriorityQueue<>();
+            for (String[] times : book_time) {
+                BookingTime bookingTime = new BookingTime(LocalTime.parse(times[0]), LocalTime.parse(times[1]));
+                bookingTimeQueue.add(bookingTime);
+            }
+
+            List<Queue<BookingTime>> oneDaySchedule = new ArrayList<>();
+            for (int i = 0; i < book_time.length; i++) {
+                BookingTime bookingTime = bookingTimeQueue.poll();
+
+                //기존 스케쥴에서 예약 가능한지 확인
+                boolean isBooked = false;
+                for (Queue<BookingTime> bookingTimes : oneDaySchedule) {
+                    BookingTime bookedTime = bookingTimes.poll();
+
+                    if(bookedTime.canNextBooking(bookingTime)) {
+                        isBooked = true;
+                        bookingTimes.offer(bookingTime);
+                        break;
+                    }
+                    bookingTimes.offer(bookedTime);
+                }
+
+                // 기존 스케쥴에서 예약이 불가능한 경우, 새로운 스케쥴 생성
+                if(!isBooked) {
+                    Queue<BookingTime> newSchedule = new LinkedList<>();
+                    newSchedule.add(bookingTime);
+                    oneDaySchedule.add(newSchedule);
+                }
+
+            }
+
+            return oneDaySchedule.size();
+        }
+
+
+        static class BookingTime implements Comparable<BookingTime> {
+            private final LocalTime startTime;
+            private final LocalTime endTime;
+            private final long breakTime = 10;
+
+            public BookingTime(LocalTime startTime, LocalTime endTime) {
+                this.startTime = startTime;
+                this.endTime = endTime;
+            }
+
+            private boolean isNextDay(){
+                LocalDateTime dateTime = LocalDateTime.of(LocalDate.MIN, endTime);
+                LocalDateTime nextDateTime = LocalDateTime.of(LocalDate.MIN, endTime).plusMinutes(breakTime);
+                return nextDateTime.getDayOfMonth() > dateTime.getDayOfMonth();
+            }
+
+            public boolean canNextBooking(BookingTime bookingTime) {
+                if(this.isNextDay()) {
+                    return false;
+                }
+
+                LocalTime ownEndTime = this.endTime.plusMinutes(breakTime);
+                LocalTime otherStartTime = bookingTime.startTime;
+                return otherStartTime.equals(ownEndTime) || otherStartTime.isAfter(ownEndTime);
+            }
+
+            @Override
+            public int compareTo(BookingTime o) {
+                return startTime.compareTo(o.startTime);
+            }
+
+            @Override
+            public String toString() {
+                return "BookingTime{" +
+                        "startTime=" + startTime +
+                        ", endTime=" + endTime +
+                        ", breakTime=" + breakTime +
+                        '}';
+            }
+        }
+
+
+
+
     }
 }
