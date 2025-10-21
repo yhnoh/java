@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ProgrammersLevel2 {
 
@@ -321,33 +322,57 @@ public class ProgrammersLevel2 {
         @Test
         public void solution() {
 
-            System.out.println("i = " + this.solution1(10000));
+//            System.out.println("n = 3일 경우 " + this.solution(3));
+            System.out.println("n = 4일 경우 " + this.solution(4));
+            System.out.println("n = 5일 경우 " + this.solution(5));
         }
 
-        /**
-         * F(2) = F(0) + F(1)
-         * F(3) = F(1) + F(2)
-         * F(4) = F(2) + F(3)
-         * F(n) = F(n-2) + F(n-1)
-         */
-        public int solution1(int n) {
+        public int solution(int n) {
 
-            long n1 = 0; //F(n - 2)
-            long n2 = 1; //F(n - 1)
-            long sum = 0; //F(n)
-
-            for (int i = 2; i <= n; i++) {
-                System.out.print("i = " + i + " n1 = " + n1 + " n2 = " + n2);
-//                System.out.print(" n1 = " + (n1 % 1234567) + " n2 = " + n2 % 1234567);
-
-                sum = (n1 + n2) % 1234567;
-                n1 = n2;
-                n2 = sum;
-                System.out.println(" sum = " + sum);
+            if (n == 0) {
+                return 0;
+            } else if(n <= 2){
+                return 1;
             }
 
-            return (int) sum;
+            int left = 1;
+            int right = 1;
+
+            /**
+             * n = 3일 경우
+             * left = 1, right = 1 + 1
+             *
+             * n = 5일 경우
+             * i= 2, left = 1, right = 2
+             * i= 3, left = 2, right = 3
+             * i= 4, left = 3, right = 5
+             */
+            for (int i = 2; i < n; i++) {
+                int temp = left % 1234567;
+                left = right;
+                right = temp + right;
+
+            }
+
+            return right % 1234567;
         }
+
+        public int reclusive(int n, Map<Integer, Integer> cache){
+
+            if(cache.containsKey(n)) {
+                return cache.get(n);
+            }
+
+
+            int left = this.solution(n - 2);
+            int right = this.solution(n - 1);
+
+            cache.put(n - 2, left  % 1234567);
+            cache.put(n - 1, right);
+
+            return left + right;
+        }
+
 
     }
 
@@ -446,7 +471,10 @@ public class ProgrammersLevel2 {
     class 점프와_순간_이동 {
         @Test
         public void solution() {
-            this.solution(6);
+
+            System.out.println("5일 경우 " + this.solution(5));
+            System.out.println("6일 경우 " + this.solution(6));
+            System.out.println("5000일 경우 " + this.solution(5000));
         }
 
         /**
@@ -461,55 +489,52 @@ public class ProgrammersLevel2 {
          * depth = 2, {(Node=k=1, p=4), (Node=k=2, p=3), (Node=k=2, p=4), (Node=k=3, p=3)}
          */
         public int solution(int n) {
+            int ans = 0;
 
+            // 값 초기화
+            Node node = new Node(1, 1);
             Queue<Node> queue = new LinkedList<>();
-            queue.add(new Node(1, 1));
+            queue.add(node);
 
-            while (true) {
-                int length = queue.size();
-                int depth = (length * 2) / 2;
 
-                for (int i = 0; i < depth; i++) {
-                    Node node = queue.poll();
+            while (!queue.isEmpty()) {
 
-                    //목표지점이 동일하면 리턴
-                    if (node.getP() == n) {
-                        return node.getK();
-                    }
-
-                    //순간이동
-                    Node leftNode = node.createTeleportingNode(node);
-                    //점프
-                    Node rightNode = node.createJumpingNode(node);
-
-                    queue.offer(leftNode);
-                    queue.offer(rightNode);
-
+                // 현재 depth의 모든 노드들을 꺼내서 자식 노드들로 변환
+                List<Node> childNodes = new ArrayList<>();
+                while (!queue.isEmpty()) {
+                    childNodes.add(queue.poll());
                 }
-//                System.out.println("queue = " + queue);
+
+                // 자식 노드들 중에서 목표 지점에 도달한 노드가 있는지 확인
+                OptionalInt optionalInt = childNodes.stream()
+                        .filter(x -> x.getP() == n)
+                        .mapToInt(Node::getK)
+                        .min();
+
+                // 목표 지점에 도달한 노드가 있다면, 그 중에서 배터리 사용량이 가장 적은 값을 답으로 설정하고 종료
+                if(optionalInt.isPresent()) {
+                    ans = optionalInt.getAsInt();
+                    break;
+                }
+
+                // 자식 노드들을 다시 큐에 추가하여 다음 depth로 진행
+                for (Node childNode : childNodes) {
+                    queue.add(new Node(childNode.getK() + 1, childNode.getP() + 1));
+                    queue.add(new Node(childNode.getK(), childNode.getP() * 2));
+                }
             }
 
-//            return 1;
+            return ans;
         }
 
-
-        public static class Node {
-            int k;
-            int p;
+        private static class Node {
+            private final int k;
+            private final int p;
 
             public Node(int k, int p) {
                 this.k = k;
                 this.p = p;
             }
-
-            public Node createJumpingNode(Node node) {
-                return new Node(node.k + 1, node.p + 1);
-            }
-
-            public Node createTeleportingNode(Node node) {
-                return new Node(node.k, node.p * 2);
-            }
-
 
             public int getK() {
                 return k;
@@ -517,15 +542,6 @@ public class ProgrammersLevel2 {
 
             public int getP() {
                 return p;
-            }
-
-
-            @Override
-            public String toString() {
-                return "Node{" +
-                        "k=" + k +
-                        ", p=" + p +
-                        '}';
             }
         }
 
@@ -770,7 +786,9 @@ public class ProgrammersLevel2 {
             //given
 
             //when
-            this.solution2(4);
+            System.out.println("n = 4일 경우: " + this.solution(4));
+            System.out.println("n = 3일 경우: " + this.solution(3));
+            this.solution(4);
             //then
         }
 
@@ -782,89 +800,33 @@ public class ProgrammersLevel2 {
          * depth = 3 stack = {3, 4, 4, 5, 4, 5, 5, 6}, answer = 4
          * depth = 4 stack = {4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8}
          */
-        public long solution1(int n) {
-            long answer = 0;
+        public long solution(int n) {
+            long answer = 1;
+            if(n == 1) {
+                return answer;
+            }
 
-            Queue<Integer> queue = new LinkedList<>();
-            queue.add(0);
+            Queue<Long> queue = new LinkedList<>();
+            queue.add(1L);
+            queue.add(2L);
 
-            int depth = 1;
-
-            while (depth <= n) {
-                int size = queue.size();
-                for (int i = 0; i < size; i++) {
-                    Integer poll = queue.poll();
-                    int leftNode = poll + 1;
-                    int rightNode = poll + 2;
-
-                    if (leftNode == n) {
+            for (int i = 1; i < n; i++) {
+                Queue<Long> childQueue = new LinkedList<>();
+                while (!queue.isEmpty()) {
+                    Long poll = queue.poll();
+                    if(poll == n) {
                         answer++;
                     }
 
-                    if (rightNode == n) {
-                        answer++;
-                    }
-
-                    queue.add(leftNode);
-                    queue.add(rightNode);
-
+                    childQueue.add(poll + 1);
+                    childQueue.add(poll + 2);
                 }
 
-//                System.out.println("depth = " + depth + " queue = " + queue + " answer = " + answer);
-                depth++;
-
-            }
-
-
-            return answer % 1234567;
-        }
-
-        public long solution2(int n) {
-            long answer = 0;
-            if (n <= 2) {
-                return n;
-            }
-            Queue<Integer> leftQueue = new LinkedList<>();
-            leftQueue.add(1);
-
-            Queue<Integer> rightQueue = new LinkedList<>();
-            rightQueue.add(2);
-
-            int depth = 2;
-            while (depth <= n) {
-                int size = leftQueue.size();
-                for (int i = 0; i < size; i++) {
-                    answer += this.getAnswer(n, leftQueue);
-                    answer += this.getAnswer(n, rightQueue);
-                }
-
-
-//                System.out.println("depth = " + depth + " leftQueue = " + leftQueue + " rightQueue = " + rightQueue + " answer = " + answer);
-                depth++;
+                queue.addAll(childQueue);
             }
 
             return answer % 1234567;
         }
-
-        public long getAnswer(int n, Queue<Integer> queue) {
-            long answer = 0;
-            Integer poll = queue.poll();
-            int leftNode = poll + 1;
-            int rightNode = poll + 2;
-
-            if (leftNode == n) {
-                answer++;
-            }
-
-            if (rightNode == n) {
-                answer++;
-            }
-
-            queue.add(leftNode);
-            queue.add(rightNode);
-            return answer;
-        }
-
     }
 
     @Nested
@@ -1088,8 +1050,9 @@ public class ProgrammersLevel2 {
 
         @Test
         public void solution() {
-            this.solution(new int[]{7, 9, 1});
-//            this.solution(new int[]{7, 9, 1, 1, 4});
+//            this.solution(new int[]{7, 9, 1});
+
+            System.out.println(this.solution(new int[]{1}));
         }
 
 
@@ -1097,32 +1060,33 @@ public class ProgrammersLevel2 {
          * elements = {7, 9, 1, 1, 4}
          */
         public int solution(int[] elements) {
-            SortedSet<Integer> set = new TreeSet<>();
-            int length = elements.length;
-            int start = 1;
 
-            while (start <= length) {
-                LinkedList<Integer> list = new LinkedList<>();
-                for (int i = 0; i < length; i++) {
-                    list.add(elements[i]);
-                }
+            HashSet<Integer> set = new HashSet<>();
+            LinkedList<Integer> indexes = IntStream.range(0, elements.length)
+                    .boxed()
+                    .collect(Collectors.toCollection(LinkedList::new));
+            int sumLength = 1;
 
-                //연속도니 합의 수열을 구하는 방법
-                for (int i = 0; i < length; i++) {
+            for (int i = 0; i < elements.length; i++) {
+                for (int j = 0; j <= elements.length; j++) {
                     int sum = 0;
-                    for (int j = 0; j < start; j++) {
-                        Integer value = list.pollFirst();
-                        sum += value;
-                        list.addLast(value);
+                    for (int k = 0; k < sumLength; k++) {
+                        sum += elements[indexes.get(k)];
                     }
+                    indexes.addLast(indexes.pollFirst());
                     set.add(sum);
                 }
+                indexes.addLast(indexes.pollFirst());
 
-                System.out.println("start = " + start + " set = " + set);
-                start++;
+                sumLength++;
             }
 
+            System.out.println("set = " + set);
             return set.size();
+        }
+
+        public static class Node {
+
         }
     }
 
@@ -2047,6 +2011,115 @@ public class ProgrammersLevel2 {
     }
 
     @Nested
+    class 이중우선순위큐 {
+
+
+        @Test
+        void solution() {
+            System.out.println(Arrays.toString(this.solution(new String[]{"I 16", "I -5643", "D -1", "D 1", "D 1", "I 123", "D -1"})));
+            System.out.println(Arrays.toString(this.solution(new String[]{"I -45", "I 653", "D 1", "I -642", "I 45", "I 97", "D 1", "D -1", "I 333"})));
+
+        }
+
+        public int[] solution(String[] operations) {
+            TreeMap<Integer, Queue<Integer>> map = new TreeMap<>();
+            for (String operation : operations) {
+
+                if(operation.startsWith("I ")) {
+                    // 삽입
+                    int key = Integer.parseInt(operation.substring(2));
+                    Queue<Integer> queue = map.getOrDefault(key, new LinkedList<>());
+                    queue.add(key);
+                    map.put(key, queue);
+                    continue;
+                }
+
+                // 빈 데이터 삭제 명령어 무시
+                if(map.isEmpty()) {
+                    continue;
+                }
+
+                int key = 0;
+                if("D 1".equals(operation)) {
+                    // 최댓값 삭제
+                    key = map.lastKey();
+                }else if("D -1".equals(operation)){
+                    // 최솟값 삭제
+                    key = map.firstKey();
+                }
+
+                Queue<Integer> queue = map.get(key);
+                queue.poll();
+
+                if(queue.isEmpty()) {
+                    map.remove(key);
+                }
+
+            }
+
+            if(map.isEmpty()) {
+                return new int[]{0, 0};
+            }
+
+            return new int[]{map.lastKey(), map.firstKey()};
+        }
+    }
+
+    @Nested
+    class 야근_지수 {
+
+        @Test
+        void solution() {
+        }
+
+        public long solution(int n, int[] works) {
+
+
+            long answer = 0;
+
+
+            return answer;
+        }
+    }
+
+
+    @Nested
+    class 더_맵게 {
+
+        public int solution(int[] scoville, int K) {
+            PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+            for (Integer s : scoville) {
+                priorityQueue.add(s);
+            }
+
+
+            int answer = 0;
+            int minScoville = -1;
+            while (priorityQueue.size() > 1) {
+
+                Integer poll1 = priorityQueue.poll();
+                Integer poll2 = priorityQueue.poll();
+
+                // 섞기 전에 두 음식의 스코빌 지수가 K 미만일 경우
+                if(poll1 < K || poll2 < K) {
+                    answer++;
+                    // 공식에 따라서 섞어줌
+                    minScoville = poll1 + (poll2 * 2);
+                    priorityQueue.offer(minScoville);
+                    continue;
+                }
+
+                break;
+            }
+
+            if(minScoville < K) {
+                return - 1;
+            }
+
+            return answer;
+        }
+    }
+    @Nested
     class 압축 {
 
 
@@ -2057,6 +2130,35 @@ public class ProgrammersLevel2 {
         }
     }
 
+    @Nested
+    class 단어_변환 {
+
+        public int solution(String begin, String target, String[] words) {
+            int answer = 0;
+
+            boolean isExist = Arrays.stream(words)
+                    .anyMatch(x -> x.equals(target));
+            if(!isExist) {
+                return answer;
+            }
+
+            Map<String, List<String>> graph = new HashMap<>();
+
+            for (int i = 0; i < words.length; i++) {
+                if(begin.equals(words[i])) {
+                    continue;
+                }
+
+                graph.put(words[i], new ArrayList<>());
+
+            }
+
+            // 시작
+
+
+            return answer;
+        }
+    }
     @Nested
     class 가장_큰_수 {
 
