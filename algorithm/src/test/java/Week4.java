@@ -14,8 +14,8 @@ public class Week4 {
         void solution() {
 
             this.solution(4,
-                    List.of(4, 10, 15),
-                    List.of(20, 5, 10),
+                    new int[]{4, 10, 15},
+                    new int[]{20, 5, 10},
                     30);
         }
 
@@ -26,31 +26,26 @@ public class Week4 {
          * @param supplies: 밀가루 공급 수량
          * @param k: 밀가루 공급 가능 일자
          */
-        public int solution(int stock, List<Integer> dates, List<Integer> supplies, int k){
-            int now = stock;
-            int need = k - stock;
+        public int solution(int stock, int[] dates, int[] supplies, int k){
 
-            PriorityQueue<Integer> pq = new PriorityQueue<>();
-            int start = 0;
-            int end = dates.size() - 1;
+            PriorityQueue<Supply> pq = new PriorityQueue<>(Comparator.reverseOrder());
+            for (int i = 0; i < dates.length; i++) {
+                pq.add(new Supply(dates[i], supplies[i]));
+            }
+
+            int answer = 0;
+            while (stock <= k) {
+                Supply supply = pq.poll();
+                if(stock > supply.getDate()) {
+
+                }
+            }
+
 
             return 0;
         }
 
-//        public int getDate(List<Integer> dates, List<Integer> supplies, int start){
-//            PriorityQueue<Integer> queue = new PriorityQueue<>();
-//            int length = dates.size();
-//
-//            for (int i = 0; i < start; i++) {
-//                queue.poll();
-//            }
-//
-//
-//        }
-
-
-
-        private static class Supply {
+        private static class Supply implements Comparable<Supply> {
             private final int date;
             private final int supply;
 
@@ -59,12 +54,20 @@ public class Week4 {
                 this.supply = supply;
             }
 
+
+
             public int getDate() {
                 return date;
             }
 
             public int getSupply() {
                 return supply;
+            }
+
+
+            @Override
+            public int compareTo(Supply o) {
+                return Integer.compare(this.supply, o.supply);
             }
         }
     }
@@ -87,20 +90,22 @@ public class Week4 {
             int y = roomMap[0].length + c - 1;
             boolean isStop = false;
             int result = 0;
-            Robot robot = new Robot(x, y, d);
-            if(robot.clean(roomMap)) {
-                result++;
+
+
+            while (!isStop) {
+                Robot robot = new Robot(x, y, d);
+                if(robot.clean(roomMap)) {
+                    result++;
+                    continue;
+                }
+
+                if(!robot.moveAndClean(roomMap)) {
+
+                }
+
             }
 
-            robot.turnLeft();
-//            if(robot.canClean(roomMap)) {
-//                robot.moved();
-//                robot.clean(roomMap);
-//            };
-            while (true) {
-
-            }
-
+            return result;
         }
 
         static class Robot {
@@ -114,18 +119,110 @@ public class Week4 {
                 this.d = d;
             }
 
-
-
             /**
              * 청소 가능가 가능하면 청소
              */
             public boolean clean(int[][] roomMap) {
                 boolean canClean = roomMap[y][x] == 0;
                 if(canClean) {
-                    roomMap[y][x] = 1;
+                    roomMap[y][x] = 2;
                     return true;
                 }
                 return false;
+            }
+
+            /**
+             * 방향 전환 값
+             */
+            private int getChangeDirection(){
+                if(d == 0) {
+                    return 3;
+                } else if(d == 1) {
+                    return 0;
+                } else if(d == 2) {
+                    return 1;
+                } else if(d == 3) {
+                    return 2;
+                }
+
+                throw new IllegalArgumentException("Invalid direction");
+            }
+
+            public boolean moveAndClean(int[][] roomMap){
+
+                int x = this.x;
+                int y = this.y;
+                int changeDirection = d;
+                boolean canMove = false;
+                for (int i = 0; i < 4; i++) {
+
+                    changeDirection = this.getChangeDirection();
+                    if(changeDirection == 0){
+                        y = y - 1;
+                    }else if(changeDirection == 1){
+                        x = x + 1;
+                    }else if(changeDirection == 2){
+                        y = y + 1;
+                    }else if (changeDirection == 3){
+                        x = x - 1;
+                    }
+
+                    // 범위를 벗어나는 경우
+                    if(x < 0 || y < 0 || y >= roomMap.length || x >= roomMap[0].length){
+                        continue;
+                    }
+
+                    // 벽이거나 청소가 이미 되어있는 경우
+                    if(roomMap[y][x] == 1 || roomMap[y][x] == 2){
+                        continue;
+                    }
+
+                    canMove = true;
+
+                    break;
+                }
+
+                if(!canMove) {
+                    return false;
+                }
+
+                this.x = x;
+                this.y = y;
+                this.d = changeDirection;
+                return this.clean(roomMap);
+            }
+
+            public boolean moveBackAndClean(int[][] roomMap){
+                int x = this.x;
+                int y = this.y;
+
+                if(d == 0){
+                    x = x;
+                    y = y + 1;
+                }else if(d == 1){
+                    x = x - 1;
+                    y = y;
+                }else if(d == 2){
+                    x = x;
+                    y = y - 1;
+                }else if (d == 3){
+                    x = x + 1;
+                    y = y;
+                }
+
+                // 범위를 벗어나는 경우
+                if(x < 0 || y < 0 || y >= roomMap.length || x >= roomMap[0].length){
+                    return false;
+                }
+
+                // 벽인 경우
+                if(roomMap[y][x] == 1){
+                    return false;
+                }
+
+                this.x = x;
+                this.y = y;
+                return this.moveAndClean(roomMap);
             }
 
 

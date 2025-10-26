@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class ProgrammersLevel2 {
 
@@ -1052,7 +1051,7 @@ public class ProgrammersLevel2 {
         public void solution() {
 //            this.solution(new int[]{7, 9, 1});
 
-            System.out.println(this.solution(new int[]{1}));
+            System.out.println(this.solution(new int[]{7, 9, 1, 1, 4}));
         }
 
 
@@ -1062,26 +1061,26 @@ public class ProgrammersLevel2 {
         public int solution(int[] elements) {
 
             HashSet<Integer> set = new HashSet<>();
-            LinkedList<Integer> indexes = IntStream.range(0, elements.length)
-                    .boxed()
-                    .collect(Collectors.toCollection(LinkedList::new));
+
+            int[] circleElements = new int[2 * elements.length - 1];
+            System.arraycopy(elements, 0, circleElements, 0, elements.length);
+            System.arraycopy(elements, 0, circleElements, elements.length, elements.length - 1);
+
+            // 모든 원소를 더한 경우의 수는 한가지
+            set.add(Arrays.stream(elements).sum());
+
             int sumLength = 1;
 
-            for (int i = 0; i < elements.length; i++) {
-                for (int j = 0; j <= elements.length; j++) {
+            for (int i = 0; i < elements.length - 1; i++) {
+                for (int j = 0; j < elements.length; j++) {
                     int sum = 0;
-                    for (int k = 0; k < sumLength; k++) {
-                        sum += elements[indexes.get(k)];
+                    for (int k = j; k < j + sumLength; k++) {
+                        sum += circleElements[k];
                     }
-                    indexes.addLast(indexes.pollFirst());
                     set.add(sum);
                 }
-                indexes.addLast(indexes.pollFirst());
-
                 sumLength++;
             }
-
-            System.out.println("set = " + set);
             return set.size();
         }
 
@@ -1773,6 +1772,149 @@ public class ProgrammersLevel2 {
         }
     }
 
+    @Nested
+    class 게임_맵_최단거리 {
+        @Test
+        void solution() {
+
+            int[][] maps = {
+                    {1, 0, 1, 1, 1},
+                    {1, 0, 1, 0, 1},
+                    {1, 0, 1, 1, 1},
+                    {1, 1, 1, 0, 1},
+                    {0, 0, 0, 0, 1}
+            };
+            int solution = this.solution(maps);
+            System.out.println("solution = " + solution);
+        }
+
+        public int solution(int[][] maps) {
+            int answer = 1;
+
+            Set<Node> visitedNodes = new HashSet<>();
+            Queue<Node> queue = new LinkedList<>();
+
+            // 종료 지점을 시작 노드로 셋팅
+            Node node = new Node(maps[0].length - 1, maps.length - 1);
+            queue.add(node);
+
+            while (!queue.isEmpty()) {
+//                System.out.println(queue);
+
+                LinkedList<Node> nearNodes = new LinkedList<>();
+                while (!queue.isEmpty()) {
+                    Node nowNode = queue.poll();
+                    // 방문 이력 추가
+                    visitedNodes.add(nowNode);
+                    // 방문 이력을 제외한, 인접 노드 조회
+                    nearNodes.addAll(this.nearNodes(maps, nowNode, visitedNodes));
+                }
+
+                // 인접 노드가 없을 경우 종료
+                if(nearNodes.isEmpty()) {
+                    break;
+                }
+
+                // 인접 노드 큐에 추가
+                for (Node nearNode : nearNodes) {
+                    if(!visitedNodes.contains(nearNode)) {
+                        queue.add(nearNode);
+                    }
+                }
+
+                answer++;
+            }
+
+            return visitedNodes.contains(new Node(0, 0)) ? answer : -1;
+        }
+
+        private LinkedList<Node> nearNodes(int[][] maps, Node node, Set<Node> visitedNodes) {
+            LinkedList<Node> list = new LinkedList<>();
+
+            Node leftNode = node.movedNode("left", maps);
+            if(leftNode != null && !visitedNodes.contains(leftNode)) {
+                list.add(leftNode);
+            }
+
+            Node rightNode = node.movedNode("right", maps);
+            if(rightNode != null && !visitedNodes.contains(rightNode)) {
+                list.add(rightNode);
+            }
+
+            Node upNode = node.movedNode("up", maps);
+            if(upNode != null && !visitedNodes.contains(upNode)) {
+                list.add(upNode);
+            }
+
+            Node downNode = node.movedNode("down", maps);
+            if(downNode != null && !visitedNodes.contains(downNode)) {
+                list.add(downNode);
+            }
+
+            return list;
+        }
+
+        private static class Node {
+            private final int x;
+            private final int y;
+
+            public Node(int x, int y) {
+                this.x = x;
+                this.y = y;
+            }
+
+            public Node movedNode(String direction, int[][] maps){
+                int x = this.x;
+                int y = this.y;
+
+                if("left".equals(direction)) {
+                    x = x - 1;
+                } else if("right".equals(direction)) {
+                    x = x + 1;
+                } else if("up".equals(direction)) {
+                    y = y - 1;
+                } else if("down".equals(direction)) {
+                    y = y + 1;
+                }else {
+                    throw new IllegalArgumentException("해당 방향으로 이동할 수 없습니다. direction = " + direction);
+                }
+
+                // 음수 좌표인 경우
+                if(x < 0 || y < 0) {
+                    return null;
+                }
+
+                // 맵의 범위를 벗어난 경우
+                if(x >= maps[0].length || y >= maps.length) {
+                    return null;
+                }
+
+                // 이동할 수 없는 칸인 경우
+                if(maps[y][x] == 0) {
+                    return null;
+                }
+
+                return new Node(x, y);
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (o == null || getClass() != o.getClass()) return false;
+                Node node = (Node) o;
+                return x == node.x && y == node.y;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(x, y);
+            }
+
+            @Override
+            public String toString() {
+                return "{x:" + x + ", y:" + y +"}";
+            }
+        }
+    }
     @Nested
     class 방문_길이 {
 
