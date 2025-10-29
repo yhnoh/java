@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ProgrammersLevel2 {
 
@@ -1533,6 +1532,10 @@ public class ProgrammersLevel2 {
     class 피로도 {
 
 
+        @Test
+        void solution() {
+        }
+
         /**
          * 일정 피로도가 있어야 던전 탐험 가능
          * <p>
@@ -1547,13 +1550,61 @@ public class ProgrammersLevel2 {
         public int solution(int k, int[][] dungeons) {
             int answer = 0;
 
+            PriorityQueue<Fatigue> priorityQueue = new PriorityQueue<>();
+            for (int[] dungeon : dungeons) {
+                Fatigue fatigue = new Fatigue(dungeon[0], dungeon[1]);
+                priorityQueue.add(fatigue);
+            }
+
+            System.out.println("priorityQueue = " + priorityQueue);
+
+            while (!priorityQueue.isEmpty()) {
+                Fatigue fatigue = priorityQueue.poll();
+                // 현재 피로도가 최소 필요 피로도 이상인 경우
+                if (k >= fatigue.getNeed()) {
+                    k -= fatigue.getUse();
+                    answer++;
+                }
+            }
+
+
+
             return answer;
         }
 
-        public boolean canExplore(int currentFatigue, int need, int use) {
-            return currentFatigue >= need && currentFatigue - use >= 0;
-        }
+        private static class Fatigue implements Comparable<Fatigue> {
+            private final int need;
+            private final int use;
 
+            public Fatigue(int need, int use) {
+                this.need = need;
+                this.use = use;
+            }
+
+            @Override
+            public String toString() {
+                return "{need: " + need + ", use: " + use + "}";
+            }
+
+            public int getNeed() {
+                return need;
+            }
+
+            public int getUse() {
+                return use;
+            }
+
+            @Override
+            public int compareTo(Fatigue o) {
+                // 최소 피로도 높으순 정렬
+                if(this.use != o.use) {
+                    return Integer.compare(this.use, o.use);
+                }
+
+                //소모 피로도 낮은순 정렬
+                return Integer.compare(this.need, o.need) * -1;
+            }
+        }
     }
 
     @Nested
@@ -2304,17 +2355,72 @@ public class ProgrammersLevel2 {
     @Nested
     class 가장_큰_수 {
 
+        @Test
+        public void solution() {
 
+
+//            System.out.println(this.solution(new int[]{6, 10, 2}));
+            System.out.println(this.solution(new int[]{3, 30, 34, 5, 9}));
+        }
 
 
         public String solution(int[] numbers) {
-            String answer = "";
+            StringBuilder answer = new StringBuilder();
 
+            // 하나의 Char로 비교하여 가장 큰 숫자로 정렬하기 위해 우선순위 큐 사용
+            PriorityQueue<SortedNumber> sortedNumbers = new PriorityQueue<>();
             for (int i = 0; i < numbers.length; i++) {
-
+                sortedNumbers.add(new SortedNumber(numbers[i]));
             }
-            return answer;
+
+            String firstNumber = sortedNumbers.poll().getNumber();
+            // 모든 숫자가 0인 경우
+            if("0".equals(firstNumber)) {
+                return "0";
+            }
+
+            answer.append(firstNumber);
+            // 정렬된 숫자들을 하나씩 꺼내서 문자열로 합침
+            while (!sortedNumbers.isEmpty()) {
+                answer.append(sortedNumbers.poll().getNumber());
+            }
+
+            return answer.toString();
         }
+
+        private static class SortedNumber implements Comparable<SortedNumber> {
+
+            private final String number;
+
+            public SortedNumber(int number) {
+                this.number = String.valueOf(number);
+            }
+
+            @Override
+            public int compareTo(SortedNumber o) {
+
+                int length = number.length();
+                int otherLength = o.number.length();
+                int lastIndex = length - 1;
+                int otherLastIndex = otherLength - 1;
+                int maxLength = Math.max(length, otherLength);
+
+                for (int i = 0; i < maxLength; i++) {
+                    char thisChar = lastIndex > i ? number.charAt(i) : number.charAt(lastIndex);
+                    char oChar = otherLastIndex > i ? o.number.charAt(i) : o.number.charAt(otherLastIndex);
+                    if(thisChar != oChar) {
+                        return Character.compare(thisChar, oChar) * -1;
+                    }
+                }
+
+                return 0;
+            }
+
+            public String getNumber() {
+                return number;
+            }
+        }
+
     }
 
     @Nested
@@ -2322,87 +2428,48 @@ public class ProgrammersLevel2 {
 
         @Test
         public void solution() {
-            int[] result1 = this.solution(new String[]{"classic", "pop", "classic", "classic", "pop"}, new int[]{500, 600, 150, 800, 2500});
+            int[] result1 = this.solution(new String[]{"classic", "pop", "classic", "classic", "pop", "classic"}, new int[]{500, 600, 150, 800, 2500, 800});
             System.out.println("result1 = " + Arrays.toString(result1));
         }
 
         public int[] solution(String[] genres, int[] plays) {
-            List<Integer> answer = new ArrayList<>();
 
-            Map<String, Genre> genreMap = new HashMap<>();
-            Map<String, SortedSet<Play>> playMap = new HashMap<>();
+
+            // 장르별 재생 수 합계 맵 (내림차순)
+            Map<String, Integer> genrePlayCountMap = new TreeMap<>(Comparator.reverseOrder());
+
+            // 장르별 재생 목록 맵
+            Map<String, PriorityQueue<Play>> genrePlayMap = new HashMap<>();
+
             int length = genres.length;
             for (int i = 0; i < length; i++) {
-
-                String genreName = genres[i];
+                String genre = genres[i];
                 int playCount = plays[i];
 
-                Genre genre = genreMap.getOrDefault(genreName, new Genre(genreName));
-                genre.addPlayCount(playCount);
-                genreMap.put(genreName, genre);
+                genrePlayCountMap.put(genre, genrePlayCountMap.getOrDefault(genre, 0) + playCount);
 
-                Play play = new Play(i, playCount);
-                SortedSet<Play> playSet = playMap.getOrDefault(genreName, new TreeSet<>());
-                playSet.add(play);
-                playMap.put(genreName, playSet);
+                PriorityQueue<Play> playQueue = genrePlayMap.getOrDefault(genre, new PriorityQueue<>());
+                playQueue.add(new Play(i, playCount));
+                genrePlayMap.put(genre, playQueue);
             }
 
-            List<Genre> genreList = genreMap.values().stream()
-                    .sorted()
-                    .collect(Collectors.toList());
+            List<Integer> result = new LinkedList<>();
 
-            for (Genre genre : genreList) {
-                String name = genre.getName();
-                SortedSet<Play> playSet = playMap.get(name);
+            for (String genre : genrePlayCountMap.keySet()) {
 
-                int i = 0;
-                for (Play play : playSet) {
-                    if(i == 2) {
+                PriorityQueue<Play> playQueue = genrePlayMap.get(genre);
+
+                // 한 장르에서 많이 재생된 노래 2곡씩 추가
+                for (int i = 0; i < 2; i++) {
+                    if(playQueue.isEmpty()) {
                         break;
                     }
-                    answer.add(play.getIndex());
-                    i++;
+                    Play play = playQueue.poll();
+                    result.add(play.getIndex());
                 }
             }
 
-
-            return answer.stream()
-                    .mapToInt(Integer::intValue)
-                    .toArray();
-        }
-
-        static class Genre implements Comparable<Genre>{
-            private final String name;
-            private int playCount;
-
-            public Genre(String name) {
-                this.name = name;
-            }
-
-            public void addPlayCount(int playCount) {
-                this.playCount += playCount;
-            }
-
-            @Override
-            public int compareTo(Genre o) {
-                return Integer.compare(playCount, o.playCount) * -1;
-            }
-
-            @Override
-            public String toString() {
-                return "Genre{" +
-                        "name='" + name + '\'' +
-                        ", playCount=" + playCount +
-                        '}';
-            }
-
-            public String getName() {
-                return name;
-            }
-
-            public int getPlayCount() {
-                return playCount;
-            }
+            return result.stream().mapToInt(Integer::intValue).toArray();
         }
 
         static class Play implements Comparable<Play>{
@@ -2423,12 +2490,12 @@ public class ProgrammersLevel2 {
                 return Integer.compare(index, o.index);
             }
 
-            public int getPlayCount() {
-                return playCount;
-            }
-
             public int getIndex() {
                 return index;
+            }
+
+            public int getPlayCount() {
+                return playCount;
             }
 
             @Override
@@ -2537,9 +2604,169 @@ public class ProgrammersLevel2 {
                         '}';
             }
         }
+    }
+
+
+    @Nested
+    class 네트워크 {
+
+        @Test
+        void solution(){
+            int n = 3;
+            int[][] computers = {
+                    {1, 1, 0},
+                    {1, 1, 0},
+                    {0, 0, 1}
+            };
+            this.solution(n, computers);
+
+            computers = new int[][]{
+                    {1, 1, 0},
+                    {1, 1, 1},
+                    {0, 1, 1}
+            };
+            this.solution(n, computers);
+        }
+
+        public int solution(int n, int[][] computers) {
+            int answer = 0;
+
+            Map<Integer, List<Integer>> graph = new LinkedHashMap<>();
+            int start = 0;
+            graph.put(start, new LinkedList<>());
+
+            for (int i = 1; i < n; i++) {
+
+                boolean isConnected = computers[i][i - 1] == 1 && computers[i - 1][i] == 1;
+                if(isConnected) {
+                    List<Integer> list = graph.get(start);
+                    list.add(i);
+                    graph.put(start, list);
+                } else {
+                    graph.put(i, new LinkedList<>());
+                    start = i;
+                }
+            }
+
+//            System.out.println(graph);
+//            for (Integer key : graph.keySet()) {
+//
+//                if(!graph.getOrDefault(key, new LinkedList<>()).isEmpty()) {
+//                    answer++;
+//                }
+//            }
+
+
+            return graph.size();
+        }
+    }
+
+    @Nested
+    class 소수_찾기 {
+        @Test
+        void solution(){
+            System.out.println(Math.sqrt(71));
+            System.out.println(Math.sqrt(24));
+//            System.out.println(this.solution("17"));
+//            System.out.println(this.solution("011"));
+        }
+
+        public int solution(String numbers) {
+            int answer = 0;
+
+            return answer;
+        }
+    }
+
+    @Nested
+    class 디스크_컨트롤러 {
+
+        @Test
+        void solution(){
+            System.out.println(this.solution(new int[][]{
+                    {0, 3},
+                    {1, 9},
+                    {3, 5}
+            }));
+        }
+
+        /**
+         *
+         * @param jobs, 인덱스: 작업 번호, s: 작업 요청 시간, l: 작업 소요 시간
+         * @return 작업 요청부터 종료까지 걸린 평균 시간
+         */
+        public int solution(int[][] jobs) {
+            int length = jobs.length;
+
+//            Worker worker = waitQueue.poll();
+            int requestMillis = jobs[0][0];
+            int requiredMillis = jobs[0][1];
+            int progressMillis = requestMillis + requiredMillis;
+            int answer = requiredMillis - requestMillis;
+
+            PriorityQueue<Worker> waitQueue = new PriorityQueue<>();
+            for (int i = 1; i < length; i++) {
+                waitQueue.add(new Worker(i, jobs[i][0], jobs[i][1]));
+            }
 
 
 
+            while (!waitQueue.isEmpty()) {
+                Worker worker = waitQueue.poll();
+                requestMillis = worker.getRequestMillis();
+                requiredMillis = worker.getRequiredMillis();
 
+
+                if(requestMillis >= progressMillis) {
+                    // 이전 작업이 끝난 이후 요청된 작업인 경우
+                    progressMillis = requiredMillis + requestMillis;
+                    answer += requiredMillis;
+                }else {
+                    // 이전 작업이 진행중인데 요청한 경우
+                    progressMillis += requiredMillis;
+                    answer += progressMillis - requestMillis;
+                }
+            }
+
+            return answer / length;
+        }
+
+        private static class Worker implements Comparable<Worker> {
+
+            private final int number;
+            private final int requestMillis;
+            private final int requiredMillis;
+
+            public Worker(int number, int requestMillis, int requiredMillis) {
+                this.number = number;
+                this.requestMillis = requestMillis;
+                this.requiredMillis = requiredMillis;
+            }
+
+            @Override
+            public int compareTo(Worker o) {
+                if(requiredMillis != o.requiredMillis) {
+                    return Integer.compare(requiredMillis, o.requiredMillis);
+                }
+
+                if(requestMillis != o.requestMillis) {
+                    return Integer.compare(requestMillis, o.requestMillis);
+                }
+
+                return Integer.compare(number, o.number);
+            }
+
+            public int getNumber() {
+                return number;
+            }
+
+            public int getRequestMillis() {
+                return requestMillis;
+            }
+
+            public int getRequiredMillis() {
+                return requiredMillis;
+            }
+        }
     }
 }
