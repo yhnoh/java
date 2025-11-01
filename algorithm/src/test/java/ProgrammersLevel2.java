@@ -487,42 +487,30 @@ public class ProgrammersLevel2 {
          * depth = 2, {(Node=k=1, p=4), (Node=k=2, p=3), (Node=k=2, p=4), (Node=k=3, p=3)}
          */
         public int solution(int n) {
-            int ans = 0;
 
             // 값 초기화
             Node node = new Node(1, 1);
             Queue<Node> queue = new LinkedList<>();
             queue.add(node);
 
+            int caseCount = 1;
+            PriorityQueue<Integer> batteryQueue = new PriorityQueue<>();
 
-            while (!queue.isEmpty()) {
+            while (batteryQueue.isEmpty()) {
 
                 // 현재 depth의 모든 노드들을 꺼내서 자식 노드들로 변환
-                List<Node> childNodes = new ArrayList<>();
-                while (!queue.isEmpty()) {
-                    childNodes.add(queue.poll());
+                for (int i = 0; i < caseCount; i++) {
+                    Node poll = queue.poll();
+                    if(poll.getP() == n) {
+                        batteryQueue.add(poll.getK());
+                    }
+                    queue.add(poll.move());
+                    queue.add(poll.jump());
                 }
-
-                // 자식 노드들 중에서 목표 지점에 도달한 노드가 있는지 확인
-                OptionalInt optionalInt = childNodes.stream()
-                        .filter(x -> x.getP() == n)
-                        .mapToInt(Node::getK)
-                        .min();
-
-                // 목표 지점에 도달한 노드가 있다면, 그 중에서 배터리 사용량이 가장 적은 값을 답으로 설정하고 종료
-                if(optionalInt.isPresent()) {
-                    ans = optionalInt.getAsInt();
-                    break;
-                }
-
-                // 자식 노드들을 다시 큐에 추가하여 다음 depth로 진행
-                for (Node childNode : childNodes) {
-                    queue.add(new Node(childNode.getK() + 1, childNode.getP() + 1));
-                    queue.add(new Node(childNode.getK(), childNode.getP() * 2));
-                }
+                caseCount *= 2;
             }
 
-            return ans;
+            return batteryQueue.poll();
         }
 
         private static class Node {
@@ -541,6 +529,16 @@ public class ProgrammersLevel2 {
             public int getP() {
                 return p;
             }
+
+            public Node move() {
+                return new Node(this.k + 1, this.p + 1);
+            }
+
+            public Node jump(){
+                return new Node(this.k, this.p * 2);
+            }
+
+
         }
 
     }
@@ -835,55 +833,43 @@ public class ProgrammersLevel2 {
             //given
 
             //when
-            int solution = this.solution(new int[]{2, 6, 8, 14});
-            System.out.println("solution = " + solution);
+
+            System.out.println(this.solution(new int[]{2, 7}));
+            System.out.println(this.solution(new int[]{2, 6, 8, 14}));
+            System.out.println(this.solution(new int[]{1, 2, 3}));
             //then
         }
 
         public int solution(int[] arr) {
-            int answer = 1;
 
             Arrays.sort(arr);
-
             int length = arr.length;
 
-            int min = 2;
-            int max = arr[length - 1];
-            boolean isContinue = true;
-            while (isContinue) {
+            int answer = 1;
+            while (true) {
+                int divideNum = arr[0];
+                if(divideNum == 1) {
+                    break;
+                }
 
-                int divideValue = 1;
-                for (int i = min; i <= max; i++) {
-                    boolean can = true;
-                    int[] tempArr = new int[length];
-
-                    for (int j = 0; j < length; j++) {
-                        //최소공배수가 가능하냐에 대한 여부
-                        if (arr[j] % i != 0) {
-                            can = false;
-                            break;
-                        }
-
-                        tempArr[j] = arr[j] / i;
-                    }
-
-                    //최소공배수가 가능하다면
-                    if (can) {
-                        arr = tempArr;
-                        max = tempArr[length - 1];
-                        divideValue = i;
-                        break;
-                    }
-
-                    //더이상 나눌것이 없다면
-                    if (i == max) {
-                        isContinue = false;
+                boolean isAllDivided = true;
+                for (int i = 0; i < length; i++) {
+                    if(arr[i] % divideNum != 0) {
+                        isAllDivided = false;
                         break;
                     }
                 }
 
-                answer *= divideValue;
-//                System.out.println("arr" + Arrays.toString(arr) + " divideValue = " + divideValue + " answer = " + answer);
+                if(!isAllDivided) {
+                    break;
+                }
+
+
+                for (int i = 0; i < length; i++) {
+                    arr[i] = arr[i] / divideNum;
+                }
+
+                answer *= divideNum;
             }
 
             for (int i = 0; i < length; i++) {
@@ -892,6 +878,7 @@ public class ProgrammersLevel2 {
 
             return answer;
         }
+
 
     }
 
