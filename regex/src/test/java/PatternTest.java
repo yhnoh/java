@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1037,4 +1038,595 @@ public class PatternTest {
         }
 
     }
+
+
+    /**
+     * 백레퍼런스(Backreference)
+     * - ()으로 그룹화된 패턴의 값을 다시 참조할 때 사용
+     */
+    @Nested
+    class BackreferenceTest {
+
+
+        @Test
+        void backreferenceTest() {
+
+            /**
+             * (\w+): 그룹1 캡쳐
+             * \s+: 공백 문자 1개 이상
+             * \1: 그룹1과 동일한 내용이 다시 나와야 함 (백레퍼런스)
+             */
+            Pattern pattern = Pattern.compile("(\\w+)\\s+\\1");
+            String text1 = "the the cat";
+            String text2 = "the cat sat";
+
+            Matcher matcher1 = pattern.matcher(text1);
+            Matcher matcher2 = pattern.matcher(text2);
+
+            System.out.println(matcher1.find());
+            System.out.println(matcher2.find());
+
+            /**
+             * 여러 그룹 참조
+             * (\w): 그룹1 캡쳐
+             * (\w): 그룹2 캡쳐
+             * \2: 그룹2와 동일한 문자
+             * \1: 그룹1과 동일한 문자
+             */
+            Pattern pattern2 = Pattern.compile("(\\w)(\\w)\\2\\1");
+            String[] texts = {"abba", "1221", "abcd", "aabb"};
+
+            for(String text : texts) {
+                System.out.println(pattern2.matcher(text).matches());
+            }
+        }
+
+        @Test
+        void findDuplicates() {
+            // 대소문자 구분 없이 단어의 중복 찾기
+            Pattern pattern = Pattern.compile("\\b(\\w+)\\s+\\1\\b", Pattern.CASE_INSENSITIVE);
+            String text = "The the cat sat on the the mat mat";
+
+            List<String> duplicates = new ArrayList<>();
+            Matcher duplicateMatcher = pattern.matcher(text);
+
+            // 중복된 단어 찾기
+            while(duplicateMatcher.find()) {
+                duplicates.add(duplicateMatcher.group(1));
+            }
+            System.out.println("duplicates = " + duplicates);
+
+            // 중복 단어 제거
+            String removedDuplicates = pattern.matcher(text)
+                    .replaceAll("$1");
+            System.out.println("removedDuplicates = " + removedDuplicates);
+        }
+
+        @Test
+        void namedBackreferenceTest(){
+            String text = "The the cat sat on the the mat mat";
+            Pattern pattern = Pattern.compile("\\b(?<word>\\w+)\\s+\\k<word>\\b", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(text);
+            while(matcher.find()) {
+                System.out.println("Found duplicate: " + matcher.group("word"));
+            }
+
+            String[] htmlTags = {
+                    "<p>Hello</p>",           // 매칭
+                    "<div>Content</div>",     // 매칭
+                    "<span>Text</p>",         // 매칭 안됨 (태그 불일치)
+                    "<h1>Title</h2>"          // 매칭 안됨 (태그 불일치)
+            };
+            Pattern htmlTagPattern = Pattern.compile("<(?<tag>\\w+)>.*?</\\k<tag>>",
+                    Pattern.DOTALL);
+            for(String html : htmlTags) {
+                System.out.println("html tag match = " + htmlTagPattern.matcher(html).matches());
+            }
+        }
+
+        @Test
+        void replaceAllTest() {
+            String text = "Jone Doe, Jane Smith, Bob Johnson";
+
+            Pattern pattern = Pattern.compile("(\\w+)\\s+(\\w+)");
+            String result = pattern.matcher(text)
+                    .replaceAll("$2, $1");
+
+            System.out.println("원본 = " + text);
+            System.out.println("변환 = " + result);
+        }
+
+    }
+
+
+    /**
+     * 일치하는 패턴의 문자열을 찾지만, 해당 패턴 자체를 결과에 포함하지 않는 특수한 패턴
+     *
+     * 같은 위치에서 여러 조건을 체크
+     * X(?=Y): X이후 Y가 오는 패턴 (긍정형 전방탐색)
+     * X(?!Y): X이후 Y가 오지 않는 패턴 (부정형 전방탐색)
+     * (?<=Y)X: Y 패턴이후 X가 오는 패턴 (긍정형 후방탐색)
+     * (?<!Y)X: Y 패턴이 아닌 이후 X가 오지 않는 패턴 (부정형 후방탐색)
+     * Lookahead: 접미사를 확인하는 용도
+     * Lookbehind: 접두사를 확인하는 용도
+     * (?=pattern) Positive Lookahead
+     * (?!pattern) Negative Lookahead
+     */
+    @Nested
+    class lookaheadAssertionsTest {
+
+
+        /**
+         *
+         */
+        @Test
+        void lookaheadTest() {
+
+            // Positive Lookahead 예제
+            // 숫자와 "원"을 포함하는 패턴 찾기, "원"은 결과에 포함
+            String text = "price: 100원, tax: 10원, total: 110원";
+
+            Pattern pattern = Pattern.compile("\\d+원");
+            Matcher matcher = pattern.matcher(text);
+
+            while(matcher.find()) {
+                System.out.println(matcher.group());
+            }
+
+            System.out.println();
+
+            // 숫자와 "원"을 포함하는 패턴을 찾되, "원"은 결과에 포함하지 않음
+            Pattern positiveLookaheadPattern = Pattern.compile("\\d+(?=원)");
+            Matcher positiveLookaheadMatcher = positiveLookaheadPattern.matcher(text);
+
+            while(positiveLookaheadMatcher.find()) {
+                System.out.println(positiveLookaheadMatcher.group());
+            }
+
+            // Negative Lookahead 예제
+            String negativeText = "I love Java and JavaScript but not Javadocs";
+
+            // "Java" 다음에 "Script"가 오지 않는 패턴 찾기, "Java"이외의 문자열은 포함하지 않음
+            Pattern negativeLookaheadPattern = Pattern.compile("Java(?!Script)");
+            Matcher negativeLookaheadMatcher = negativeLookaheadPattern.matcher(negativeText);
+
+            while(negativeLookaheadMatcher.find()) {
+                System.out.println(negativeLookaheadMatcher.group());
+            }
+        }
+
+        @Test
+        void passwordValidTest() {
+            Pattern passwordPattern = Pattern.compile(
+                    "^"
+                    + "(?=.*[a-z])" // 소문자 최소 1개
+                    + "(?=.*[A-Z])" // 대문자 최소 1개
+                    + "(?=.*\\d)"   // 숫자 최소 1개
+                    + "(?=.*[@$!%*?&])" // 특수문자 최소 1
+                    + "[A-Za-z\\d@$!%*?&]{8,20}" // 전체 길이 8-20자
+                    + "$"
+            );
+
+            String[] passwords = {
+                    "Pass123!",      // true
+                    "password",      // false (대문자, 숫자, 특수문자 없음)
+                    "PASSWORD123!",  // false (소문자 없음)
+                    "Pass!",         // false (8자 미만, 숫자 없음)
+                    "Pass1234"       // false (특수문자 없음)
+            };
+
+            for(String password : passwords) {
+                System.out.println(password + ": " + passwordPattern.matcher(password)
+                        .matches());
+            }
+        }
+
+        @Test
+        void domainRestrictedEmailValidatorTest() {
+
+
+            String[] emails = {
+                    "user@gmail.com",       // true
+                    "user@naver.com",       // true
+                    "user@kakao.com",       // true
+                    "user@daum.net",        // false
+                    "user@company.com"      // false
+            };
+
+            Pattern pattern = Pattern.compile("^.+@(gmail|naver|kakao)\\.com$");
+
+            for(String email : emails) {
+                System.out.println("email = " + email + ", matches = " + pattern.matcher(email)
+                        .matches());
+            }
+        }
+
+        @Test
+        void safeFilenameValidatorTest() {
+            String[] fileNames = {
+                    "document.txt",         // true
+                    "my-file_123.pdf",      // true
+                    ".hidden",              // false (점으로 시작)
+                    "file..txt",            // false (연속 점)
+                    "noextension",          // false (확장자 없음)
+                    "file.name.txt"         // true
+            };
+
+            Pattern noneArounDot = Pattern.compile("^(?!\\.).+(?!\\.)$");
+            Pattern pattern = Pattern.compile("^(?!\\.)(?!.*\\.\\.)\\.(txt|jpg|pdf)$");
+
+
+            for(String fileName : fileNames) {
+                System.out.println("fileName = " + fileName + ", isValid = " + pattern.matcher(fileName)
+                        .matches());
+            }
+        }
+    }
+
+    @Nested
+    class lookbehindAssertionsTest {
+
+        @Test
+        void lookbehindTest() {
+
+            String text = "price: $100, tax: $10, total: $110";
+            Pattern noneLookBehindPattern = Pattern.compile("\\$\\d+");
+            Matcher noneLookBehindMatcher = noneLookBehindPattern.matcher(text);
+
+            while(noneLookBehindMatcher.find()) {
+                System.out.println(noneLookBehindMatcher.group());
+            }
+
+            System.out.println();
+
+            Pattern positiveLookBehindPattern = Pattern.compile("(?<=\\$)\\d+");
+            Matcher positiveLookBehindMatcher = positiveLookBehindPattern.matcher(text);
+
+            while(positiveLookBehindMatcher.find()) {
+                System.out.println(positiveLookBehindMatcher.group());
+            }
+
+            System.out.println();
+            String negativeLookbehindText = "file.txt image.png document.pdf script.js";
+
+            Pattern negativeLookBehindPattern = Pattern.compile("(?<!file|image)\\.[a-z]{2,}");
+            Matcher negativeLookBehindMatcher = negativeLookBehindPattern.matcher(negativeLookbehindText);
+
+            while(negativeLookBehindMatcher.find()) {
+                System.out.println(negativeLookBehindMatcher.group());
+            }
+        }
+    }
+
+    @Nested
+    class BoundaryMatchersTest {
+
+        /**
+         * \b단어\b: 일치하는 독립단어
+         * \B단어\B: 단어 중간의 일치하는 단어
+         * \b단어 : 단어의 시작
+         * 단어\b : 단어의 끝
+         */
+        @Test
+        void boundaryTest() {
+
+            /**
+             * cat 단어만 찾고 싶지만, category에도 cat이 포함되어 있음
+             */
+            String text = "The cat and category";
+            Pattern pattern = Pattern.compile("cat");
+            Matcher matcher = pattern.matcher(text);
+
+            while(matcher.find()) {
+                System.out.println(matcher.group());
+            }
+
+            System.out.println();
+
+            /**
+             * \b: 단어 경계
+             * 단어 경계를 통해서 "cat"단어만 찾기
+             */
+            Pattern boundaryPattern = Pattern.compile("\\bcat\\b");
+            Matcher boundaryMatcher = boundaryPattern.matcher(text);
+
+            while(boundaryMatcher.find()) {
+                System.out.println(boundaryMatcher.group());
+            }
+
+
+            System.out.println();
+
+            /**
+             * \B: 단어 경계가 아닌 위치
+             * 단어 중간의 "cat" 찾기를 통해서 "scatter" 단어에서만 "cat" 찾기
+             */
+            text = "thecat and category and scatter";
+            Pattern noneBoundaryPattern = Pattern.compile("\\Bcat\\B");
+            Matcher noneBoundaryMatcher = noneBoundaryPattern.matcher(text);
+
+            while(noneBoundaryMatcher.find()) {
+                System.out.println(noneBoundaryMatcher.group());
+            }
+        }
+
+
+        /**
+         * ^: 문자열의 시작, 라인의 시작
+         * $: 문자열의 끝, 라인의 끝
+         */
+        @Test
+        void lineBoundaryTest(){
+            // ^: 문자열 시작
+            Pattern p1 = Pattern.compile("^Hello");
+            System.out.println(p1.matcher("Hello World").find());    // true
+            System.out.println(p1.matcher("Say Hello").find());      // false
+
+            // $: 문자열 끝
+            Pattern p2 = Pattern.compile("World$");
+            System.out.println(p2.matcher("Hello World").find());    // true
+            System.out.println(p2.matcher("World Hello").find());    // false
+
+            // ^ + $: 전체 매칭
+            Pattern p3 = Pattern.compile("^Hello World$");
+            System.out.println(p3.matcher("Hello World").matches());   // true
+            System.out.println(p3.matcher("Hello World!").matches());  // false
+        }
+
+
+        /**
+         * \A: 입력 문자열의 시작
+         * \z: 입력 문자열의 끝
+         * \Z: 입력 문자열의 끝(마지막 줄바꿈 문자 제외)
+         */
+        @Test
+        void absoluteBoundaryTest(){
+            String text = "Line1\nLine2\nLine3";
+
+            Pattern p1 = Pattern.compile("\\ALine1");
+            System.out.println(p1.matcher(text).find()); // true
+
+            Pattern p2 = Pattern.compile("Line3\\z");
+            System.out.println(p2.matcher(text).find()); // true
+
+            String textWithNewline = "Line1\nLine2\nLine3\n";
+            Pattern p3 = Pattern.compile("Line3\\Z");
+            System.out.println(p3.matcher(textWithNewline).find()); // true
+
+            Pattern p4 = Pattern.compile("Line3\\z");
+            System.out.println(p4.matcher(textWithNewline).find()); // false
+        }
+
+        @Test
+        void multilineTest() {
+            String text = "Line1\nLine2\nLine3";
+
+            // 기본모드: ^는 전체 문자열에서 시작만 체크
+            Pattern p1 = Pattern.compile("^Line2");
+            System.out.println(p1.matcher(text).find()); // false
+
+            // 멀티라인 모드: ^가 각 라인의 시작을 체크
+            Pattern p2 = Pattern.compile("^Line2", Pattern.MULTILINE);
+            System.out.println(p2.matcher(text).find()); // true
+
+            // 기본모드: $는 전체 문자열에서 끝만 체크
+            Pattern p3 = Pattern.compile("Line2$");
+            System.out.println(p3.matcher(text).find()); // false
+
+            int a = 1 | 2;
+            // 멀티라인 모드: $가 각 라인의 끝을 체크
+            Pattern p4 = Pattern.compile("Line2$", Pattern.MULTILINE);
+            System.out.println(p4.matcher(text).find()); // true
+
+        }
+
+        @Test
+        void extractDomainTest() {
+            String[] emails = {
+                    "user@example.com",
+                    "admin@company.co.kr",
+                    "test@sub.domain.org"
+            };
+
+            String regex = "(?<=@)[^\\s@]+";
+            Pattern pattern = Pattern.compile(regex);
+
+
+            for(String email : emails) {
+
+                Matcher matcher = pattern.matcher(email);
+                if(matcher.find()) {
+                    System.out.println("group = " + matcher.group());
+                }
+            }
+        }
+
+        public String extractDomain(String email) {
+            Pattern pattern = Pattern.compile("(?<=@)[^\\s@]+");
+            Matcher matcher = pattern.matcher(email);
+            if(matcher.find()) {
+                return matcher.group();
+            }
+            return null;
+        }
+
+        @Test
+        void commentRemoverTest() {
+
+
+            String code = """
+            // This is a comment
+            public class Test {
+                // Another comment
+                int value = 10; // inline comment (keep this)
+                // More comments
+            }
+            """;
+
+
+            System.out.println(this.removeLineComments(code));
+
+        }
+
+        public String removeLineComments(String code) {
+            Pattern pattern = Pattern.compile("^*//.*$", Pattern.MULTILINE);
+            Matcher matcher = pattern.matcher(code);
+            StringBuilder sb = new StringBuilder();
+            while(matcher.find()) {
+                matcher.appendReplacement(sb, "");
+            }
+
+            matcher.appendTail(sb);
+            return sb.toString();
+        }
+
+        @Test
+        void wordCountTest() {
+            String text = "Java is great. I love Java programming. JavaScript is also Java-based.";
+
+            // 2 (JavaScript, Java-based는 제외)
+            System.out.println("'Java' 출현 횟수: " + countWord(text, "Java"));
+            System.out.println("'is' 출현 횟수: " + countWord(text, "is"));
+        }
+
+        private int countWord(String text, String word) {
+
+            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(word) + "\\b",
+                    Pattern.CASE_INSENSITIVE);
+
+            Matcher matcher = pattern.matcher(text);
+
+            int result = 0;
+            while(matcher.find()) {
+                result++;
+            }
+
+            return result;
+        }
+
+    }
+
+
+    /**
+     * 플래그: 정규식의 동작 방식을 제어
+     */
+    @Nested
+    class PlagTest {
+
+        @Test
+        void caseInsensitiveTest(){
+            String text = "Hello World, HELLO everyone, hello there";
+
+            // 대소문자 구분 하여 "hello" 찾기
+            Pattern p1 = Pattern.compile("hello");
+            Matcher m1 = p1.matcher(text);
+
+            while(m1.find()) {
+                System.out.println(m1.group());
+            }
+
+            System.out.println();
+
+            // 대소문자 구분 없이 "hello" 찾기
+            Pattern p2 = Pattern.compile("hello", Pattern.CASE_INSENSITIVE);
+            Matcher m2 = p2.matcher(text);
+
+            while(m2.find()) {
+                System.out.println(m2.group());
+            }
+
+            System.out.println();
+
+            // (?i) 플래그를 사용하여 대소문자 구분 없이 "hello" 찾기
+            Pattern p3 = Pattern.compile("(?i)hello");
+            Matcher m3 = p3.matcher(text);
+
+            while(m3.find()) {
+                System.out.println(m3.group());
+            }
+        }
+
+        @Test
+        void multilineTest() {
+            String text = "Line1\nLine2\nLine3";
+            text = """
+                    Line1
+                    Line2
+                    Line3
+                    """;
+
+            // 기본모드: ^ 테스트
+            Pattern p1 = Pattern.compile("^Line2");
+            Matcher m1 = p1.matcher(text);
+            System.out.println(m1.find()); // false
+
+            System.out.println();
+
+            // 기본모드: ^ 테스트
+            Pattern p2 = Pattern.compile("Line2$");
+            Matcher m2 = p2.matcher(text);
+            System.out.println(m2.find()); // false
+
+            System.out.println();
+
+            // 멀티라인 상황에서 ^ 테스트
+            Pattern p3 = Pattern.compile("^Line2", Pattern.MULTILINE);
+            Matcher m3 = p3.matcher(text);
+            System.out.println(m3.find()); // true
+
+            System.out.println();
+
+            // 멀티라인 상황에서 $ 테스트
+            Pattern p4 = Pattern.compile("Line2$", Pattern.MULTILINE);
+            Matcher m4 = p4.matcher(text);
+            System.out.println(m4.find()); // true
+
+            System.out.println();
+
+            // 모든 라인 출력
+            Pattern p5 = Pattern.compile("^.*$", Pattern.MULTILINE);
+            Matcher m5 = p5.matcher(text);
+            while(m5.find()) {
+                System.out.println(m5.group());
+            }
+
+            System.out.println();
+
+            // 모든 라인 출력
+            Pattern p6 = Pattern.compile("(?m)^.*$");
+            Matcher m6 = p6.matcher(text);
+            while(m6.find()) {
+                System.out.println(m6.group());
+            }
+        }
+
+        @Test
+        void dotallTest() {
+            String text = "Line1\nLine2\nLine3";
+
+            // 기본모드: 정규표현식 .패턴은 줄바꿈 문자를 제외한 모든 문자와 매칭
+            Pattern p1 = Pattern.compile("Line1.*Line3");
+            Matcher m1 = p1.matcher(text);
+            System.out.println(m1.find()); // false
+
+            System.out.println();
+
+            // DOTALL 모드: .이 개행 포함
+            Pattern p2 = Pattern.compile("Line1.*Line3", Pattern.DOTALL);
+            Matcher m2 = p2.matcher(text);
+            System.out.println(m2.find()); // true
+
+            Pattern p3 = Pattern.compile("(?s)Line1.*Line3");
+            Matcher m3 = p3.matcher(text);
+            System.out.println(m3.find()); // true
+
+            String html = "<div>\n    <p>Hello World</p>\n</div>";
+            Pattern p4 = Pattern.compile("<div>.*</div>", Pattern.DOTALL);
+            Matcher matcher = p4.matcher(html);
+            while(matcher.find()) {
+                System.out.println(matcher.group());
+            }
+        }
+    }
+
 }
