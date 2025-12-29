@@ -1,5 +1,4 @@
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -646,7 +644,8 @@ public class PatternTest {
      * 캡쳐 그룹
      * - 정규표현식의 소괄호()를 사용하여 그룹핑한 부분을 캡쳐하여 추출 가능
      * - matcher.group(n)을 통해 각 그룹에 접근 가능
-     * - (?..): 그룹 내에서 ?가 붙게되면 캡쳐 그룹에 포함되지 않음
+     * - (?: 패턴: 그룹 내에서 ?가 붙게되면 캡쳐 그룹에 포함되지 않음
+     * (?:X)	X, as a non-capturing group
      * Groups beginning with (? are either pure, non-capturing groups that do not capture text and do not count towards the group total, or named-capturing group.
      */
     @Nested
@@ -867,5 +866,175 @@ public class PatternTest {
                         directory, filename, extension);
             }
         }
+    }
+
+
+    /**
+     *
+     * - named-capturing group
+     * - 이름을 부여하여, 캡쳐 그룹에 이름을 통해서 접근 가능, 가독성 향상
+     * - (?<이름>패턴)으로 정규식 작성시, matcher.group("이름") 으로 접근
+     * - 이름 규칙: 대소문자 영어 및 숫자
+     */
+    @Nested
+    class NamedCapturingGroupTest {
+
+        @Test
+        void namedGroupTest() {
+            String email = "user@example.com";
+            Pattern pattern = Pattern.compile("(?<local>[a-zA-Z0-9._%+-]+)@(?<domain>[a-zA-Z0-9.-]+)\\.(?<tld>[a-zA-Z]{2,})");
+            Matcher matcher = pattern.matcher(email);
+
+            if(matcher.matches()) {
+                System.out.println("local = " + matcher.group("local"));
+                System.out.println("domain = " + matcher.group("domain"));
+                System.out.println("tld = " + matcher.group("tld"));
+            }
+        }
+
+        @Test
+        void urlParserTest() {
+            String[] urls = {"https://example.com", "http://example.com:8080/api/users",
+                    "https://example.com/search?q=java&lang=ko"};
+
+            for(String url : urls) {
+                System.out.println(UrlParser.parse(url));
+            }
+        }
+
+        static class UrlParser {
+            private static final Pattern URL_PATTERN = Pattern.compile("(?<protocol>https?)" +    // 프로토콜
+                    "://" +
+                    "(?<host>[^:/]+)" + // 호스트
+                    "(?::(?<port>\\d+))?" + // 포트 (선택적)
+                    "(?<path>/[^?]*)?" + // 경로 (선택적)
+                    "(?<query>\\?.*)?" // 쿼리 문자열 (선택적)
+            );
+
+            private String protocol;
+            private String host;
+            private String port;
+            private String path;
+            private String query;
+
+            public static UrlParser parse(String url) {
+                Matcher matcher = URL_PATTERN.matcher(url);
+                if (!matcher.matches()) {
+                    throw new IllegalArgumentException("Invalid URL: " + url);
+                }
+
+                UrlParser urlParser = new UrlParser();
+                urlParser.protocol = matcher.group("protocol");
+                urlParser.host = matcher.group("host");
+                urlParser.port = matcher.group("port");
+                urlParser.path = matcher.group("path");
+                urlParser.query = matcher.group("query");
+
+                return urlParser;
+            }
+
+            @Override
+            public String toString() {
+                return String.format("protocol=%s, host=%s, port=%s, path=%s, query=%s",
+                        protocol, host, port, path, query);
+            }
+        }
+
+
+        @Test
+        void httpParserTest() {
+            String[] requests = {
+                    "GET /api/users HTTP/1.1",
+                    "POST /api/orders?status=pending HTTP/1.1",
+                    "DELETE /api/users/123 HTTP/2.0"
+            };
+
+            for(String request : requests) {
+                System.out.println(HttpParser.parse(request));
+            }
+        }
+
+        static class HttpParser {
+
+            private static final Pattern HTTP_LINE_PATTERN = Pattern.compile("(?<method>GET|POST|PUT|DELETE|HEAD|OPTIONS|PATCH)"
+                    + "\\s+"
+                    + "(?<path>/[^\s?]+)"
+                    + "(?:\\?(?<query>[^\s]+))?"
+                    + "\\s+"
+                    + "HTTP/(?<version>[\\d.]+)"
+            );
+            private String method;
+            private String path;
+            private String query;
+            private String version;
+
+            public static HttpParser parse(String requestLine){
+
+                Matcher matcher = HTTP_LINE_PATTERN.matcher(requestLine);
+                if(!matcher.matches()) {
+                    throw new IllegalArgumentException("Invalid HTTP Request Line: " + requestLine);
+                }
+
+                HttpParser httpParser = new HttpParser();
+                httpParser.method = matcher.group("method");
+                httpParser.path = matcher.group("path");
+                httpParser.query = matcher.group("query");
+                httpParser.version = matcher.group("version");
+                return httpParser;
+            }
+
+
+            @Override
+            public String toString() {
+                return String.format("method=%s, path=%s, query=%s, version=%s",
+                        method, path, query, version);
+            }
+        }
+
+        @Test
+        void versionParserTest() {
+
+            String[] versions = {
+                    "1.2.3",
+                    "2.0.0-beta",
+                    "3.1.4-alpha.1"
+            };
+
+            for(String version : versions) {
+                System.out.println(VersionParser.parse(version));
+            }
+        }
+
+        static class VersionParser {
+            private int major;
+            private int minor;
+            private int patch;
+            private String preRelease;
+
+            public static VersionParser parse(String version) {
+                Pattern pattern = Pattern.compile("(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:-(?<preRelease>[0-9A-Za-z.-]+))?");
+                Matcher matcher = pattern.matcher(version);
+
+                if (!matcher.matches()) {
+                    throw new IllegalArgumentException("Invalid version string: " + version);
+                }
+
+                VersionParser versionParser = new VersionParser();
+                versionParser.major = Integer.parseInt(matcher.group("major"));
+                versionParser.minor = Integer.parseInt(matcher.group("minor"));
+                versionParser.patch = Integer.parseInt(matcher.group("patch"));
+                versionParser.preRelease = matcher.group("preRelease");
+
+                return versionParser;
+            }
+
+
+            @Override
+            public String toString() {
+                return String.format("major=%d, minor=%d, patch=%d, preRelease=%s",
+                        major, minor, patch, preRelease);
+            }
+        }
+
     }
 }
