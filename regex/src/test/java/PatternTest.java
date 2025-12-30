@@ -1,8 +1,11 @@
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1627,6 +1630,463 @@ public class PatternTest {
                 System.out.println(matcher.group());
             }
         }
+
+
+        @Test
+        void commentsTest(){
+
+            /**
+             * (?x) 정규표현식의 주석과 공백 무시
+             */
+            Pattern pattern = Pattern.compile("""
+                    ^                   # 시작
+                    (?<year>\\d{4})        # 년도 (4자리)
+                    -
+                    (?<month>\\d{2})    # 월
+                    -
+                    (?<day>\\d{2})      # 일
+                    $
+                    """, Pattern.COMMENTS);
+            String date = "2025-12-31";
+            Matcher matcher = pattern.matcher(date);
+
+            if(matcher.matches()) {
+                System.out.println("year = " + matcher.group("year"));
+                System.out.println("month = " + matcher.group("month"));
+                System.out.println("day = " + matcher.group("day"));
+            }
+
+            System.out.println();
+            /**
+             * 실제 공백을 무시하기 때문에 공백을 매칭시키위해서 \s를 사용해야함
+             */
+            Pattern pattern1 = Pattern.compile("hello world", Pattern.COMMENTS);
+            System.out.println(pattern1.matcher("hello world").matches()); // false
+            System.out.println(pattern1.matcher("helloworld").matches()); // true
+
+            Pattern pattern2 = Pattern.compile("hello\\sworld", Pattern.COMMENTS);
+            System.out.println(pattern2.matcher("hello world").matches()); // true
+
+        }
+
+        @Test
+        void unicodeCaseTest(){
+            String text = "Café café CAFÉ";
+
+            /**
+             * CASE_INSENSITIVE는 기본적으로 ASCII 문자에만 적용
+             */
+            Pattern p1 = Pattern.compile("café", Pattern.CASE_INSENSITIVE);
+            Matcher m1 = p1.matcher(text);
+            while (m1.find()) {
+                System.out.println(m1.group());
+            }
+
+            System.out.println();
+
+            /**
+             * UNICODE_CASE 추가: 유니코드 처리
+             */
+            Pattern p2 = Pattern.compile(
+                    "café",
+                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+            );
+            Matcher m2 = p2.matcher(text);
+            while (m2.find()) {
+                System.out.println(m2.group());
+            }
+        }
+
+        @Test
+        void literalTest() {
+            String text = "Price: $100.50";
+
+            // 일반 모드: $와 .이 메타문자
+            Pattern p1 = Pattern.compile("$100.50");
+            System.out.println("일반 모드: " + p1.matcher(text).find());
+
+            // LITERAL: 모든 문자를 리터럴로
+            Pattern p2 = Pattern.compile("$100.50", Pattern.LITERAL);
+            System.out.println("LITERAL: " + p2.matcher(text).find());
+
+            // Pattern.quote()와 동일 효과
+            Pattern p3 = Pattern.compile(Pattern.quote("$100.50"));
+            System.out.println("quote(): " + p3.matcher(text).find());
+        }
+
+        @Test
+        void orTest() {
+            /**
+             * 비트 or 연산자를 이용하여 조합
+             */
+            String text = """
+                    Hello World
+                    HELLO WORLD
+                    hello world
+                    """;
+
+            Pattern pattern1 =
+                    Pattern.compile("^hello world$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+            Matcher matcher = pattern1.matcher(text);
+            while(matcher.find()) {
+                System.out.println(matcher.group());
+            }
+
+            // 여러 플래그를 패턴 안에
+            /**
+             * 여러 플래그를 패턴 안에
+             * i = CASE_INSENSITIVE
+             * m = MULTILINE
+             * s = DOTALL
+             */
+            Pattern patter2 = Pattern.compile("(?ims)^hello.*world$");
+
+            Matcher matcher2 = patter2.matcher("""
+                    Hello
+                    beautiful
+                    WORLD
+                    """);
+
+            while(matcher2.find()) {
+                System.out.println(matcher2.group());
+            }
+        }
+
+
+        /**
+         * 부분적 플래그 적용
+         */
+        @Test
+        void partTest() {
+
+            Pattern pattern = Pattern.compile("(?i)hello(?-i) WORLD");
+
+            System.out.println(pattern.matcher("hello WORLD").find()); // true
+            System.out.println(pattern.matcher("HELLO WORLD").find()); // true
+            System.out.println(pattern.matcher("hello world").find()); // false
+        }
+
+        @Test
+        void configParser() {
+
+            String config = """
+            # Database Configuration
+            db_host = localhost
+            DB_PORT = 5432
+            db_name = myapp
+            
+            # API Configuration
+            api_key = abc123
+            API_URL = https://api.example.com
+            """;
+
+            Pattern pattern = Pattern.compile("""
+                ^
+                \\s*                # 선택적 공백
+                (?<key>[a-zA-Z_]+)  # 키 (영문자 및 밑줄)
+                \\s*=\\s*           # 등호 및 선택적 공백
+                (?<value>.+)        # 값 (나머지 모든 문자)
+                \\s*                # 선택적 공백
+                $
+            """, Pattern.COMMENTS | Pattern.MULTILINE);
+
+            Map<String, String> configMap = new HashMap<>();
+            Matcher matcher = pattern.matcher(config);
+            while(matcher.find()) {
+                configMap.put(matcher.group("key"), matcher.group("value"));
+            }
+
+            System.out.println(configMap);
+        }
+
+        @Test
+        void caseInsensitiveReplacerTest() {
+
+            String text = "I love Java. Java is great. java programming is fun";
+            String from = "java";
+            String to = "python";
+
+            System.out.println(this.replaceCaseInsensitive(text, from, to));
+
+        }
+
+        public String replaceCaseInsensitive(String text, String from, String to) {
+            Pattern pattern = Pattern.compile(Pattern.quote(from), Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(text);
+            return matcher.replaceAll(to);
+        }
+
+        @Test
+        void readableEmailValidatorTest() {
+
+            String[] emails = {
+                    "user@example.com",
+                    "user.name@example.com",
+                    "user+tag@sub.example.org",
+                    "@example.com",
+                    "user@"
+            };
+
+            for (String email : emails) {
+                System.out.printf("%-30s: %s%n", email, this.isValidEmail(email));
+            }
+        }
+
+        public boolean isValidEmail(String email) {
+
+            String regex = """
+                    ^
+                    (?<local>[a-zA-Z.\\-_+]+)
+                    @
+                    (?<domain>[a-zA-Z.\\-]+)
+                    \\.
+                    (?<tld>[a-z]{2,})
+                    $
+                    """;
+            Pattern pattern = Pattern.compile(regex, Pattern.COMMENTS);
+            Matcher matcher = pattern.matcher(email);
+
+            return matcher.matches();
+        }
+
+        @Test
+        void multiLineLogExtractorTest() {
+            String log = """
+            [INFO] Application started
+            [ERROR] Connection failed
+              at line 123
+              caused by timeout
+            [WARN] Memory usage high
+            [ERROR] Database error
+              SQL exception
+              Table not found
+            [INFO] Request completed
+            """;
+            this.extractEmails(log);
+        }
+
+        public List<String> extractEmails(String log) {
+
+            String regex = "^\\s*\\[(ERROR)].*[^\\[]$";
+            Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL);
+            Matcher matcher = pattern.matcher(log);
+
+            ArrayList<String> extractedErrors = new ArrayList<>();
+            while(matcher.find()) {
+                System.out.println(matcher.group());
+            }
+
+            return extractedErrors;
+        }
     }
+
+    @Nested
+    class 성능최적화 {
+
+        @Test
+        void compiledPatternTest() {
+            CompiledPattern compiledPattern = new CompiledPattern();
+            String email = "abc@example.com";
+            int iter = 1_000_000;
+
+            long startTime = System.currentTimeMillis();
+            for(int i = 0; i < iter; i++) {
+                compiledPattern.isValidEmailWhenStatic(email);
+            }
+            long endTime = System.currentTimeMillis();
+            System.out.println("선언된 패턴 사용 = " + (endTime - startTime) + "ms");
+
+
+            startTime = System.currentTimeMillis();
+            for(int i = 0; i < iter; i++) {
+                compiledPattern.isValidEmail(email);
+            }
+            endTime = System.currentTimeMillis();
+
+            System.out.println("호출시점마다 패턴 선언 = " + (endTime - startTime) + "ms");
+        }
+
+        static class CompiledPattern {
+            private static final Pattern EMAIL_PATTERN = Pattern.compile("^\\w+@\\w+\\.\\w+$", Pattern.COMMENTS);
+
+            public boolean isValidEmailWhenStatic(String email){
+                Matcher matcher = EMAIL_PATTERN.matcher(email);
+                return matcher.matches();
+            }
+
+            public boolean isValidEmail(String email){
+                Pattern emailPattern = Pattern.compile("^\\w+@\\w+\\.\\w+$", Pattern.COMMENTS);
+                Matcher matcher = emailPattern.matcher(email);
+                return matcher.matches();
+            }
+        }
+    }
+
+    @Nested
+    class StringPatternTest {
+
+        @Test
+        void matchesTest() {
+            String text = "abc123";
+
+            /**
+             * 전체 문자열 패턴과 일치해야함
+             * Pattern.matches()와 동일하며, 내부적으로 Pattern과 Matcher를 생성하여 처리
+             * 만약 반복적으로 사용하게 된다면 성능상 문제 발생 가능성 존재
+             */
+            System.out.println(text.matches("abc123")); // true
+            System.out.println(text.matches("abc")); // false
+            System.out.println(text.matches(".*123")); // true
+            System.out.println(text.matches("\\w+")); // true
+        }
+
+
+        @Test
+        void splitTest() {
+
+            /**
+             * 정규실을 활용한 문자열 분리
+             * Pattern.split()과 동일하며, 내부적으로 Pattern과 Matcher를 생성하여 처리
+             * 만약 반복적으로 사용하게 된다면 성능상 문제 발생 가능성 존재
+             */
+            String text = "a,b,c";
+
+            String[] parts = text.split(",");
+            System.out.println(Arrays.toString(parts));
+
+            text = "a,b,c|d;e;f|g";
+            System.out.println(Arrays.toString(text.split("[,|;]")));
+
+            // String.split과 동일
+            System.out.println(Arrays.toString(text.split("[,|;]",0)));
+            // limit 양수: 최대 limit개로 분리, 나머지는 마지막 요소에 포함
+            System.out.println(Arrays.toString(text.split("[,|;]",2)));
+            System.out.println(Arrays.toString(text.split("[,|;]",3)));
+
+            // limit 음수:
+            System.out.println(Arrays.toString(text.split("[,|;]",-1)));
+
+        }
+
+        @Test
+        void replaceAllTest(){
+            String text = "I love java. Java is great!";
+
+            // 모든 "Java"를 "Python"으로
+            String result = text.replaceAll("(?i)Java", "Python");
+            System.out.println(result);
+            // I love Python. Python is great!
+
+            // 숫자 제거
+            String text2 = "abc123def456";
+            String result2 = text2.replaceAll("\\d+", "");
+            System.out.println(result2);
+            // abcdef
+
+            // 공백 정규화
+            String text3 = "hello    world   test";
+            String result3 = text3.replaceAll("\\s+", " ");
+            System.out.println(result3);
+            // hello world test
+        }
+
+        @Test
+        void replaceAllWithCapturingGroupTest() {
+            // 날짜 형식 변환
+            String date = "2024-12-26";
+            String usFormat = date.replaceAll("(\\d{4})-(\\d{2})-(\\d{2})", "$2/$3/$1");
+            System.out.println("US: " + usFormat);
+
+            // 이름 순서 변환
+            String name = "Doe, John";
+            String reversed = name.replaceAll("(\\w+), (\\w+)", "$2 $1");
+            System.out.println("Name: " + reversed);
+
+            // 전화번호 포맷
+            String phone = "01012345678";
+            String formatted = phone.replaceAll("(\\d{3})(\\d{4})(\\d{4})", "$1-$2-$3");
+            System.out.println("Phone: " + formatted);
+
+            // HTML 태그 제거 (내용 유지)
+            String html = "<p>Hello</p><div>World</div>";
+            String text = html.replaceAll("<[^>]+>", "");
+            System.out.println("Text: " + text);
+        }
+
+        @Test
+        void replaceAllWithSpecialChars() {
+
+            String text = "Price: $100";
+
+            // ✗ 잘못: $ 는 그룹 참조
+            String wrong = text.replaceAll("\\$100", "$200");
+            System.out.println("Wrong: " + wrong);
+            // IllegalArgumentException 또는 잘못된 결과
+
+            // ✓ 올바름: Matcher.quoteReplacement() 사용
+            String correct = text.replaceAll("\\$100", Matcher.quoteReplacement("$200"));
+            System.out.println("Correct: " + correct);
+            // Correct: Price: $200
+
+            // 또는 replace() 사용 (리터럴 치환)
+            String literal = text.replace("$100", "$200");
+            System.out.println("Literal: " + literal);
+            // Literal: Price: $200
+        }
+
+        @Test
+        void templateRenderTest() {
+            String template = "Hello {{name}}, you are {{age}} years old! {{name}} welcome! {{age}}";
+
+            Map<String, String> data = new HashMap<>();
+            data.put("name", "John");
+            data.put("age", "30");
+            System.out.println(this.render(template, data));
+        }
+
+        public String render(String template, Map<String, String> data) {
+
+            Pattern pattern = Pattern.compile("\\{\\{(?<key>\\w+)\\}\\}");
+            Matcher matcher = pattern.matcher(template);
+
+            String replaceTemplate = template;
+            while(matcher.find()) {
+                String key = matcher.group("key");
+                if(data.containsKey(key)) {
+                    replaceTemplate = replaceTemplate.replace(matcher.group(), data.get(key));
+                }
+            }
+
+            return replaceTemplate;
+        }
+
+        @Test
+        void sqlFormatterTest() {
+            String sql = "  select   name,  age   from   users  where  age > 18  ";
+            System.out.println(sqlFormat(sql));
+        }
+
+        /**
+         * 연속 공백을 하나로
+         * 키워드를 대문자로
+         * 앞뒤 공백 제거
+         */
+        public String sqlFormat(String sql) {
+            String format = sql.trim()
+                    .replaceAll("\\s+", " ");
+
+            Pattern pattern = Pattern.compile("\\b(select|from|where)\\b", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(format);
+
+            StringBuffer sb = new StringBuffer();
+            while(matcher.find()) {
+                matcher.appendReplacement(sb, matcher.group().toUpperCase());
+            }
+            matcher.appendTail(sb);
+            return sb.toString();
+        }
+    }
+
 
 }
