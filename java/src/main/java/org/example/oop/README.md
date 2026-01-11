@@ -51,3 +51,113 @@ int getBalance(struct Account* account)
 ## 객체지향 프로그래밍 (OOP: Object-Oriented Programming)
 
 ---
+
+- 객체지향 프로그래밍은 ***데이터와 데이터를 처리하는 행위를 하나의 단위(객체: Object)로 묶어서 서로 간에 상호작용하도록 설계***하는 프로그래밍 방식이다.
+- 객체지향 프로그래밍에는 캡슐화, 다형성, 상속, 추상화와 같은 요소가 존재하며 객체지향 언어라고 하여도 이러한 요소들을 모두 지원하지 않는 경우도 있다.
+
+```java
+// Account.java 파일
+class Account {
+    private int balance;
+    private int accountNumber;
+
+    void deposit(int amount)
+
+    void withDraw(int amount)
+
+    void printAccount()
+
+    int getBalance()
+}
+```
+
+### 절차지향 프로그래밍의 한계를 극복하기 위한 객체지향 프로그래밍
+
+#### 1. 캡슐화 (Encapsulation)를 통한 응집도 향상
+
+- 절차지향 프로그래밍에서는 데이터와 함수가 별도로 분리되어 있어서 응집도가 낮아, 기능 추가나 수정에 대한 유지보수가 어렵다고 했다. 하지만 하지만 객체지향 프로그래밍에서는
+  ***캡슐화를 통해 데이터와 함수를 단위(객체)로 묶여 있어서 응집도가 높아지고, 유지보수가 용이***해진다.
+- `Account` 클래스의 경우 데이터와 행위를 하나의 단위로 묶어서 관리하기 때문에, `Account`와 관련된 기능을 수정하거나 확장할 때 해당 클래스만 수정하면 된다.
+
+> 참고로 응집도(Cohesion)란 관련있는 기능들이 하나의 모듈에 얼마나 밀접하게 결합되어 있는지를 나타내는 개념이다.
+
+#### 2. 정보 은닉 (Information Hiding)을 통한 데이터 보호 및 불필요한 노출 방지
+
+- 절차지향 프로그래밍에서 데이터를 직접 접근하여 수정하는 경우, 어디서 데이터가 변경되는지 추적하기 어렵다고 했다. 때문에 객체지향 프로그래밍에서는
+  ***정보 은닉을 통해 데이터에 대한 직접 접근을 제한하고, 불필요한 데이터나 함수의 노출을 방지***한다.
+- 데이터의 직접 접근 제한의 경우 아마 많은 개발자들이 접근 제한자를 통해서 경험해 보았을 것이고, 왜 이러한 접근 제한자가 필요한지에대해서도 공감할 것이다.
+  > 참고로 Reflection API를 통해서 private 접근제한자도 접근이 가능하다.
+- 하지만 많은 개발자들이 정보 은닉의 또 다른 측면인 불필요한 노출 방지에 대해서는 간과하는 경우가 많다.
+- 에를 들어 슈퍼회원과 일반회원에 따라서 할인 정책을 달리해야하는 경우가 있다고 가정하였을 때, 아래와 같이 코드를 작성할 수 있다.
+
+```java
+// 회원 할인 정책 인터페이스
+public interface MemberDiscountPolicy {
+
+    int getDiscountAmount(int amount);
+}
+
+// 일반 회원 할인 정책 클래스
+public class NormalMemberDiscountPolicy implements MemberDiscountPolicy {
+
+    @Override
+    public int getDiscountAmount(int amount) {
+        // 10% 할인 정책
+        double discountRate = 0.1;
+        return (int) (amount * discountRate);
+    }
+}
+
+// 슈퍼 회원 할인 정책 클래스
+public class SuperMemberDiscountPolicy implements MemberDiscountPolicy {
+
+    @Override
+    public int getDiscountAmount(int amount) {
+        // 20% 할인 정책
+        double discountRate = 0.2;
+        return (int) (amount * discountRate);
+    }
+}
+
+// 회원 할인 정책 팩토리 클래스
+public class MemberDiscountPolicyFactory {
+
+    private final MemberDiscountPolicy normalMemberDiscountPolicy;
+    private final MemberDiscountPolicy superMemberDiscountPolicy;
+
+    public MemberDiscountPolicyFactory() {
+        normalMemberDiscountPolicy = new NormalMemberDiscountPolicy();
+        superMemberDiscountPolicy = new SuperMemberDiscountPolicy();
+    }
+
+    public MemberDiscountPolicy getDiscountPolicy(String memberType) {
+        if ("NORMAL".equals(memberType)) {
+            return normalMemberDiscountPolicy;
+        } else if ("SUPER".equals(memberType)) {
+            return superMemberDiscountPolicy;
+        } else {
+            return null;
+        }
+
+    }
+}
+```
+
+- 위 코드의 경우 `MemberDiscountPolicyFactory`를 통해서만 `MemberDiscountPolicy`를 얻을 수 있도록 의도를 가지고 설계했다고 가정해보자.
+    - 하지만 `NormalMemberDiscountPolicy`와 `SuperMemberDiscountPolicy` 클래스가 `public`으로 선언되어 있기 때문에, 외부에서 해당 클래스를 직접 생성하여
+      사용할 수 있다.
+- 이는 두가지 문제를 일으킨다.
+    - 클라이언트에게 불필요한 클래스를 노출시켜 어떤 것을 사용해야하는지에 대한 혼동을 준다.
+    - 만약 클라이언트가 `MemberDiscountPolicy`의 구현체들을 직접 의존받아서 사용했을 경우, 해당 구현체중 하나를 수정하거나 삭제하였을때 클라이언트 코드도 함께 수정해야하는 문제가 발생한다.
+- 때문에 위와 같은 경우 `NormalMemberDiscountPolicy`와 `SuperMemberDiscountPolicy` 클래스를 `package-private`으로 선언하여 외부에 노출되지 않도록 하는
+  것이 좋다.
+
+> 현재 코드는 단순하여 크게 문제가 되지 않아보이지만, 실제 서비스가 커졌을때 불필요한 클래스들이 노출되어 혼란을 주거나 유지보수가 어려워질 수 있다.
+
+#### 3. 다형성(Polymorphism)
+
+#### 4. 추상화(Abstraction)와 상속(Inheritance)
+
+> [Infa > OOP 캡슐화 & 정보 은닉 개념 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EC%BA%A1%EC%8A%90%ED%99%94Encapsulation-%EC%A0%95%EB%B3%B4-%EC%9D%80%EB%8B%89%EC%9D%98-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430)
+> [Infa > 객체 지향 개념과 추상화 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EA%B0%9D%EC%B2%B4-%EC%A7%80%ED%96%A5-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D-%EA%B0%9C%EB%85%90%EA%B3%BC-%EC%B6%94%EC%83%81%ED%99%94-%EC%84%A4%EA%B3%84%EC%9D%98-%EC%9D%B4%ED%95%B4)
+> [Infa > 자바의 다형성(Polymorphism) 완벽 이해하기](https://inpa.tistory.com/entry/OOP-JAVA%EC%9D%98-%EB%8B%A4%ED%98%95%EC%84%B1Polymorphism-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430)
