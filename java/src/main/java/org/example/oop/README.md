@@ -154,10 +154,118 @@ public class MemberDiscountPolicyFactory {
 
 > 현재 코드는 단순하여 크게 문제가 되지 않아보이지만, 실제 서비스가 커졌을때 불필요한 클래스들이 노출되어 혼란을 주거나 유지보수가 어려워질 수 있다.
 
-#### 3. 다형성(Polymorphism)
+#### 3. 추상화(Abstraction)와 다형성(Polymorphism)을 활용한 프로그램 설계
 
-#### 4. 추상화(Abstraction)와 상속(Inheritance)
+- 객체지향 프로그래밍에서 추상화와 다형성이란 단어를 자주 접할 수 있다.
+    - 추상화란 ***복잡한 시스템에서 핵심적인 개념이나 기능을 추출하여 단순화하는 것***을 의미한다.
+    - 다형성이란 ***동일한 인터페이스여도 다르게 동작할 수 있는 것을 의미***한다.
+- 추상화와 다형성을 활용하면 ***코드의 가독성을 높이고 유지보수를 용이하게 할 수 있다는 장점***이 있지만, 객체지향 프로그래밍을 가장 어렵게 만드는 개념중에 하나이기도 하다.
+    - 추상화와 다형성은 단순히 코드 작성법을 넘어서 프로그램 설계에 대한 개념이기 때문에, 해당 개념을 실제 코드로 옮기는 것이 쉽지 않다.
+- 우리가 다양한 메시지 전송 기능을 제공하는 프로그램을 설계한다고 가정해보자. 이때 우리는 다짜고짜 코드부터 구현하지 않고, 먼저 추상화 과정을 거치며 어디에 다형성을 적용할지 고민한다.
+    - 메시지는 카카오톡, 이메일, 문자메시지 등 다양한 방법으로 전송될 수 있다.
+    - 각 메시지 전송 방법은 서로 다른 구현 방식을 가지고 있지만, 공통적인 인터페이스를 제공할 수 있다. (다형성 적용 가능)
+    - 메시지 전송 기능을 추상화하여 기능을 단순화 할 수 있다. (추상화 적용 가능)
 
-> [Infa > OOP 캡슐화 & 정보 은닉 개념 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EC%BA%A1%EC%8A%90%ED%99%94Encapsulation-%EC%A0%95%EB%B3%B4-%EC%9D%80%EB%8B%89%EC%9D%98-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430)
-> [Infa > 객체 지향 개념과 추상화 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EA%B0%9D%EC%B2%B4-%EC%A7%80%ED%96%A5-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D-%EA%B0%9C%EB%85%90%EA%B3%BC-%EC%B6%94%EC%83%81%ED%99%94-%EC%84%A4%EA%B3%84%EC%9D%98-%EC%9D%B4%ED%95%B4)
-> [Infa > 자바의 다형성(Polymorphism) 완벽 이해하기](https://inpa.tistory.com/entry/OOP-JAVA%EC%9D%98-%EB%8B%A4%ED%98%95%EC%84%B1Polymorphism-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430)
+##### 1. 추상화 과정: 핵심 개념 도출
+
+- 메시지 전송 시스템의 핵심은 "메시지를 전송 하는 것"이다. 어떤 방법으로 전송하든 결국 수신자에게 메시지를 전달하는 것이 목적이다.
+- 때문에 아래와 같은 공통 인터페이스를 추출할 수 있다.
+
+```java
+public interface MessageSender {
+
+    void sendMessage(String recipient, String message);
+}
+```
+
+##### 2. 다형성 적용: 동일한 인터페이스를 가반으로 다르게 동작하는 구현체 작성
+
+- 추상화된 인터페이스를 기반으로 각 전송 방법을 구체적으로 구현한다.
+- 해당 구현체들은 동일한 `MessageSender` 인터페이스를 구현하지만, 내부 동작은 다르게 작성된다.
+
+```java
+public class EmailSender implements MessageSender {
+    @Override
+    public void sendMessage(String recipient, String message) {
+        // Email 보내는 로직 작성
+        System.out.println("Sending Email to " + recipient + ": " + message);
+    }
+}
+
+public class KakaoSender implements MessageSender {
+    @Override
+    public void sendMessage(String recipient, String message) {
+        // KakaoTalk 보내는 로직 작성
+        System.out.println("Sending KakaoTalk message to " + recipient + ": " + message);
+    }
+}
+
+public class SMSSender implements MessageSender {
+
+    @Override
+    public void sendMessage(String recipient, String message) {
+        // SMS 보내는 로직 작성
+        System.out.println("Sending SMS to " + recipient + ": " + message);
+    }
+}
+```
+
+##### 3. 비지니스 로직 작성: 추상화된 인터페이스를 활용한 메시지 전송
+
+- 비지니스 로직에서는 구체적인 구현체에 의존하지 않고, 추상화된 `MessageSender` 인터페이스에만 의존한다.
+- 이로 인해서 절차지향 프로그래밍에서 있었던 if-else 문이나 switch 문이 사라지고, 코드의 가독성과 공통기능 추가와 같은 유지보수가 용이해진다.
+- 만약 새로운 메시지 전송 방법이 추가되더라도, `MesssgeService`라는 비지니스 로직 코드는 수정할 필요가 없다.
+- 또한 `MessageSender`라는 의존성을 주입받아 사용하기 때문에, 테스트 코드 작성도 용이하다.
+
+```java
+public class MessageService {
+
+    private final MessageSender messageSender;
+
+    public MessageService(MessageSender messageSender) {
+        this.messageSender = messageSender;
+    }
+
+    public void sendMessage(String recipient, String message) {
+        messageSender.sendMessage(recipient, message);
+    }
+}
+```
+
+- 만약 추상화와 다형성을 활용하지 않고 절차지향 프로그래밍 방식으로 작성하였다면, 아래와 같이 if-else 문이나 switch 문이 난무하는 복잡한 코드가 된다.
+- 또한 테스트 코드의 작성은 어려워 지며 MessageService 코드를 지속적으로 수정해야하는 문제가 발생한다.
+
+```java
+public class MessageService {
+    public void sendMessage(String method, String recipient, String message) {
+        if ("EMAIL".equals(method)) {
+            // Email 보내는 로직 작성
+            System.out.println("Sending Email to " + recipient + ": " + message);
+        } else if ("KAKAO".equals(method)) {
+            // KakaoTalk 보내는 로직 작성
+            System.out.println("Sending KakaoTalk message to " + recipient + ": " + message);
+        } else if ("SMS".equals(method)) {
+            // SMS 보내는 로직 작성
+            System.out.println("Sending SMS to " + recipient + ": " + message);
+        } else {
+            throw new IllegalArgumentException("Unknown message method: " + method);
+        }
+    }
+}
+```
+
+#### 결론
+
+- 절차지향 프로그래밍에서 발생하는 많은 if-else 문이나 switch 문은 추상화와 다형성을 활용하여 해결할 수 있다.
+    - 이로 인해서 코드의 가독성은 향상되고, 테스트 코드 작성 용이해진다.
+    - 또한 메시지 전송 기능이 추가되거나 삭제, 변경 시, `MessageService` 코드를 수정할 필요가 없기 때문에 유지보수가 용이해진다.
+- 하지만 추상화와 다형성은 단순히 코드 작성법을 넘어서 프로그램 설계에 대한 개념이기 때문에, 해당 개념을 실제 코드로 옮기는 것이 쉽지 않다.
+- 또한 추상화의 과도한 사용은 오히려 코드의 복잡도를 증가시키고, 이해하기 어렵게 만들 수 있다.
+    - 스프링 프레임워크는 추상화와 다형성을 적극적으로 활용하는 프레임워크이지만, 코드 분석이 쉽지는 않다.
+- 때문에 처음부터 완벽한 추상화를 설계하기보다는, 요구사항을 구현하면서 추상화와 다형성을 적용할 수 있는 부분이 있는지 지속적으로 고민하고 작성하는 것이 중요하다.
+
+#### 4. 상속(Inheritance)
+
+> [Infa > OOP 캡슐화 & 정보 은닉 개념 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EC%BA%A1%EC%8A%90%ED%99%94Encapsulation-%EC%A0%95%EB%B3%B4-%EC%9D%80%EB%8B%89%EC%9D%98-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430) <br/>
+> [Infa > 객체 지향 개념과 추상화 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EA%B0%9D%EC%B2%B4-%EC%A7%80%ED%96%A5-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D-%EA%B0%9C%EB%85%90%EA%B3%BC-%EC%B6%94%EC%83%81%ED%99%94-%EC%84%A4%EA%B3%84%EC%9D%98-%EC%9D%B4%ED%95%B4) <br/>
+> [Infa > 자바의 다형성(Polymorphism) 완벽 이해하기](https://inpa.tistory.com/entry/OOP-JAVA%EC%9D%98-%EB%8B%A4%ED%98%95%EC%84%B1Polymorphism-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430) <br/>
