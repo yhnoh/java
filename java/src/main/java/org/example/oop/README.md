@@ -291,3 +291,45 @@ public class MessageService {
 > [Infa > OOP 캡슐화 & 정보 은닉 개념 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EC%BA%A1%EC%8A%90%ED%99%94Encapsulation-%EC%A0%95%EB%B3%B4-%EC%9D%80%EB%8B%89%EC%9D%98-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430) <br/>
 > [Infa > 객체 지향 개념과 추상화 완벽 이해하기](https://inpa.tistory.com/entry/OOP-%EA%B0%9D%EC%B2%B4-%EC%A7%80%ED%96%A5-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D-%EA%B0%9C%EB%85%90%EA%B3%BC-%EC%B6%94%EC%83%81%ED%99%94-%EC%84%A4%EA%B3%84%EC%9D%98-%EC%9D%B4%ED%95%B4) <br/>
 > [Infa > 자바의 다형성(Polymorphism) 완벽 이해하기](https://inpa.tistory.com/entry/OOP-JAVA%EC%9D%98-%EB%8B%A4%ED%98%95%EC%84%B1Polymorphism-%EC%99%84%EB%B2%BD-%EC%9D%B4%ED%95%B4?category=967430) <br/>
+
+## Java의 Object 클래스
+
+- Java는 객체지향 프로그래밍 언어로써 Object 클래스를 최상위 클래스로 사용한다. 즉, 모든 클래스는 Object 클래스를 암묵적으로 상속받는다.
+- Java의 Object 클래스를 이해한다는 것은 곧, Java가 어떠한 문제를 해결하기 위해 설계되었는지 이해하는 것과 같다.
+
+### getClass(): 클래스 정보를 반환하는 메서드
+
+- `getClass()` 메서드는 ***객체의 클래스 정보를 반환하는 메서드***이다. ClassLoader가 로드한 클래스의 메타데이터를 Class 객체로 반환하여 ***런타임 환경에서 확인***할 수 있다.
+- 주로 리플렉션 (Reflection) API와 함께 사용되어, 객체의 클래스 타입을 동적으로 확인하거나, 메서드 호출, 필드 접근 등을 수행할 때 활용된다.
+    - 우리가 사용하는 프레임워크나 라이브러리들이 리플렉션 API를 활용하여 부가적인 기능을 제공하는 경우가 많다.
+
+### toString(): 객체를 문자열로 표현하는 메서드
+
+- `toString()` 메서드는 객체를 문자열로 표현하는 메서드로, ***사람이 읽기 쉬운 형태로 객체의 상태를 나타내기 위해 사용***된다.
+- 만약 직접 클래스를 제작한 이후, `toString()` 메서드를 오버라이딩하지 않는다면, 기본적으로 클래스 이름과 해시코드가 포함된 문자열이 반환된다.
+    - ` getClass().getName() + '@' + Integer.toHexString(hashCode())`
+- 만약 객체에 대한 상태를 로그로 남겨야 한다고 가정해볼때, `toString()` 메서드를 활용하여 쉽게 객체의 상태를 문자열로 변환할 수 있다.
+    - toString() 오버라이딩 하지 않고 구현은 가능하지만 굉장히 번거러운 작업이 된다.
+
+```java
+public static void main(String[] args) {
+    User user = new User("user1", 1);
+    // toString 적용하지 않을 경우 출력 결과 name = user1, age = 1
+    System.out.println("name = " + user.getName() + ", age = " + user.getAge());
+    // toString 적용할 경우 출력 결과: User{name='user1', age=1}
+    System.out.println(user);
+}
+```
+
+### equals(), hashCode(): 객체간의 비교를 위한 메서드
+
+- `equals()` 메서드는 ***두 객체가 논리적으로 동일한지를 비교하는 메서드***이다.
+- `hashCode()` 메서드는 ***객체의 해시 코드를 반환하는 메서드***로, 주로 해시 기반 컬렉션 (예: HashMap, HashSet)에서 객체를 효율적으로 저장하고 검색하기 위해 사용된다.
+- `equals()`와 `hashCode()` 메서드는 밀접한 관계가 있다.
+    - 만약 두 객체가 `equals()` 메서드에 의해 동일하다고 판단된다면, 반드시 동일한 `hashCode()` 값을 반환해야 한다.
+    - 반대로, 두 객체가 `equals()` 메서드에 의해 동일하지 않다고 판단된다면, 반드시 동일하지 않은 `hashCode()` 값을 반환할 필요는 없다.
+- 때문에 `equals()` 메서드를 오버라이딩할 때는 반드시 `hashCode()` 메서드도 함께 오버라이딩 해야 한다.
+
+### wait(), notify(): 스레드 간의 통신을 위한 메서드
+
+> [Infa > 자바 Object 클래스와 메서드 오버라이딩](https://inpa.tistory.com/entry/JAVA-%E2%98%95-Object-%ED%81%B4%EB%9E%98%EC%8A%A4%EC%99%80-%EC%83%81%EC%9C%84-%EB%A9%94%EC%84%9C%EB%93%9C-%EC%9E%AC%EC%A0%95%EC%9D%98-%ED%99%9C%EC%9A%A9-%EC%B4%9D%EC%A0%95%EB%A6%AC#tostring_%EB%A9%94%EC%86%8C%EB%93%9C)
