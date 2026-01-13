@@ -37,7 +37,7 @@
 4. 실행: JVM이 변환된 코드를 실행하며, 운영체제와 상호작용하여 프로그램이 동작하도록 한다.
     - JVM은 바이트코드를 해석하여 기계어로 변환하여 자바 프로그램이 실행되도록 한다.
 
-#### 자바 프로그램은 컴파일 언어인가?
+### 자바 프로그램은 컴파일 언어인가?
 
 - 자바는 ***컴파일 언어이면서 동시에 인터프리터 언어의 특성***을 가지고 있다.
     - 위의 자바 실행 과정에서 볼 수 있듯이, 자바 코드는 먼저 바이트코드로 컴파일된 후, JVM에 의해 실행된다.
@@ -46,7 +46,7 @@
     - 컴파일 언어의 장점: 빠른 실행 속도, 문법 오류 확인
     - 인터프리터 언어의 장점: 바이트코드라는 중간 단계 덕분에 다양한 플랫폼에서 실행 가능
 
-#### 인터프리터의 한계를 극복하기 위한 JIT(Just-In-Time) 컴파일러
+### 인터프리터의 한계를 극복하기 위한 JIT(Just-In-Time) 컴파일러
 
 - 자바는 인터프리터 언어의 특성을 가지기 때문에, 바이트코드를 실행할 때마다 기계어로 해석하는 과정이 필요하여 실행 속도가 느릴 수 있다.
 - 이를 해결하기 위해 JVM은 JIT(Just-In-Time) 컴파일러를 사용한다.
@@ -62,6 +62,23 @@
 
 > https://docs.oracle.com/javase/8/embedded/develop-apps-platforms/codecache.htm
 
+## JVM 아키텍처
+
+- 위에서 간단하게 어떻게 자바 프로그램이 실행이되고, JVM이 어떤 역할을 하는지 간단하게 알아보았다.
+- 이번에는 좀더 깊이 들어가서 JVM의 내부 구조와 각 구성 요소가 어떻게 상호작용하는지 살펴보자.
+
+![](./img/jvm_architecture.png)
+
+### ClassLoader
+
+- `ClassLoader`는 자바 클래스 파일(.class)을 JVM 메모리(Method Area)에 로드하는 역할을 한다.
+    - 우리가 Java 런타임 환경에서 `Class` 객체를 반환받을 수 있는 이유도 바로 `ClassLoader` 덕분이다.
+- `ClassLoader`는 계층 구조로 구성되어 있으며, 부모-자식 관계를 통해 클래스를 로드한다.
+    - Bootstrap ClassLoader: 자바 런타임 환경의 핵심 클래스를 로드 (예: java.lang 패키지)
+    - Extension ClassLoader: 확장 라이브러리를 로드 (예: JRE의 lib/ext 디렉토리)
+    - Application ClassLoader: 애플리케이션 클래스패스에 있는 클래스를 로드
+
+> https://parkadd.tistory.com/112
 > https://catsbi.oopy.io/df0df290-9188-45c1-b056-b8fe032d88ca
 > https://www.geeksforgeeks.org/java/how-jvm-works-jvm-architecture/
 > https://www.freecodecamp.org/news/jvm-tutorial-java-virtual-machine-architecture-explained-for-beginners/
