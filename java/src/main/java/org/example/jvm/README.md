@@ -159,7 +159,33 @@ example.jar
 > ![Infa > 클래스는 언제 메모리에 로딩 & 초기화 되는가 ❓](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%ED%81%B4%EB%9E%98%EC%8A%A4%EB%8A%94-%EC%96%B8%EC%A0%9C-%EB%A9%94%EB%AA%A8%EB%A6%AC%EC%97%90-%EB%A1%9C%EB%94%A9-%EC%B4%88%EA%B8%B0%ED%99%94-%EB%90%98%EB%8A%94%EA%B0%80-%E2%9D%93) <br/>
 > [Spring Boot Docs > Nested JARs](https://docs.spring.io/spring-boot/specification/executable-jar/nested-jars.html)
 
-###  
+### Memory
+
+![](./img/jvm_memory_architecture.png)
+
+#### Method Area / Metaspace
+
+- Method Area는 JVM 메모리의 한 영역으로, 자바 클래스의 구조와 관련된 정보를 저장하는 공간이다.
+    - 클래스 이름, 접근 제어자, 필드 및 메서드 정보 등이 포함된다.
+    - Method Area는 JVM이 클래스를 로드하고 실행할 때 필요한 정보를 제공한다.
+    - Method Area는 모든 스레드가 공유하는 영역이기 때문에, 동시성 문제를 방지하기 위해 적절한 동기화 메커니즘이 필요하다.
+- 앞에 이야기한 ClassLoader가 로드한 클래스 파일(.class)은 Method Area에 저장된다.
+- Java에서 Method Area 영역을 너무 작게 설정하면, 클래스 로딩 시도 시 `java.lang.OutOfMemoryError: Metaspace` 예외가 발생할 수 있다.
+- 문제는 Metaspace의 경우 Class에 대한 중요 정보가 저장되는 영역이기 때문에, 이 영역이 부족해지면 새로운 클래스를 로드할 수 없게 되어 애플리케이션이 정상적으로 동작하지 않을 수 있다.
+    - 특히 동적 클래스 로딩이 빈번한 애플리케이션에서는 Metaspace 부족 현상이 더 자주 발생할 수 있다.
+- 때문에 Metaspace를 모니터링하고, 필요에 따라서 크기를 조정하는 것이 중요하다.
+    - `-XX:MetaspaceSize=<size>` : Metaspace의 초기 크기를 설정
+    - `-XX:MaxMetaspaceSize=<size>` : Metaspace의 최대 크기를 설정
+
+> [자바 메타스페이스(Metaspace)에 대해 알아보자.](https://jaemunbro.medium.com/java-metaspace%EC%97%90-%EB%8C%80%ED%95%B4-%EC%95%8C%EC%95%84%EB%B3%B4%EC%9E%90-ac363816d35e)
+
+#### Heap Area
+
+#### Stack Area
+
+#### Program Counter (PC) Registers
+
+#### Native Method Stacks
 
 > https://docs.oracle.com/javase/specs/jls/se21/html/jls-12.html
 > https://brewagebear.github.io/fundamental-jvm-classloader/
