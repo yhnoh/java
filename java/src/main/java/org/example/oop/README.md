@@ -332,9 +332,9 @@ public static void main(String[] args) {
 #### equals()와 hashCode()를 함께 오버라이딩 해야하는 이유가 뭘까?
 
 - hashCode()는 객체의 해시 코드를 반환하는 메서드로, 주로 ***해시 기반 컬렉션(예: HashMap, HashSet)에서 객체를 효율적으로 저장하고 검색하기 위해 사용***된다.
-- 우리가 Map에 대해서 조회를 할때, O(1)의 시간복잡도로 조회가 가능한 이유는 내부적으로 해시코드를 활용하기 때문이다.
-  - 기본적으로 자료구조의 구현의 경우 데이터 저장의 용도로 배열이 활용이 되는데, 배열의 인덱스를 해시코드를 기반으로 계산하여 해당 인덱스에 바로 접근할 수 있기 때문에 빠른 조회가 가능하다.
-- 하지만 hashCode() 메서드가 동일한 값을 반환하는 서로 다른 객체들이 존재할 수 있다. (해시 충돌)
+- 우리가 Map에 대해서 조회를 할때, ***O(1)의 시간복잡도로 조회가 가능한 이유는 내부적으로 해시코드를 활용***하기 때문이다.
+  - 기본적으로 자료구조의 구현의 경우 데이터 저장의 용도로 배열이 많이 활용이 되는데, 배열의 인덱스를 해시코드를 기반으로 계산하여 해당 인덱스에 바로 접근할 수 있기 때문에 빠른 조회가 가능하다.
+- 하지만 hashCode() 메서드가 ***동일한 값을 반환하는 서로 다른 객체들이 존재할 수 있다.*** (해시 충돌)
     - 때문에 hashCode() 메서드가 동일한 값을 반환하는 객체들에 대해서는 equals() 메서드를 사용하여 논리적인 동등성을 비교한다.
 - 아래는 Java HashMap의 put()과 get()이 어떻게 해시코드를 활용하는지 표현하기 위한 의사코드이다.
 ```text
@@ -375,6 +375,73 @@ public class HashMap<K, V> {
       HashMap과 같은 해시 기반 컬렉션에서 올바르게 동작하지 않을 수 있다.
 
 ### wait(), notify(): 스레드 간의 통신을 위한 메서드
+- `wait()`와 `notify()` 메서드는 ***멀티스레드 환경에서 스레드 간의 통신을 위해 사용***되는 메서드이다.
+  - `wait()`: 현재 스레드를 일시적으로 대기 상태로 전환시키는 메서드
+  - `notify()`: 대기 상태에 있는 스레드를 깨워 실행 대기 상태로 전환시키는 메서드
+- 참고로 해당 장에서는 너무 상세히 다루지 않겠다.
+- 멀티스레드 환경에서 동시성 문제를 해결하기 위해서는 Lock 이라는 개념이 필요하고, Lock을 구성하기 아래와 같은 기본적인 매커니즘이 필요하다.
+  - 현재 작업중인 스레드가 존재할 경우 다른 스레드가 접근하지 못하도록 막아야 한다. (wait)
+  - 작업이 완료된 이후 다른 스레드가 접근할 수 있도록 허용해야 한다. (notify)
+- 아래는 `wait()`와 `notify()` 메서드를 활용하여 Lock의 기본적인 매커니즘을 구현한 코드이다.
 
+```java
+public static void main(String[] args) throws InterruptedException {
+    Object lock = new Object();
+
+    Thread thread1 = new Thread(() -> {
+        try {
+            sleep(1000);
+
+            synchronized (lock) {
+                System.out.println(Thread.currentThread().getName() + " 락 획득 이후, wait() 호출");
+                // Thread-1 Waiting 상태로 전환
+                lock.wait();
+                System.out.println(Thread.currentThread().getName() + " 작업 완료");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+    }, "Thread-1");
+
+    Thread thread2 = new Thread(() -> {
+
+        try {
+            // Thread-2 10초 대기: Thread-1이 wait() 상태로 들어간 후에 notify() 호출하도록 보장
+            sleep(10000);
+
+            synchronized (lock) {
+                System.out.println(Thread.currentThread().getName() + " 락 획득 이후, notify() 호출을 통한 Thread-1 깨우기");
+                // Thread-1 Runnable 상태로 전환 시도
+                lock.notifyAll();
+                System.out.println(Thread.currentThread().getName() + " 작업 완료");
+            }
+
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }, "Thread-2");
+
+
+    thread1.start();
+    thread2.start();
+
+    thread1.join();
+    thread2.join();
+}
+```
+- 위와 같이 서로 다른 스레드가 동일한 객체를 가지고 `wait()`와 `notify()` 메서드를 호출하여 스레드 간의 통신을 할 수 있다.
+
+### Java Object 클래스를 통해서 어떤 문제를 해결하려고 했을까?
+- Java의 Object 클래스는 단순히 객체의 표현을 넘어 아래와 같은 문제를 해결하기 위해서 나온 언어지 않을까 생각해본다.
+- Class 정보의 제공을 통한 런타임 환경에서의 유연한 프로그래밍을 지원한다.
+  - `getClass()` 메서드를 통해 런타임 환경에서 객체의 클래스 정보를 확인할 수 있도록 하여, 리플렉션 API와 같은 동적 프로그래밍을 지원한다.
+- 객체를 표현하기 위하여 필요한 표준화된 인터페이스를 제공한다.
+    - `toString()`, `equals()`, `hashCode()` 메서드를 통해 객체 자체를 하나의 데이터 타입으로 표현하고 비교할 수 있도록 한다.
+- 멀티 스레드 환경을 고려하여 설계되었다.
+  - `wait()`, `notify()` 메서드를 통해 멀티스레드 환경에서 스레드 간의 통신을 지원하여 동시성 문제를 해결할 수 있도록 한다.
+
+> [Java Docs > java.lang.Object](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html)
 > [Infa > 자바 Object 클래스와 메서드 오버라이딩](https://inpa.tistory.com/entry/JAVA-%E2%98%95-Object-%ED%81%B4%EB%9E%98%EC%8A%A4%EC%99%80-%EC%83%81%EC%9C%84-%EB%A9%94%EC%84%9C%EB%93%9C-%EC%9E%AC%EC%A0%95%EC%9D%98-%ED%99%9C%EC%9A%A9-%EC%B4%9D%EC%A0%95%EB%A6%AC#tostring_%EB%A9%94%EC%86%8C%EB%93%9C) <br/>
 > [Infa > 자바 객체의 hashCode는 고유하지 않다](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%EA%B0%9D%EC%B2%B4%EC%9D%98-hashCode%EB%8A%94-%EA%B3%A0%EC%9C%A0%ED%95%98%EC%A7%80-%EC%95%8A%EB%8B%A4-%E2%9D%8C#%EA%B0%9D%EC%B2%B4%EC%9D%98_hashcode%EB%8A%94_%EA%B3%A0%EC%9C%A0%ED%95%98%EC%A7%80_%EC%95%8A%EB%8B%A4)
