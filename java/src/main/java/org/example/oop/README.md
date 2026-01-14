@@ -442,6 +442,6 @@ public static void main(String[] args) throws InterruptedException {
 - 멀티 스레드 환경을 고려하여 설계되었다.
   - `wait()`, `notify()` 메서드를 통해 멀티스레드 환경에서 스레드 간의 통신을 지원하여 동시성 문제를 해결할 수 있도록 한다.
 
-> [Java Docs > java.lang.Object](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html)
+> [Java Docs > java.lang.Object](https://docs.oracle.com/javase/8/docs/api/java/lang/Object.html) <br/>
 > [Infa > 자바 Object 클래스와 메서드 오버라이딩](https://inpa.tistory.com/entry/JAVA-%E2%98%95-Object-%ED%81%B4%EB%9E%98%EC%8A%A4%EC%99%80-%EC%83%81%EC%9C%84-%EB%A9%94%EC%84%9C%EB%93%9C-%EC%9E%AC%EC%A0%95%EC%9D%98-%ED%99%9C%EC%9A%A9-%EC%B4%9D%EC%A0%95%EB%A6%AC#tostring_%EB%A9%94%EC%86%8C%EB%93%9C) <br/>
 > [Infa > 자바 객체의 hashCode는 고유하지 않다](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%EA%B0%9D%EC%B2%B4%EC%9D%98-hashCode%EB%8A%94-%EA%B3%A0%EC%9C%A0%ED%95%98%EC%A7%80-%EC%95%8A%EB%8B%A4-%E2%9D%8C#%EA%B0%9D%EC%B2%B4%EC%9D%98_hashcode%EB%8A%94_%EA%B3%A0%EC%9C%A0%ED%95%98%EC%A7%80_%EC%95%8A%EB%8B%A4)
