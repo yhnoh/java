@@ -172,20 +172,63 @@ example.jar
 - 앞에 이야기한 ClassLoader가 로드한 클래스 파일(.class)은 Method Area에 저장된다.
 - Java에서 Method Area 영역을 너무 작게 설정하면, 클래스 로딩 시도 시 `java.lang.OutOfMemoryError: Metaspace` 예외가 발생할 수 있다.
 - 문제는 Metaspace의 경우 Class에 대한 중요 정보가 저장되는 영역이기 때문에, 이 영역이 부족해지면 새로운 클래스를 로드할 수 없게 되어 애플리케이션이 정상적으로 동작하지 않을 수 있다.
-    - 특히 동적 클래스 로딩이 빈번한 애플리케이션에서는 Metaspace 부족 현상이 더 자주 발생할 수 있다.
+    - 거의 모든 자바 애플리케이션은 런타임 시점에 동적으로 클래스를 로드된 이후에, 애플리케이션 종료 시점에 언로드(unload)되기 때문에 메모리 해제가 자주 일어나지 않는다.
+    - 동적 클래스 로딩이 빈번한 애플리케이션에서는 Metaspace 부족 현상이 더 자주 발생할 수 있다.
 - 때문에 Metaspace를 모니터링하고, 필요에 따라서 크기를 조정하는 것이 중요하다.
     - `-XX:MetaspaceSize=<size>` : Metaspace의 초기 크기를 설정
     - `-XX:MaxMetaspaceSize=<size>` : Metaspace의 최대 크기를 설정
 
 > [자바 메타스페이스(Metaspace)에 대해 알아보자.](https://jaemunbro.medium.com/java-metaspace%EC%97%90-%EB%8C%80%ED%95%B4-%EC%95%8C%EC%95%84%EB%B3%B4%EC%9E%90-ac363816d35e)
 
+#### Stack Area
+
+- Stack Area는 JVM 메모리의 한 영역으로, 각 ***스레드가 생성될 때마다 할당되는 메모리 공간***이며, ***메서드를 호출하고 실행하는 동안 필요한 데이터를 저장***한다.
+    - Stack Area는 각 스레드마다 독립적으로 존재하며, 스레드가 종료되면 해당 스택도 함께 해제된다.
+    - 메서드에 필요한 정보인 매개변수, 지역변수, 연산 정보, 반환값 등을 임시로 저장한다.
+    - Stack Area는 LIFO(Last In First Out) 구조로 동작하며, 메서드 호출시 스택 프레임이 생성되고, 메서드가 종료되면 해당 스택 프레임이 제거된다. 이로 인해서 메모리 할당과 해제가
+      빠르게 이루어진다.
+- Stack Area의 크기는 제한되어 있으며, 너무 많은 메서드 호출이나 깊은 재귀 호출이 발생하면 `java.lang.StackOverflowError` 예외가 발생할 수 있다.
+- 아래는 Stack Area의 동작 방식을 보여주는 간단한 예제이다.
+
+```java
+public class StackAreaMain {
+
+    // methodA -> methodB -> methodC 호출 순서로 출력
+    // Stack 영역에 methodA 실행 -> methodB 실행 -> methodC 실행 순서로 스택에 쌓임
+    // methodC 종료 -> methodB 종료 -> methodA 종료 순서로 Stack 영역에서 제거됨
+    public static void main(String[] args) {
+
+        StackAreaMain stackAreaMain = new StackAreaMain();
+        stackAreaMain.methodA();
+    }
+
+    public void methodA() {
+        System.out.println("StackAreaMain.methodA 호출");
+        methodB();
+    }
+
+    public void methodB() {
+        System.out.println("StackAreaMain.methodB 호출");
+        methodC();
+    }
+
+    public void methodC() {
+        System.out.println("StackAreaMain.methodC 호출");
+    }
+}
+```
+
 #### Heap Area
 
-#### Stack Area
+- Heap Area는 JVM 메모리의 한 영역으로, 자바 애플리케이션에서 ***`new` 연산자로 생성된 객체들이 저장되는 공간***이다.
+    - 모든 스레드가 공유하는 영역이며, 동적으로 할당되고 해제되는 메모리를 관리한다.
+    - 가비지 컬렉션(Garbage Collection)이라는 메커니즘을 통해 사용되지 않는 객체들을 자동으로 제거하여 메모리 누수를 방지한다.
 
 #### Program Counter (PC) Registers
 
 #### Native Method Stacks
+
+> [Infa > JVM 내부 구조 & 메모리 영역 💯 총정리](./https://inpa.tistory.com/entry/JAVA-%E2%98%95-JVM-%EB%82%B4%EB%B6%80-%EA%B5%AC%EC%A1%B0-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%98%81%EC%97%AD-%EC%8B%AC%ED%99%94%ED%8E%B8#%EB%9F%B0%ED%83%80%EC%9E%84_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%98%81%EC%97%AD_runtime_data_area)
 
 > https://docs.oracle.com/javase/specs/jls/se21/html/jls-12.html
 > https://brewagebear.github.io/fundamental-jvm-classloader/
