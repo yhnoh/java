@@ -71,13 +71,98 @@
 
 ### ClassLoader
 
+![](./img/jvm_classloader_architecture.png))
+
 - `ClassLoader`는 자바 클래스 파일(.class)을 JVM 메모리(Method Area)에 로드하는 역할을 한다.
     - 우리가 Java 런타임 환경에서 `Class` 객체를 반환받을 수 있는 이유도 바로 `ClassLoader` 덕분이다.
-- `ClassLoader`는 계층 구조로 구성되어 있으며, 부모-자식 관계를 통해 클래스를 로드한다.
-    - Bootstrap ClassLoader: 자바 런타임 환경의 핵심 클래스를 로드 (예: java.lang 패키지)
-    - Extension ClassLoader: 확장 라이브러리를 로드 (예: JRE의 lib/ext 디렉토리)
-    - Application ClassLoader: 애플리케이션 클래스패스에 있는 클래스를 로드
 
+#### Dynamic Class Loading
+
+- Java는 컴파일 언어이면서 동시에 인터프리터 언어의 특성을 가지고 있다. 때문에 ***JVM은 런타임 시점에 필요한 클래스 파일(.class)을 동적으로 로드***할 수 있다.
+    - 이러한 특성 덕분에 Java 프로그램 시작시 모든 클래스를 미리 로드하지 않고, ***필요한 시점에 클래스를 로드***하게 된다.
+    - 클래스는 단 한번만 로드되며, 이후에는 메모리에 로드된 클래스를 재사용한다.
+    - 이를 통해 메모리 사용을 최적화하고, 애플리케이션의 유연성을 높일 수 있다.
+- 그럼 `ClassLoader`는 어떻게 클래스를 로드하여 JVM이 사용할 수 있도록 할까?
+    - 클래스 로딩: 지정된 경로에서 클래스 파일을 찾아 JVM 메모리에 로드한다. (내장 클래스 로더, 사용자 정의 클래스 로더)
+    - 클래스 검증: 로드된 클래스 파일이 유효한지 검사하여 보안성을 확보한다.
+    - 클래스 연결: 로드된 클래스를 JVM 내부 구조에 연결하여 사용할 수 있도록 한다.
+    - 클래스 초기화: 클래스의 static 블록이나 static 변수를 초기화한다.
+- 아래 예제는 `UserApplication`이 실행될 때, 커맨드라인 인자가 존재하는 경우에만 `User` 클래스를 동적으로 로드하는 예제이다.
+
+```java
+public class UserApplication {
+
+    public static void main(String[] args) {
+        System.out.println("UserApplication 실행");
+
+        if (args.length != 0) {
+            User user = new User();
+        }
+        System.out.println("UserApplication 종료");
+    }
+}
+```
+
+```shell
+## 클래스 로딩 과정 추적을 위해 -verbose:class 옵션을 사용하여 UserApplication 실행
+java -verbose:class -cp build/classes/java/main org.example.jvm.classloader.dynamic.UserApplication
+
+## 결과
+UserApplication 실행
+UserApplication 종료
+[0.049s][info][class,load] java.lang.Shutdown source: shared objects file
+[0.049s][info][class,load] java.lang.Shutdown$Lock source: shared objects file 
+
+## 커맨드라인 인자를 추가하여 User 클래스가 동적으로 로드되는 과정 확인
+java -verbose:class -cp build/classes/java/main org.example.jvm.classloader.dynamic.UserApplication arg1
+
+## 결과
+UserApplication 실행
+// User 동적 클래스 로딩 과정
+[0.031s][info][class,load] org.example.jvm.classloader.dynamic.User source: file:/Users/yhnoh/git/java/java/build/classes/java/main/
+[0.031s][info][class,load] java.lang.invoke.MethodType$1 source: shared objects file
+//...
+[0.035s][info][class,load] java.lang.invoke.LambdaForm$MH/0x0000000501000400 source: __JVM_LookupDefineClass__
+User 인스턴스 생성: org.example.jvm.classloader.dynamic.User@15db9742
+UserApplication 종료
+[0.035s][info][class,load] java.lang.Shutdown source: shared objects file
+[0.035s][info][class,load] java.lang.Shutdown$Lock source: shared objects file
+```
+
+- 이러한 동적 로딩의 특성 덕분에 `classpath`에 존재하는 클래스만 로드되는 것 뿐만 아니라, ***사용자 정의 클래스 로더를 통해 네트워크, 데이터베이스 등 다양한 소스에서 클래스를 로드***할 수 있다.
+    - 애플리케이션의 유연성과 확장성을 높일 수 있다는 의미이기도 하다.
+- Spring Boot의 경우 `jar` 파일 내부에 `BOOT-INF/classes` 및 `BOOT-INF/lib` 디렉토리에 존재하는 클래스들을 로드하기 위해, `LaunchedURLClassLoader`라는
+  사용자 정의 클래스 로더를 사용한다.
+
+```shell
+## Jar 구조 
+
+example.jar
+ |
+ +-META-INF
+ |  +-MANIFEST.MF
+ +-org
+ |  +-springframework
+ |     +-boot
+ |        +-loader
+ |           +-<spring boot loader classes>
+ +-BOOT-INF
+    +-classes
+    |  +-mycompany
+    |     +-project
+    |        +-YourClasses.class
+    +-lib
+       +-dependency1.jar
+       +-dependency2.jar
+```
+
+> ![Infa > 클래스는 언제 메모리에 로딩 & 초기화 되는가 ❓](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%ED%81%B4%EB%9E%98%EC%8A%A4%EB%8A%94-%EC%96%B8%EC%A0%9C-%EB%A9%94%EB%AA%A8%EB%A6%AC%EC%97%90-%EB%A1%9C%EB%94%A9-%EC%B4%88%EA%B8%B0%ED%99%94-%EB%90%98%EB%8A%94%EA%B0%80-%E2%9D%93) <br/>
+> [Spring Boot Docs > Nested JARs](https://docs.spring.io/spring-boot/specification/executable-jar/nested-jars.html)
+
+###  
+
+> https://docs.oracle.com/javase/specs/jls/se21/html/jls-12.html
+> https://brewagebear.github.io/fundamental-jvm-classloader/
 > https://parkadd.tistory.com/112
 > https://catsbi.oopy.io/df0df290-9188-45c1-b056-b8fe032d88ca
 > https://www.geeksforgeeks.org/java/how-jvm-works-jvm-architecture/
