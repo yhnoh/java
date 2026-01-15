@@ -163,9 +163,14 @@ example.jar
 
 ![](./img/jvm_memory_architecture.png)
 
+- JVM 메모리는 자바 애플리케이션이 실행되는 동안 필요한 데이터를 저장하고 관리하는 역할을 한다. 이를 효율적으로 관리하기 위해서 JVM 메모리는 여러 영역으로 나누어져 있다.
+- 크게는 Heap Area와 Non-Heap Area로 나눌 수 있다.
+    - Heap Area: 자바 애플리케이션에서 `new` 연산자로 생성된 객체 또는 배열이 저장되는 공간이다.
+    - Non-Heap Area: JVM이 내부적으로 사용하는 메모리 영역으로, Method Area, Stack Area, Program Counter(PC) Registers, Native Method Stacks 등이 포함된다.
+
 #### Method Area / Metaspace
 
-- Method Area는 JVM 메모리의 한 영역으로, 자바 클래스의 구조와 관련된 정보를 저장하는 공간이다.
+- Method Area는 JVM 메모리의 한 영역으로, ***자바 클래스의 구조와 관련된 정보를 저장하는 공간***이다.
     - 클래스 이름, 접근 제어자, 필드 및 메서드 정보 등이 포함된다.
     - Method Area는 JVM이 클래스를 로드하고 실행할 때 필요한 정보를 제공한다.
     - Method Area는 모든 스레드가 공유하는 영역이기 때문에, 동시성 문제를 방지하기 위해 적절한 동기화 메커니즘이 필요하다.
@@ -220,9 +225,35 @@ public class StackAreaMain {
 
 #### Heap Area
 
-- Heap Area는 JVM 메모리의 한 영역으로, 자바 애플리케이션에서 ***`new` 연산자로 생성된 객체들이 저장되는 공간***이다.
-    - 모든 스레드가 공유하는 영역이며, 동적으로 할당되고 해제되는 메모리를 관리한다.
-    - 가비지 컬렉션(Garbage Collection)이라는 메커니즘을 통해 사용되지 않는 객체들을 자동으로 제거하여 메모리 누수를 방지한다.
+- Heap Area는 JVM 메모리의 한 영역으로, 자바 애플리케이션에서 ***`new` 연산자로 생성된 객체 또는 배열이 저장되는 공간***이다.
+    - 모든 스레드가 공유하는 영역이며, 가비지 컬렉션(GC: Garbage Collection)이라는 메커니즘을 통해 메모리를 동적으로 할당하고 해제한다.
+    - 자바에서는 명시적으로 메모리를 해제할 수 없으며, 가비지 컬렉터가 자동으로 사용되지 않는 객체들을 제거하여 메모리 누수를 방지한다.
+- Heap Area 중요한 이유는 ***자바의 메모리 영역에서 가장 큰 부분을 차지***하며, 자바에서 ***동적으로 메모리 할당과 해제를 담당하는 가비지 컬렉터가 작동하는 영역***이기 때문이다.
+  - 때문에 Heap Area는 애플리케이션의 성능과 안정성에 큰 영향을 미친다.
+
+##### Heap Area 구조
+![](./img/jvm_heap_memory_structure.png)
+- Heap 영역의 메모리 구조에서 크게 두가지 영역으로 나눌 수 있다.
+  - Young Generation: 새로 생성된 객체들이 저장되는 영역이다. Young Generation은 크게 두개의 영역으로 나눌 수 있다.
+    - Eden: 새로 생성된 객체들이 처음 할당되는 영역이다.
+    - Survivor: Eden에서 GC이후에 살아남은 객체들이 이동하는 영역으로, 두개의 영역으로 구성되어 하나의 영역은 반드시 비어 있어야 한다.
+      - 참고로 객체의 크기가 Survivor 영역보다 큰 경우에는 Eden 영역에서 직접 Old Generation 영역으로 이동한다.
+  - Old Generation: 장기간 살아남은 객체들이 저장되는 영역이다. Young Generation에서 여러 번의 GC을 거친 객체들이 이 영역으로 이동한다.
+
+##### GC: Garbage Collection
+- Heap Area의 구조가 Young Generation과 Old Generation으로 나누어져 있는 이유는 JVM의 가비지 컬렉션(GC)을 효율적으로 사용하기 위해서이다.
+  - 만약 Heap 영역이 단일 영역으로 구성되어 있다면, GC이 발생할 때마다 전체 Heap 영역을 검사해야 하기 때문에 성능 저하가 발생할 수 있다.
+  - 참고로 ***GC가 발생하게 되는 순간, JVM은 애플리케이션의 실행을 일시 중단(Stop-the-world)*** 시키기 때문에, GC의 효율성은 애플리케이션의 응답성에 큰 영향을 미친다.
+- GC는 크게 Minor GC와 Major GC로 나눌 수 있다. 
+  - Minor GC: Young Generation에서 발생하는 GC**
+    - Minor GC는 Young Generation에서 사용되지 않는 객체들을 제거하고, 살아남은 객체들을 Survivor 영역으로 이동시킨다.
+    - Minor GC는 상대적으로 빠르게 수행되며, 애플리케이션의 응답성에 큰 영향을 미치지 않는다. 즉 Yong Generation은 메모리 공간도 작고, GC도 자주 발생하기 때문에 빠르게 수행되는 것이 중요하다.
+  - Major GC: Old Generation에서는 발생하는 GC
+    - Major GC는 Old Generation에서 사용되지 않는 객체들을 제거한다.
+    - Major GC는 상대적으로 오래 걸리며, 애플리케이션의 응답성에 큰 영향을 미칠 수 있다. 즉 Old Generation은 메모리 공간도 크고, GC도 자주 발생하지 않기 때문에 상대적으로 오래 걸린다.
+
+> [Oracle > HotSpot Virtual Machine Garbage Collection Tuning Guide](https://docs.oracle.com/en/java/javase/21/gctuning/introduction-garbage-collection-tuning.html) <br/>
+> [Bestol > Java Memory Management for Java Virtual Machine (JVM)](https://www.betsol.com/blog/java-memory-management-for-java-virtual-machine-jvm/)
 
 #### Program Counter (PC) Registers
 
