@@ -292,8 +292,8 @@ public class Thread implements Runnable {
 
 
 
-> [Infa > JVM 내부 구조 & 메모리 영역 💯 총정리](./https://inpa.tistory.com/entry/JAVA-%E2%98%95-JVM-%EB%82%B4%EB%B6%80-%EA%B5%AC%EC%A1%B0-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%98%81%EC%97%AD-%EC%8B%AC%ED%99%94%ED%8E%B8#%EB%9F%B0%ED%83%80%EC%9E%84_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%98%81%EC%97%AD_runtime_data_area)
-> [Oracle > Java Execution](https://docs.oracle.com/javase/specs/jls/se21/html/jls-12.html)
-> [Catsbi's DLog > JVM은 무엇이며 자바 코드는 어떻게 실행하는 것인가.](https://catsbi.oopy.io/df0df290-9188-45c1-b056-b8fe032d88ca)
-> https://www.geeksforgeeks.org/java/how-jvm-works-jvm-architecture/
-> https://www.freecodecamp.org/news/jvm-tutorial-java-virtual-machine-architecture-explained-for-beginners/
+> [Infa > JVM 내부 구조 & 메모리 영역 💯 총정리](./https://inpa.tistory.com/entry/JAVA-%E2%98%95-JVM-%EB%82%B4%EB%B6%80-%EA%B5%AC%EC%A1%B0-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%98%81%EC%97%AD-%EC%8B%AC%ED%99%94%ED%8E%B8#%EB%9F%B0%ED%83%80%EC%9E%84_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%98%81%EC%97%AD_runtime_data_area) <br/>
+> [Oracle > Java Execution](https://docs.oracle.com/javase/specs/jls/se21/html/jls-12.html) <br/>
+> [Catsbi's DLog > JVM은 무엇이며 자바 코드는 어떻게 실행하는 것인가.](https://catsbi.oopy.io/df0df290-9188-45c1-b056-b8fe032d88ca) <br/>
+> https://www.geeksforgeeks.org/java/how-jvm-works-jvm-architecture/ <br/> 
+> https://www.freecodecamp.org/news/jvm-tutorial-java-virtual-machine-architecture-explained-for-beginners/ <br/>
