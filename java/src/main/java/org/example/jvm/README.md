@@ -255,15 +255,45 @@ public class StackAreaMain {
 > [Oracle > HotSpot Virtual Machine Garbage Collection Tuning Guide](https://docs.oracle.com/en/java/javase/21/gctuning/introduction-garbage-collection-tuning.html) <br/>
 > [Bestol > Java Memory Management for Java Virtual Machine (JVM)](https://www.betsol.com/blog/java-memory-management-for-java-virtual-machine-jvm/)
 
-#### Program Counter (PC) Registers
+#### PC Registers (Program Counter Register)
+- PC Register는 JVM 메모리의 한 영역으로, 각 스레드가 생성될 때마다 할당되는 메모리 공간이며, ***현재 실행 중인 명령어의 주소를 저장하는 역할***을 한다.
+    - PC Register는 각 스레드마다 독립적으로 존재하며, 스레드가 실행되는 동안 현재 실행 중인 명령어를 기록한다.
+- 각 스레드가 독립적인 PC Register를 가지는 이유는 멀티스레딩 환경에서 각 스레드가 실행 흐름을 독립적으로 유지해야 하기 때문이다.
+  -  멀티 스레딩 환경에서 Context Switch가 일어날 경우, ***스레드가 일시 중단되거나 재개될 때 현재 실행 중인 명령어의 주소를 정확하게 유지하는 데 사용***된다.
 
 #### Native Method Stacks
+- Native Method Stacks는 JVM 메모리의 한 영역으로, 각 스레드가 생성될때마다 할당되는 메모리 공간이며, 자바 애플리케이션에서 ***네이티브 메서드(native method)가 호출될 때 사용하는 메모리 공간***이다.
+    - 네이티브 메서드는 자바 외부에서 작성된 메서드(Native Method Library)로, 기계어로 작성된 프로그램을 실행시키는 영역이다.
+    - 주로 자바이외의 언어 (C 또는 C++, 어셈블리등) 으로 작성되며, JNI(Java Native Interface)를 통해 자바 코드와 상호작용한다.
+- Native Method를 사용하는 이유는 자바의 경우 JVM을 통해서 실행 되며, 직접적으로 메모리를 관리할 수 없다어 아래와 같은 한계가 존재한다.
+  - OS 특정 기능 사용의 어려움: 모든 운영체제가 동일한 기능을 제공하지 않기 때문에 특정 OS의 특정 기능 사용의 어려움 존재  
+  - 성능 이슈: 자바가 아무리 빠르다고 하여도, C, C++, 어셈블리에 비하면 성능 이슈 발생 가능성 존재 (보안, 그래픽 및 멀티미디아)
+  - 재사용의 어려움: JNI가 없을 경우 이미 잘 만들어진 C, C++ 라이브러리 사용의 어려움
+  - 메모리 직접 제어의 어려움: 자바의 경우 메모리 관리가 자동으로 이루진다. 
+- 아래는 스레드 생성시 native method가 활용되는 예제이다.
+```java
+
+public class Thread implements Runnable {
+
+    public void start() {
+        synchronized (this) {
+            // zero status corresponds to state "NEW".
+            if (holder.threadStatus != 0)
+                throw new IllegalThreadStateException();
+            start0();
+        }
+    }
+
+    private native void start0();
+}
+
+
+```
+
+
 
 > [Infa > JVM 내부 구조 & 메모리 영역 💯 총정리](./https://inpa.tistory.com/entry/JAVA-%E2%98%95-JVM-%EB%82%B4%EB%B6%80-%EA%B5%AC%EC%A1%B0-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%98%81%EC%97%AD-%EC%8B%AC%ED%99%94%ED%8E%B8#%EB%9F%B0%ED%83%80%EC%9E%84_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%98%81%EC%97%AD_runtime_data_area)
-
-> https://docs.oracle.com/javase/specs/jls/se21/html/jls-12.html
-> https://brewagebear.github.io/fundamental-jvm-classloader/
-> https://parkadd.tistory.com/112
-> https://catsbi.oopy.io/df0df290-9188-45c1-b056-b8fe032d88ca
+> [Oracle > Java Execution](https://docs.oracle.com/javase/specs/jls/se21/html/jls-12.html)
+> [Catsbi's DLog > JVM은 무엇이며 자바 코드는 어떻게 실행하는 것인가.](https://catsbi.oopy.io/df0df290-9188-45c1-b056-b8fe032d88ca)
 > https://www.geeksforgeeks.org/java/how-jvm-works-jvm-architecture/
 > https://www.freecodecamp.org/news/jvm-tutorial-java-virtual-machine-architecture-explained-for-beginners/
