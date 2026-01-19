@@ -38,6 +38,91 @@
     - 요청 처리 속도 빠름: 멀티 스레드는 같은 프로세스 내에서 스레드 간의 통신이 빠르기 때문에, 요청 처리 속도가 빠르다. 반면 멀티 프로세스는 각 프로세스 간의 통신이 느리기 때문에, 요청 처리 속도가 느리다.
 
 
+## 멀티 스레드 프로그래밍시 주의해야할 사항
+- 멀티 스레드는 메모리를 공유하기 때문에 공유 자원에 대한 접근이 쉽지만, 이로 인해서 여러 스레드가 동시에 동일한 자원에 접근하게 될 경우 ***데이터 일관성 문제가 발생할 수 있다.***
+- 때문에 멀티 스레드 프로그래밍시에는 공유 자원에 대한 접근을 제어하는 동기화(Synchronization) 기법을 반드시 사용해야 한다.
+
+### 경쟁상태(Race Condtion)와 임계영역(Critical Section)
+
+- 동기화를 통해서 데이터의 일관성을 유지하기전에 먼저 ***어떤 상황이나 영역에 동기화가 필요한지를 먼저 파악***해야한다.
+    - ***경쟁상태(Race Condtion): 여러 프로세스나 스레드가 동시에 공유 자원에 접근하여 데이터의 일관성이 깨지는 상황***
+    - ***임계영역(Critical Section): 경쟁 상태가 발생하는 영역 또는 코드 블록***
+
+#### 동기화 기법이 필요한 이유
+
+```java
+public static class Counter {
+    private int value;
+
+    public void increment() {
+        value++;
+    }
+
+    public int getValue() {
+        return value;
+    }
+}
+
+public static void main(String[] args) throws InterruptedException {
+
+    // 공유 자원
+    Counter counter = new Counter();
+
+    // 100개의 스레드 생성
+    int threadCount = 100;
+    Thread[] threads = new Thread[threadCount];
+
+    for (int i = 0; i < threadCount; i++) {
+
+        threads[i] = new Thread(() -> {
+            // 각 스레드는 카운트를 1 증가
+            try {
+                sleep(10);
+                counter.increment();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    // 모든 스레드 시작
+    for (int i = 0; i < threadCount; i++) {
+        threads[i].start();
+    }
+
+    // 모든 스레드가 종료될 때까지 대기
+    for (int i = 0; i < threadCount; i++) {
+        threads[i].join();
+    }
+
+    // 최종 카운트 출력
+    System.out.println("count = " + counter.getCount());
+
+}
+
+```
+
+- 위의 `Counter` 클래스는 `increment()` 메서드를 통해서 값을 1씩 증가시키는 기능을 제공한다.
+- 멀티 스레드 환경에서는 여러 스레드가 동시에 `increment()` 메서드를 호출할 경우 기대하는 결과값이 나오지 않을 수 있다.
+- `increment()` 메서드를 통해서 `value` 값을 증가시키는 과정은 해석해보면 아래와 같다.
+    - `value` 값을 읽어온다.
+    - `value` 값을 1 증가시킨다.
+    - 증가된 값을 다시 `value`에 저장한다.
+- 멀티 스레드 환경에서의 동작 방식은 아래와 같이 동작할 수 있다.
+
+```text
+Thread-1: value 읽기 (value = 0)
+Thread-2: value 읽기 (value = 0)
+Thread-1: value 증가 (value = 1)
+Thread-2: value 증가 (value = 1)
+Thread-1: value 저장 (value = 1)
+Thread-2: value 저장 (value = 1)
+```
+- `Counter` 클래스의 `increment()` 메서드를 멀티 스레드 환경에서 실행하게 되면, `value` 값이 2가 아닌 1로 저장되는 상황이 발생한다. 데이터의 일관성이 깨지는 경쟁 상태가 발생했으며
+  `increment()` 메서드가 임계 영역이라는 것을 알 수 있다.
+
+
+
 
 ## Java 스레드
 - Java에서 동시성 애플리케이션을 만들기 위하여 `java.lang.Thread` 클래스를 제공한다. Java에서 제공하는 스레드는 운영체제에서 제공하는 커널 스레드와 1:1로 매핑되며 운영체제의 스케쥴러에 의해서 스레드를 관리하게 된다.
