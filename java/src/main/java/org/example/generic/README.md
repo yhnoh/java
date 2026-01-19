@@ -45,34 +45,99 @@ class GenericClass<T> {
 
 
 ### 제네릭은 어떻게 컴파일 될까?
+
 - 자바 컴파일러는 제네릭 타입을 컴파일할 때, 타입 소거(Type Erasure)라는 과정을 거친다. 타입 소거는 ***제네릭 타입 정보를 컴파일 시점에 제거하고, 실제 코드에서는 Object 타입으로 대체하는 과정***이다.
-- 타입 소거 과정으로 컴파일 시점에 타입 검사가 이루어지며, 런타임 시점에는 제네릭 타입 정보가 사라지게 된다.
-- 이러한 타입 소거 과정을 이해하지 않으면 제네릭에 대하여 오해가 발생할 수 있다.
+    - 타입 소거 과정에서 컴파일 시점에 타입 검사가 이루어지며, 런타임 시점에는 개발자가 작성한 제네릭 타입 정보가 사라지게 된다.
+    - 이러한 과정을 통해 제네릭이 도입되기 이전(JDK 1.4 이하 버전)의 코드와 호환성을 유지할 수 있다.
+- 제네릭의 컴파일 과정에서 Bounded Type Parameter(제한된 타입 파라미터)를 사용하는 경우, 타입 소거 과정에서 상위 타입으로으로 대체된다.
+  - Bounded Type Parameter: <T extends 상위타입> 으로 코드를 작성할 경우, 타입 소거 과정으로 상위타입으로 대체된다.
+  - Unbounded Type Parameter: <T> 로 코드를 작성할 경우, 타입 소거 과정으로 Object 타입으로 대체된다.
+
+![](./img/type_erasure.png)
+
+#### 제네릭에 대한 오해와 진실
+- 제네릭의 타입 소거 과정을 이해해야하는 이유가 뭘까? 타입 소거 과정을 정확히 이해하지 않으면 ***제네릭에 대하여 오해가 발생하거나 치명적인 오류가 발생***할 수 있다.
   - 형변환이 없기 때문에 성능의 향상이 있다?
   - 제네릭을 사용하면 런타임 시점에 모든 상황에서 타입 안전성이 보장된다?
   - 제네릭은 모든 상황에서 작성할 수 있다?
 
-![](./img/type_erasure.png)
+##### 1. 형변환이 없기 때문에 성능의 향상이 있다?
+- 제네릭을 사용하면 컴파일 시점에 타입 검사가 이루어지기 때문에, 런타임 시점에서 형변환이 필요 없다고 생각할 수 있다.
+- 하지만, 제네릭 타입은 컴파일 시점에 타입 소거로 인해 Object 타입으로 대체되기 때문에, 런타임 시점에 형변환이 발생한다.
+- 따라서, 제네릭을 사용한다고 형변환이 없어지는 것이 아니기 때문에, 성능 향상이 있다고 단정할 수 없다.
 
-#### 제네릭 Type Erasure 과정
-1. 컴파일 타임 타입 검사
-    - 
-2. 타입 이레이저
-3. 자동 형변환 삽입
+##### 2. 제네릭을 사용하면 런타임 시점에 모든 상황에서 타입 안전성이 보장된다?
+- 제네릭은 컴파일 시점에 타입 검사를 수행하여, 잘못된 타입이 사용되는 것을 방지한다.
+- 하지만, 제네릭 타입은 컴파일 시점에 Object 타입으로 대체되기 때문에, 런타임 시점에서는 타입 안전성이 보장되지 않는다.
+- 예를 들어, 제네릭 타입을 사용하여 컬렉션을 정의하더라도, 런타임 시점에 잘못된 타입이 추가될 수 있다.
 
+```java
+List<String> stringList = new ArrayList();
+List rawList = stringList; // List<Object> 로 캐스팅하여, 타입 파라미터가 아닌 모든 타입 참조 가능하도록 셋팅
+rawList.add(1); // 잘못된 데이터 추가
+String string = stringList.get(0);// 런타임 시점에 ClassCastException 발생
+```
 
-> [자바 제네릭 타입 소거 컴파일 과정 알아보기](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%EC%A0%9C%EB%84%A4%EB%A6%AD-%ED%83%80%EC%9E%85-%EC%86%8C%EA%B1%B0-%EC%BB%B4%ED%8C%8C%EC%9D%BC-%EA%B3%BC%EC%A0%95-%EC%95%8C%EC%95%84%EB%B3%B4%EA%B8%B0)
+- 위 과정에서 어떠한 일이 발생했을까?
+  1.  컴파일 시점에 `List<String>` 타입이 `List` 타입으로 타입 소거가 발생한다. (타입 소거)
+  2. `rawList` 변수에 `stringList` 참조가 할당된다. 할당이 가능한 이유는 위에서 이미 설명한 것처럼 타입 소거 과정이 발생하였기 때문이다. (업캐스팅 가능)
+  3. `rawList` 변수에 `Integer` 타입의 값이 추가된다. 변수 추가가 가능한 이유는 `rawList` 변수가 `List` 타입이기 때문이다. (타입 체크 이상 없음)
+  4. `stringList` 변수에서 값을 꺼낼 때, `String` 타입으로 형변환이 발생한다. 이때, `Integer` 타입의 값이 들어있기 때문에 `ClassCastException` 예외가 발생한다. (런타임 시점에 예외 발생)
+- 이러한 현상을 힙 오염(Heap Pollution)이라고 하며, 제네릭이 타입 안정성을 보장하지 않는 대표적인 예시이다.
+> 힙 오염: 메모리 영역에서 잘못된 타입의 객체가 저장되는 현상, 이로 인해서 데이터를 꺼낼때 데이터 타입이 맞지 않아 타입 변환 오류(ClassCastException) 예외가 발생하는 현성
+
+##### 3. 제네릭은 모든 상황에서 작성할 수 있다?
+- 제네릭은 타입 소거 과정을 거치기 때문에, 모든 상황에서 제네릭을 작성할 수 있는 것은 아니다.
+```java
+List<String> list = new ArrayList<>();
+if(list instanceof List<Integer>) { // 컴파일 에러 발생
+// ...
+}
+```
+- 위 코드는 컴파일 에러가 발생한다. 이유는 `List<Integer>` 타입이 런타임 시점에 `List` 타입으로 타입 소거가 발생하기 때문에, 만약 런타임 시점에 `instanceof` 연산자를 사용하여 타입을 검사한다면, 항상 `true`가 반환되기 때문이다.
+```java
+interface MyInterface {
+    void myMethod(List<String> data);
+    void myMethod(List<Integer> data);
+}
+```
+- 위 코드는 컴파일 에러가 발생한다. 이유는 `myMethod` 메서드가 오버로딩 되었지만, 두 메서드의 시그니처가 동일하기 때문에 컴파일러가 이를 구분할 수 없기 때문이다.
+  - 타입 소거 과정으로 인하여 두 메서드 모두 `void myMethod(List data);` 로 변환된다.
+
+- 반대로 static 메서드에서 제네릭을 사용 가능한 이유도 타입 소거 과정 때문이다.
+```java
+// 컴파일 타임에 T는 Object 타입으로 대체된다.
+public static <T> T getData(T data) {
+    return data;
+}
+
+// 해당 코드는 String s = (String) getData("Hello, World!"); 와 동일하게 컴파일 된다.
+String s = getData("Hello, World!"); //
+```
+- static 메서드는 런타임 시점에는 이미 타입이 결정되어야 하기 때문에, 일반적으로 생각하면 제네릭을 사용할 수 없을 것 같다.
+- 하지만 타입 소거 과정으로 인하여 컴파일 시점에 Object 타입으로 대체되고, 사용하는 코드는 컴파일 시점에 타입이 결정되기 때문에, static 메서드에서도 제네릭을 사용할 수 있다.
+
+> [Infa > 자바 제네릭 타입 소거 컴파일 과정 알아보기](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%EC%A0%9C%EB%84%A4%EB%A6%AD-%ED%83%80%EC%9E%85-%EC%86%8C%EA%B1%B0-%EC%BB%B4%ED%8C%8C%EC%9D%BC-%EA%B3%BC%EC%A0%95-%EC%95%8C%EC%95%84%EB%B3%B4%EA%B8%B0)
+> [Infa > 힙 오염 (Heap Pollution) 이란?](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%EC%A0%9C%EB%84%A4%EB%A6%AD-%ED%9E%99-%EC%98%A4%EC%97%BC-Heap-Pollution-%EC%9D%B4%EB%9E%80)
 
 
 ## 제네릭 사용해보기
 
-#### 제네릭 클래스
 
-#### 제네릭 메서드
+### Bounded Type Parameters (제한된 타입 파라미터)
+- 제한된 타입 파라미터는 특정 상위 타입으로 제한된 제네릭 타입을 정의할 때 사용된다.
+- 제네릭의 경우 모든 타입 파라미터가 허용되는 자유로움이 있기 때문에, 특정 타입 계층 구조 내에서만 동작하도록 제한하고 싶을 때 유용하다.
+- 제한된 타입 파라미터는 `extends` 키워드를 사용하여 정의하여, 상위 타입과 그 하위 타입들만 허용할 수 있다.
 
-#### 
+
+### Wildcards (와일드카드)
+- 와일드카드는 제네릭 타입에서 불특정한 타입을 나타내기 위해 사용된다.
+- 와일드카드는 `?` 기호로 표현되며, 다음과 같은 세 가지 형태가 있다.
+  - Unbounded Wildcard (`<?>`): 모든 타입을 허용하는 와일드카드
+  - Upper Bounded Wildcard (`<? extends T>`): 특정 타입 T와 그 하위 타입을 허용하는 와일드카드
+  - Lower Bounded Wildcard (`<? super T>`): 특정 타입 T와 그 상위 타입을 허용하는 와일드카드
 
 
 
 > [Java Tutorial > Generic](https://docs.oracle.com/javase/tutorial/java/generics/types.html) <br/>
-> [자바 제네릭(Generics) 개념 & 문법 정복하기](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%EC%A0%9C%EB%84%A4%EB%A6%ADGenerics-%EA%B0%9C%EB%85%90-%EB%AC%B8%EB%B2%95-%EC%A0%95%EB%B3%B5%ED%95%98%EA%B8%B0) <br/>
+> [Infa > 자바 제네릭(Generics) 개념 & 문법 정복하기](https://inpa.tistory.com/entry/JAVA-%E2%98%95-%EC%A0%9C%EB%84%A4%EB%A6%ADGenerics-%EA%B0%9C%EB%85%90-%EB%AC%B8%EB%B2%95-%EC%A0%95%EB%B3%B5%ED%95%98%EA%B8%B0) <br/>
